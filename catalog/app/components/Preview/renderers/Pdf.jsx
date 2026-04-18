@@ -11,6 +11,8 @@ import * as Data from 'utils/Data'
 import { mkSearch } from 'utils/NamedRoutes'
 import usePrevious from 'utils/usePrevious'
 
+export const PDF_PREVIEW_SIZE = 'w2048h1536'
+
 function useBlob(blob) {
   const url = React.useMemo(() => window.URL.createObjectURL(blob), [blob])
   React.useEffect(
@@ -22,14 +24,14 @@ function useBlob(blob) {
   return url
 }
 
-async function loadBlob({ sign, handle, page, firstPageBlob, type }) {
+export async function loadBlob({ sign, handle, page, firstPageBlob, type }) {
   if (page === 1) return firstPageBlob
   try {
     const url = sign(handle)
     const search = mkSearch({
       url,
       input: type,
-      size: 'w1024h768',
+      size: PDF_PREVIEW_SIZE,
       page,
     })
     const r = await fetch(`${cfg.apiGatewayEndpoint}/thumbnail${search}`)

@@ -78,6 +78,64 @@ def test_403():
     assert "error" in body
 
 
+def test_pdf_thumb_renders_at_configured_dpi_and_downsamples(monkeypatch):
+    calls = {}
+    source = Image.new("RGB", (2550, 3300), color="white")
+
+    def fake_convert_from_path(path, *, dpi, first_page, last_page):
+        calls.update(
+            {
+                "path": path,
+                "dpi": dpi,
+                "first_page": first_page,
+                "last_page": last_page,
+            }
+        )
+        return [source.copy()]
+
+    monkeypatch.setenv("PDF_PREVIEW_DPI", "600")
+    monkeypatch.setattr(t4_lambda_thumbnail.pdf2image, "convert_from_path", fake_convert_from_path)
+
+    thumb, render_dpi = t4_lambda_thumbnail.pdf_thumb(path="/tmp/sample.pdf", page=3, size=1024)
+
+    assert calls == {
+        "path": "/tmp/sample.pdf",
+        "dpi": 300,
+        "first_page": 3,
+        "last_page": 3,
+    }
+    assert render_dpi == 300
+    assert thumb.size == (1024, 1325)
+
+
+def test_handle_pdf_reports_render_metadata(monkeypatch):
+    thumb = Image.new("RGB", (1024, 1325), color="white")
+
+    monkeypatch.setattr(
+        t4_lambda_thumbnail,
+        "pdf_thumb",
+        lambda **_: (thumb.copy(), 240),
+    )
+    monkeypatch.setattr(
+        t4_lambda_thumbnail.pdf2image,
+        "pdfinfo_from_path",
+        lambda _path: {"Pages": 25},
+    )
+
+    info, data = t4_lambda_thumbnail.handle_pdf(
+        path="/tmp/sample.pdf",
+        page=1,
+        size=1024,
+        count_pages=True,
+    )
+
+    assert info["thumbnail_size"] == (1024, 1325)
+    assert info["pdf_render_dpi"] == 240
+    assert info["pdf_resize_filter"] == "LANCZOS"
+    assert info["page_count"] == 25
+    assert data
+
+
 @responses.activate
 @pytest.mark.parametrize(
     "input_file, params, expected_thumb, expected_original_size, expected_thumb_size, num_pages, status",

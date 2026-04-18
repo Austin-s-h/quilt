@@ -8,8 +8,9 @@ import { PreviewData, PreviewError } from '../types'
 import * as utils from './utils'
 
 export const detect = utils.extIn(['.pdf', '.pptx'])
+export const PDF_PREVIEW_SIZE = 'w2048h1536'
 
-async function loadPdf({ sign, handle }) {
+export async function loadPdf({ sign, handle }) {
   try {
     const url = sign(handle)
     const type = (handle.logicalKey || handle.key).toLowerCase().endsWith('.pptx')
@@ -18,7 +19,7 @@ async function loadPdf({ sign, handle }) {
     const search = mkSearch({
       url,
       input: type,
-      size: 'w1024h768',
+      size: PDF_PREVIEW_SIZE,
       countPages: true,
     })
     const r = await fetch(`${cfg.apiGatewayEndpoint}/thumbnail${search}`)
