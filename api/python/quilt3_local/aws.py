@@ -7,7 +7,7 @@ import json
 import mimetypes
 from functools import lru_cache
 from pathlib import Path
-from typing import AsyncIterator
+from typing import AsyncIterator, Callable, Literal, TypedDict, cast
 
 import boto3
 from botocore.exceptions import ClientError
@@ -15,8 +15,171 @@ from botocore.exceptions import ClientError
 from . import settings
 
 
+class FilesystemObjectEntry(TypedDict):
+    Key: str
+    Size: int
+    ETag: str
+    LastModified: datetime.datetime
+    StorageClass: str
+
+
+class ObjectListingEntry(TypedDict, total=False):
+    Key: str
+    Size: int
+    ETag: str
+    LastModified: datetime.datetime
+    StorageClass: str
+    VersionId: str
+
+
+class FilesystemObjectMetadata(FilesystemObjectEntry):
+    Body: bytes
+    ContentType: str
+
+
+PageItem = tuple[str, Literal["prefix", "content"], FilesystemObjectEntry | None]
+
+
+CONVENTIONAL_KEY_GROUPS: tuple[tuple[str, ...], ...]
+CONVENTIONAL_KEY_LOOKUP: dict[str, tuple[str, ...]]
+CONVENTIONAL_DEFAULT_FACTORIES: dict[str, Callable[[str], bytes]]
+
+
+def _default_readme(bucket: str) -> bytes:
+    return (
+        f"# {bucket}\n\n"
+        "This is a filesystem-backed LOCAL Quilt bucket.\n\n"
+        "Quilt exposes a few conventional config files by default in LOCAL mode:\n\n"
+        "- `.quilt/catalog/config.yml`\n"
+        "- `.quilt/workflows/config.yml`\n"
+        "- `.quilt/queries/config.yaml`\n"
+        "- `quilt_summarize.json`\n"
+    ).encode()
+
+
+def _default_bucket_preferences(bucket: str) -> bytes:
+    return (
+        "ui:\n"
+        "  sourceBuckets:\n"
+        f'    "{bucket}": {{}}\n'
+    ).encode()
+
+
+def _default_experiment_universal_schema(_bucket: str) -> bytes:
+    return (
+        b'{\n'
+        b'  "$schema": "http://json-schema.org/draft-07/schema#",\n'
+        b'  "type": "object"\n'
+        b'}\n'
+    )
+
+
+def _default_workflows_config(bucket: str) -> bytes:
+    schema_url = _bucket_root(bucket).joinpath(
+        ".quilt", "workflows", "schemas", "experiment-universal.json"
+    ).as_uri()
+    return b"".join((
+        b'version:\n',
+        b'  base: "1"\n',
+        b'  catalog: "1"\n',
+        b'default_workflow: "experiment"\n',
+        b'is_workflow_required: false\n',
+        b'workflows:\n',
+        b'  experiment:\n',
+        b'    name: Experiment\n',
+        b'    metadata_schema: experiment-universal\n',
+        b'schemas:\n',
+        b'  experiment-universal:\n',
+        f'    url: {schema_url}\n'.encode(),
+    ))
+
+
+def _default_queries_config(_bucket: str) -> bytes:
+    return b'version: "1"\nqueries: {}\n'
+
+
+_DEFAULT_SUMMARIZE_GROUP_ORDER = (
+    "text",
+    "tabular",
+    "structured",
+    "notebooks",
+    "scientific",
+    "images",
+    "documents",
+    "media",
+)
+
+
+def _default_quilt_summarize(bucket: str) -> bytes:
+    preview_objects = [
+        item["Key"]
+        for item in _filesystem_real_objects(bucket)
+        if item["Key"].startswith("preview/")
+    ]
+    if not preview_objects:
+        return b"[]\n"
+
+    grouped: dict[str, list[str]] = {}
+    for key in sorted(preview_objects):
+        parts = key.split("/", 2)
+        group = parts[1] if len(parts) > 2 else "misc"
+        grouped.setdefault(group, []).append(key)
+
+    ordered_groups = [
+        group for group in _DEFAULT_SUMMARIZE_GROUP_ORDER if group in grouped
+    ]
+    ordered_groups.extend(
+        sorted(group for group in grouped if group not in _DEFAULT_SUMMARIZE_GROUP_ORDER)
+    )
+
+    summarize = [
+        [
+            {
+                "path": key,
+                "title": Path(key).name,
+                "expand": True,
+            }
+            for key in grouped[group]
+        ]
+        for group in ordered_groups
+    ]
+    return (json.dumps(summarize, indent=2) + "\n").encode()
+
+
+CONVENTIONAL_KEY_GROUPS = (
+    ("README.md",),
+    ("README.txt",),
+    ("README.ipynb",),
+    ("quilt_summarize.json",),
+    (".quilt/workflows/config.yml", ".quilt/workflows/config.yaml"),
+    (".quilt/workflows/schemas/experiment-universal.json",),
+    (".quilt/catalog/config.yml", ".quilt/catalog/config.yaml"),
+    (".quilt/queries/config.yaml", ".quilt/queries/config.yml"),
+)
+
+CONVENTIONAL_KEY_LOOKUP = {
+    alias.casefold(): group
+    for group in CONVENTIONAL_KEY_GROUPS
+    for alias in group
+}
+
+CONVENTIONAL_DEFAULT_FACTORIES = {
+    "README.md": _default_readme,
+    "quilt_summarize.json": _default_quilt_summarize,
+    ".quilt/workflows/config.yml": _default_workflows_config,
+    ".quilt/workflows/schemas/experiment-universal.json": _default_experiment_universal_schema,
+    ".quilt/catalog/config.yml": _default_bucket_preferences,
+    ".quilt/queries/config.yaml": _default_queries_config,
+}
+
+
 def _etag_for_path(path: Path) -> str:
     digest = hashlib.md5(path.read_bytes()).hexdigest()  # noqa: S324
+    return f'"{digest}"'
+
+
+def _etag_for_bytes(data: bytes) -> str:
+    digest = hashlib.md5(data).hexdigest()  # noqa: S324
     return f'"{digest}"'
 
 
@@ -24,7 +187,10 @@ def _bucket_root(bucket: str) -> Path:
     root = settings.data_dir()
     if root is None:
         raise RuntimeError("QUILT_LOCAL_DATA_DIR must be set for filesystem local mode")
-    return root / bucket
+    candidate = (root / bucket).resolve()
+    if not candidate.is_relative_to(root):
+        raise PermissionError("Bucket name escapes data root")
+    return candidate
 
 
 def _object_path(bucket: str, key: str) -> Path:
@@ -33,6 +199,143 @@ def _object_path(bucket: str, key: str) -> Path:
     if not candidate.is_relative_to(bucket_root):
         raise PermissionError("Object path escapes bucket root")
     return candidate
+
+
+def _mtime(path: Path) -> datetime.datetime:
+    return datetime.datetime.fromtimestamp(path.stat().st_mtime, datetime.timezone.utc)
+
+
+def _content_type_for_key(key: str) -> str:
+    return mimetypes.guess_type(key)[0] or "application/octet-stream"
+
+
+def _conventional_variants(key: str) -> tuple[str, ...]:
+    return CONVENTIONAL_KEY_LOOKUP.get(key.casefold(), (key,))
+
+
+def _conventional_default_key(key: str) -> str | None:
+    for candidate in _conventional_variants(key):
+        if candidate in CONVENTIONAL_DEFAULT_FACTORIES:
+            return candidate
+    return None
+
+
+def _find_case_insensitive_path(bucket: str, key: str) -> Path | None:
+    bucket_root = _bucket_root(bucket)
+    if not bucket_root.exists():
+        return None
+
+    parts = tuple(filter(None, key.split("/")))
+    for part in parts:
+        if part in {".", ".."}:
+            raise PermissionError("Object path escapes bucket root")
+
+    def _walk(current: Path, index: int) -> Path | None:
+        if index >= len(parts):
+            return current
+        if not current.is_dir():
+            return None
+        part = parts[index]
+        exact = current / part
+        matches = []
+        if exact.exists():
+            matches.append(exact)
+        matches.extend(sorted(
+            (
+                child
+                for child in current.iterdir()
+                if child.name.casefold() == part.casefold() and child != exact
+            ),
+            key=lambda child: child.name,
+        ))
+        for candidate in matches:
+            resolved = _walk(candidate, index + 1)
+            if resolved is not None:
+                return resolved
+        return None
+
+    return _walk(bucket_root, 0)
+
+
+def _filesystem_object_metadata(bucket: str, key: str) -> FilesystemObjectMetadata | None:
+    bucket_root = _bucket_root(bucket)
+    if not bucket_root.exists():
+        return None
+
+    for candidate_key in _conventional_variants(key):
+        path = _find_case_insensitive_path(bucket, candidate_key)
+        if path is None or not path.is_file():
+            continue
+        actual_key = path.relative_to(bucket_root).as_posix()
+        data = path.read_bytes()
+        return {
+            "Key": actual_key,
+            "Body": data,
+            "ETag": _etag_for_path(path),
+            "LastModified": _mtime(path),
+            "Size": len(data),
+            "StorageClass": "STANDARD",
+            "ContentType": _content_type_for_key(actual_key),
+        }
+
+    canonical_key = _conventional_default_key(key)
+    if canonical_key is None:
+        return None
+
+    for candidate_key in _conventional_variants(canonical_key):
+        path = _find_case_insensitive_path(bucket, candidate_key)
+        if path is not None and path.is_file():
+            return None
+
+    data = CONVENTIONAL_DEFAULT_FACTORIES[canonical_key](bucket)
+    return {
+        "Key": canonical_key,
+        "Body": data,
+        "ETag": _etag_for_bytes(data),
+        "LastModified": _mtime(bucket_root),
+        "Size": len(data),
+        "StorageClass": "STANDARD",
+        "ContentType": _content_type_for_key(canonical_key),
+    }
+
+
+def _filesystem_real_objects(bucket: str) -> list[FilesystemObjectEntry]:
+    bucket_root = _bucket_root(bucket)
+    if not bucket_root.exists():
+        return []
+
+    objects = []
+    for path in sorted(bucket_root.rglob("*")):
+        if not path.is_file():
+            continue
+        key = path.relative_to(bucket_root).as_posix()
+        objects.append({
+            "Key": key,
+            "Size": path.stat().st_size,
+            "ETag": _etag_for_path(path),
+            "LastModified": _mtime(path),
+            "StorageClass": "STANDARD",
+        })
+
+    return sorted(objects, key=lambda item: item["Key"])
+
+
+def _filesystem_objects(bucket: str) -> list[FilesystemObjectEntry]:
+    objects = list(_filesystem_real_objects(bucket))
+
+    for canonical_key in CONVENTIONAL_DEFAULT_FACTORIES:
+        metadata = _filesystem_object_metadata(bucket, canonical_key)
+        if metadata is None or metadata["Key"] != canonical_key:
+            continue
+        objects.append({
+            "Key": canonical_key,
+            "Size": metadata["Size"],
+            "ETag": metadata["ETag"],
+            "LastModified": metadata["LastModified"],
+            "StorageClass": "STANDARD",
+        })
+
+    return sorted(objects, key=lambda item: item["Key"])
 
 
 @lru_cache
@@ -49,7 +352,7 @@ async def bucket_exists(bucket: str) -> bool:
             _sync_s3_client().head_bucket(Bucket=bucket)
             return True
         except ClientError as exc:
-            if exc.response["Error"]["Code"] == "403":
+            if exc.response["Error"]["Code"] in {"403", "404", "NoSuchBucket", "NotFound"}:
                 return False
             raise
 
@@ -58,11 +361,7 @@ async def bucket_exists(bucket: str) -> bool:
 
 async def list_objects_v2(*, Bucket: str, Prefix: str = "", MaxKeys: int = 1000) -> dict:
     if settings.filesystem_mode():
-        count = 0
-        async for _ in list_all_objects(Bucket=Bucket, Prefix=Prefix):
-            count += 1
-            if count >= MaxKeys:
-                break
+        count = sum(1 for item in _filesystem_objects(Bucket) if item["Key"].startswith(Prefix))
         return {"KeyCount": count}
 
     def _list():
@@ -73,26 +372,18 @@ async def list_objects_v2(*, Bucket: str, Prefix: str = "", MaxKeys: int = 1000)
 
 async def list_object_versions(*, Bucket: str, Prefix: str = "", MaxKeys: int = 1000) -> dict:
     if settings.filesystem_mode():
-        bucket_root = _bucket_root(Bucket)
         versions = []
-        if bucket_root.exists():
-            for path in sorted(bucket_root.rglob("*")):
-                if not path.is_file():
-                    continue
-                key = path.relative_to(bucket_root).as_posix()
-                if key != Prefix:
-                    continue
-                stat = path.stat()
-                versions.append({
-                    "Key": key,
-                    "VersionId": "null",
-                    "IsLatest": True,
-                    "LastModified": datetime.datetime.fromtimestamp(stat.st_mtime, datetime.timezone.utc),
-                    "ETag": _etag_for_path(path),
-                    "Size": stat.st_size,
-                    "StorageClass": "STANDARD",
-                })
-                break
+        metadata = _filesystem_object_metadata(Bucket, Prefix)
+        if metadata is not None:
+            versions.append({
+                "Key": Prefix,
+                "VersionId": "null",
+                "IsLatest": True,
+                "LastModified": metadata["LastModified"],
+                "ETag": metadata["ETag"],
+                "Size": metadata["Size"],
+                "StorageClass": "STANDARD",
+            })
         return {
             "Name": Bucket,
             "Prefix": Prefix,
@@ -119,8 +410,8 @@ async def list_objects_page(
     MaxKeys: int = 1000,
 ) -> dict:
     if settings.filesystem_mode():
-        bucket_root = _bucket_root(Bucket)
-        if not bucket_root.exists():
+        objects = [item for item in _filesystem_objects(Bucket) if item["Key"].startswith(Prefix)]
+        if not objects and not _bucket_root(Bucket).exists():
             return {
                 "Name": Bucket,
                 "Prefix": Prefix,
@@ -133,43 +424,26 @@ async def list_objects_page(
             }
 
         prefixes: set[str] = set()
-        contents: list[dict] = []
-        for path in sorted(bucket_root.rglob("*")):
-            if not path.is_file():
-                continue
-            key = path.relative_to(bucket_root).as_posix()
-            if not key.startswith(Prefix):
-                continue
-
+        contents: list[FilesystemObjectEntry] = []
+        for item in objects:
+            key = item["Key"]
             remainder = key[len(Prefix):]
             if Delimiter and Delimiter in remainder:
                 child = remainder.split(Delimiter, 1)[0]
                 prefixes.add(f"{Prefix}{child}{Delimiter}")
                 continue
+            contents.append(item)
 
-            stat = path.stat()
-            contents.append({
-                "Key": key,
-                "Size": stat.st_size,
-                "ETag": _etag_for_path(path),
-                "LastModified": datetime.datetime.fromtimestamp(
-                    stat.st_mtime,
-                    tz=datetime.timezone.utc,
-                ),
-                "StorageClass": "STANDARD",
-            })
-
-        items = sorted(
-            [("prefix", prefix_value) for prefix_value in prefixes]
-            + [("content", content) for content in contents],
-            key=lambda item: item[1] if item[0] == "prefix" else item[1]["Key"],
-        )
+        items: list[PageItem] = []
+        items.extend((prefix_value, "prefix", None) for prefix_value in prefixes)
+        items.extend((content["Key"], "content", content) for content in contents)
+        items.sort(key=lambda item: item[0])
 
         if ContinuationToken:
             items = [
                 item
                 for item in items
-                if (item[1] if item[0] == "prefix" else item[1]["Key"]) > ContinuationToken
+                if item[0] > ContinuationToken
             ]
 
         truncated = len(items) > MaxKeys
@@ -177,7 +451,7 @@ async def list_objects_page(
         next_token = None
         if truncated and page:
             last_item = page[-1]
-            next_token = last_item[1] if last_item[0] == "prefix" else last_item[1]["Key"]
+            next_token = last_item[0]
 
         return {
             "Name": Bucket,
@@ -187,11 +461,11 @@ async def list_objects_page(
             "KeyCount": len(page),
             "IsTruncated": truncated,
             "NextContinuationToken": next_token,
-            "Contents": [item[1] for item in page if item[0] == "content"],
+            "Contents": [item[2] for item in page if item[1] == "content"],
             "CommonPrefixes": [
-                {"Prefix": item[1]}
+                {"Prefix": item[0]}
                 for item in page
-                if item[0] == "prefix"
+                if item[1] == "prefix"
             ],
         }
 
@@ -206,29 +480,16 @@ async def list_objects_page(
     return await asyncio.to_thread(_list_page)
 
 
-async def list_all_objects(*, Bucket: str, Prefix: str = "") -> AsyncIterator[dict]:
+async def list_all_objects(*, Bucket: str, Prefix: str = "") -> AsyncIterator[ObjectListingEntry]:
     if settings.filesystem_mode():
-        bucket_root = _bucket_root(Bucket)
-        if not bucket_root.exists():
-            return
-        for path in sorted(bucket_root.rglob("*")):
-            if not path.is_file():
-                continue
-            stat = path.stat()
-            key = path.relative_to(bucket_root).as_posix()
-            if not key.startswith(Prefix):
-                continue
-            yield {
-                "Key": key,
-                "Size": stat.st_size,
-                "ETag": _etag_for_path(path),
-                "LastModified": datetime.datetime.fromtimestamp(stat.st_mtime, datetime.timezone.utc),
-            }
+        for item in _filesystem_real_objects(Bucket):
+            if item["Key"].startswith(Prefix):
+                yield cast(ObjectListingEntry, item)
         return
 
-    def _collect() -> list[dict]:
+    def _collect() -> list[ObjectListingEntry]:
         paginator = _sync_s3_client().get_paginator("list_objects_v2")
-        out = []
+        out: list[ObjectListingEntry] = []
         for page in paginator.paginate(Bucket=Bucket, Prefix=Prefix):
             out.extend(page.get("Contents", ()))
         return out
@@ -239,7 +500,10 @@ async def list_all_objects(*, Bucket: str, Prefix: str = "") -> AsyncIterator[di
 
 async def read_bytes(*, Bucket: str, Key: str, VersionId: str | None = None) -> bytes:
     if settings.filesystem_mode():
-        return _object_path(Bucket, Key).read_bytes()
+        metadata = _filesystem_object_metadata(Bucket, Key)
+        if metadata is None:
+            raise FileNotFoundError(f"No such local object: s3://{Bucket}/{Key}")
+        return metadata["Body"]
 
     def _read():
         kwargs = {"Bucket": Bucket, "Key": Key}
@@ -260,6 +524,32 @@ async def read_json_lines(*, Bucket: str, Key: str) -> list[dict]:
     return [json.loads(line) for line in body.splitlines() if line]
 
 
+async def get_object_tagging(*, Bucket: str, Key: str, VersionId: str | None = None) -> dict | None:
+    if settings.filesystem_mode():
+        metadata = _filesystem_object_metadata(Bucket, Key)
+        if metadata is None:
+            return None
+        return {
+            "VersionId": VersionId or "null",
+            "TagSet": [],
+        }
+
+    def _get_object_tagging():
+        kwargs = {"Bucket": Bucket, "Key": Key}
+        if VersionId:
+            kwargs["VersionId"] = VersionId
+        try:
+            return _sync_s3_client().get_object_tagging(**kwargs)
+        except ClientError as exc:
+            error = exc.response.get("Error", {})
+            status = exc.response.get("ResponseMetadata", {}).get("HTTPStatusCode")
+            if status == 404 or error.get("Code") in {"404", "NoSuchKey", "NotFound"}:
+                return None
+            raise
+
+    return await asyncio.to_thread(_get_object_tagging)
+
+
 async def fetch_object(
     *,
     Bucket: str,
@@ -272,7 +562,6 @@ async def fetch_object(
 ) -> dict:
     method = Method.upper()
     if settings.filesystem_mode():
-        path = _object_path(Bucket, Key)
         if method == "HEAD" and Key == "" and _bucket_root(Bucket).is_dir():
             return {
                 "status": 200,
@@ -286,6 +575,7 @@ async def fetch_object(
             }
 
         if method == "PUT":
+            path = _object_path(Bucket, Key)
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_bytes(Body or b"")
             return {
@@ -297,19 +587,20 @@ async def fetch_object(
                 "body": b"",
             }
 
-        if not path.exists() or path.is_dir():
+        metadata = _filesystem_object_metadata(Bucket, Key)
+        if metadata is None:
             return {
                 "status": 404,
                 "headers": {"content-type": "text/plain"},
                 "body": b"Not found",
             }
 
-        data = path.read_bytes()
+        data = metadata["Body"]
         status = 200
         headers = {
-            "content-type": ContentType or mimetypes.guess_type(path.name)[0] or "application/octet-stream",
+            "content-type": metadata["ContentType"],
             "content-length": str(len(data)),
-            "etag": _etag_for_path(path),
+            "etag": metadata["ETag"],
         }
         if Range and Range.startswith("bytes="):
             start_s, _, end_s = Range[6:].partition("-")
@@ -317,7 +608,7 @@ async def fetch_object(
             end = int(end_s) if end_s else len(data) - 1
             data = data[start:end + 1]
             status = 206
-            headers["content-range"] = f"bytes {start}-{end}/{path.stat().st_size}"
+            headers["content-range"] = f"bytes {start}-{end}/{metadata['Size']}"
             headers["content-length"] = str(len(data))
         if method == "HEAD":
             data = b""

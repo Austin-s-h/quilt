@@ -25,6 +25,25 @@ uv sync --python 3.11 --no-dev --extra catalog
 source .venv/bin/activate
 ```
 
+## One-shot LOCAL test setup
+
+To prepare the full LOCAL catalog filesystem test state in one command:
+
+```bash
+cd quilt/api/python
+uvx --from poethepoet poe catalog-test
+```
+
+That task:
+
+```text
+- refreshes api/python catalog dependencies
+- runs catalog npm install
+- rewrites catalog/static-dev/config.js for LOCAL mode
+- resets /tmp/quilt-local-data/demo-bucket
+- stages the curated preview fixtures, including dog_watermark.pdf
+```
+
 ## Frontend Proxy Mode
 
 If you are changing source files under `catalog/`, run the local Catalog backend
@@ -64,18 +83,24 @@ window.QUILT_CATALOG_CONFIG = {
 Then run the two processes in separate terminals:
 
 ```bash
-cd catalog
+cd quilt/catalog
 PORT=3001 npm start
 ```
 
 ```bash
-cd api/python
+cd quilt/api/python
 PYTHONPATH=$PWD \
+QUILT_LOCAL_OBJECT_BACKEND=filesystem \
+QUILT_LOCAL_DATA_DIR=/tmp/quilt-local-data \
 QUILT_CATALOG_URL=http://localhost:3001 \
 	uv run --no-dev --extra catalog quilt3 catalog --host localhost --port 3000 --no-browser
 ```
 
 Open `http://localhost:3000` in your browser. The Python app serves the LOCAL backend routes, and proxies static assets to webpack on port 3001.
+
+```bash
+xdg-open http://localhost:3000
+```
 
 `PYTHONPATH=$PWD` is required so the repo-local `api/python/quilt3_local/` implementation overrides the published `quilt3_local` package during local dev.
 
@@ -157,6 +182,30 @@ $ PYTHONPATH=$PWD \
 		uv run --python 3.11 --no-dev --extra catalog quilt3 catalog --host localhost --port 3000 --no-browser
 ```
 
+## Canonical Preview Fixtures
+
+The repo already contains a small, checked-in preview fixture pack. Reuse that pack for LOCAL filesystem demos instead of creating a second set of sample binaries.
+
+To stage the curated pack into a filesystem-backed LOCAL bucket:
+
+```bash
+cd api/python
+python -m tests.preview_fixtures /tmp/quilt-local-data/demo-bucket
+```
+
+This copies the existing canonical samples into `/tmp/quilt-local-data/demo-bucket` from these source locations:
+
+```text
+- lambdas/preview/test/data for text, csv, tsv, vcf, ipynb, and parquet fixtures
+- lambdas/tabular_preview/tests/data/simple for jsonl-focused tabular fixtures
+- lambdas/shared/tests/data/fcs for FCS fixtures
+- lambdas/thumbnail/tests/data for image, pdf, and pptx fixtures
+- api/python/tests/data for extra local document fixtures such as dog_watermark.pdf
+- catalog/app/components/JsonEditor/object-expand.webm for a tiny video fixture
+```
+
+That fixture registry lives in `api/python/tests/preview_fixtures.py`, and `api/python/tests/test_local_mode.py` reuses it for built-in LOCAL preview coverage. This keeps the local preview workflow aligned with the existing lambda test structure instead of duplicating assets.
+
 In filesystem mode:
 
 ```text
@@ -164,14 +213,10 @@ In filesystem mode:
 - each top-level directory under $QUILT_LOCAL_DATA_DIR appears in the Catalog as a browsable bucket
 - object URLs are routed through /__s3proxy on the LOCAL backend
 - object pages now emulate the S3 listObjectVersions call used by the UI, so version-history lookups do not hard-fail in LOCAL mode
+- object tags now return an empty S3 TagSet XML document instead of raw file bytes, so the Object Tags panel does not fail on ordinary files
 - downloads and preview fetches use the same local object proxy path
-```
-
-Expected LOCAL-mode console noise:
-
-```text
-- HEAD/GET probes for optional files such as README.md, README.txt, README.ipynb, quilt_summarize.json, and .quilt/workflows/config.yml still return 404 when those files do not exist
-- those 404s are expected and are how the Catalog detects whether optional bucket-level content is present
+- filesystem buckets expose default LOCAL-only bucket files when they are missing: README.md, quilt_summarize.json, .quilt/workflows/config.yml, .quilt/catalog/config.yml, and .quilt/queries/config.yaml
+- real files override those defaults immediately, and the conventional config paths are resolved case-insensitively so README / config case variants still work during local testing
 ```
 
 ## Capability Checklist
@@ -279,16 +324,6 @@ Minimum backend changes:
 	when static local credentials are supplied
 - teach quilt3_local/s3proxy.py to proxy write flows to the configured endpoint
 - add the missing mutation resolvers needed by the frontend flows you want to test
-```
-
-Recommended next setup step before PDF work:
-
-```text
-1. Decide whether you want read-only testing against real AWS, or a full local
-	 S3-compatible mock for read/write flows.
-2. If you want full local mocking, add endpoint overrides to quilt3_local first.
-3. Then choose a backend such as LocalStack or MinIO and point LOCAL mode at it.
-4. After that, close the GraphQL gap for the specific Catalog flows you need.
 ```
 
 See the [CLI API reference](../api-reference/cli.md#catalog) for details.
