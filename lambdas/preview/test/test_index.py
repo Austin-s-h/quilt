@@ -5,11 +5,16 @@ import json
 import math
 import os
 import re
+import sys
 from pathlib import Path
 from unittest.mock import ANY, patch
 
 import pyarrow.parquet as pq
 import responses
+
+SHARED_SRC = Path(__file__).resolve().parents[2] / 'shared' / 'src'
+if SHARED_SRC.exists() and str(SHARED_SRC) not in sys.path:
+    sys.path.insert(0, str(SHARED_SRC))
 
 import t4_lambda_preview
 from t4_lambda_shared.utils import read_body

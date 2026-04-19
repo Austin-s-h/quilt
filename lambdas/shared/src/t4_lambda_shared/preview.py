@@ -169,13 +169,91 @@ def _parse_fcs_flowio_meta(path):
     if FlowData is None:
         raise ImportError('flowio is not installed')
 
-    fd = FlowData(
-        path,
-        only_text=True,
-        ignore_offset_discrepancy=True,
-        ignore_offset_error=True,
-    )
-    return {str(k): str(v) for k, v in fd.text.items()}
+    try:
+        fd = FlowData(
+            path,
+            only_text=True,
+            ignore_offset_discrepancy=True,
+            ignore_offset_error=True,
+        )
+        metadata = {str(k): str(v) for k, v in fd.text.items()}
+    except Exception:  # noqa: BLE001 - fallback to raw TEXT parsing for malformed DATA sections
+        metadata = _parse_fcs_text_segment(path)
+
+    channel_names = _extract_fcs_channel_names(metadata)
+    if channel_names:
+        metadata.setdefault('_channel_names_', channel_names)
+    return metadata
+
+
+def _parse_fcs_text_segment(path):
+    with open(path, 'rb') as handle:
+        header = handle.read(58)
+        if len(header) < 58:
+            raise ValueError('FCS header is truncated')
+
+        text_start = int(header[10:18].decode('ascii').strip())
+        text_end = int(header[18:26].decode('ascii').strip())
+        if text_end < text_start:
+            raise ValueError('FCS TEXT segment offsets are invalid')
+
+        handle.seek(text_start)
+        text_bytes = handle.read(text_end - text_start + 1)
+
+    if not text_bytes:
+        raise ValueError('FCS TEXT segment is empty')
+
+    delimiter = chr(text_bytes[0])
+    text = text_bytes[1:].decode('latin-1')
+    tokens = _split_fcs_text_tokens(text, delimiter)
+    if len(tokens) < 2:
+        raise ValueError('FCS TEXT segment does not contain metadata pairs')
+
+    metadata = {}
+    for key, value in zip(tokens[0::2], tokens[1::2], strict=False):
+        metadata[key.strip()] = value.strip()
+    return metadata
+
+
+def _split_fcs_text_tokens(text, delimiter):
+    tokens = []
+    current = []
+    idx = 0
+
+    while idx < len(text):
+        char = text[idx]
+        if char == delimiter:
+            if idx + 1 < len(text) and text[idx + 1] == delimiter:
+                current.append(delimiter)
+                idx += 2
+                continue
+            tokens.append(''.join(current))
+            current = []
+            idx += 1
+            continue
+
+        current.append(char)
+        idx += 1
+
+    if current:
+        tokens.append(''.join(current))
+
+    return [token for token in tokens if token]
+
+
+def _extract_fcs_channel_names(metadata):
+    try:
+        channel_count = int(metadata.get('$PAR', '0').strip())
+    except ValueError:
+        channel_count = 0
+
+    channel_names = []
+    for idx in range(1, channel_count + 1):
+        name = metadata.get(f'$P{idx}N') or metadata.get(f'$P{idx}S')
+        if name:
+            channel_names.append(name)
+
+    return ','.join(channel_names)
 
 
 def _build_fcs_scatter_spec(data, *, limit=FCS_SCATTER_LIMIT):

@@ -169,15 +169,17 @@ wheels = [
 
 [[package]]
 name = "fcsparser"
-version = "0.2.8"
+version = "0.2.4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "numpy" },
     { name = "pandas" },
+    { name = "setuptools" },
+    { name = "six" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/f1/7b/b8decfe3b0e6c2aca4e9069bb80f54960fe6405a6bf63c01a9ca685ba5c6/fcsparser-0.2.8.tar.gz", hash = "sha256:df0436bf678df1f4ad3274e55fa06773f884fa45d8329015913a6178d10c73ea", size = 14538608, upload-time = "2023-10-17T13:50:21.24Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/ff/17/89cf417134b47cb6e1351b56e3d9508bb3e511bd53d899672ce15c3effed/fcsparser-0.2.4.tar.gz", hash = "sha256:fa8e60d1bbda2fd592b6fd387e7bf3048fa357359e06e0b263e7034469f617b3", size = 7061675, upload-time = "2021-10-24T17:29:49.322Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/1e/10/bfdc8e5b35896d8134a9637ce51c6686f60d8a10fe511de2e07accb8b407/fcsparser-0.2.8-py3-none-any.whl", hash = "sha256:833b02ceff18f34c9304681f5b6675039f5b39a31dfdd9640881f43223bcc2ab", size = 14613064, upload-time = "2023-10-17T13:50:18.119Z" },
+    { url = "https://files.pythonhosted.org/packages/67/9a/0b893be056e0d1a77e8b2966353e408a091a16da2b78772904b4598a2d7d/fcsparser-0.2.4-py3-none-any.whl", hash = "sha256:52e07e96ec21c5915c78c0481aa796888890f704e56a0c7114f5c198ef6de46e", size = 5031986, upload-time = "2021-10-24T17:29:44.902Z" },
 ]
 
 [[package]]
@@ -702,6 +704,15 @@ wheels = [
 ]
 
 [[package]]
+name = "setuptools"
+version = "82.0.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/4f/db/cfac1baf10650ab4d1c111714410d2fbb77ac5a616db26775db562c8fab2/setuptools-82.0.1.tar.gz", hash = "sha256:7d872682c5d01cfde07da7bccc7b65469d3dca203318515ada1de5eda35efbf9", size = 1152316, upload-time = "2026-03-09T12:47:17.221Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/9d/76/f789f7a86709c6b087c5a2f52f911838cad707cc613162401badc665acfe/setuptools-82.0.1-py3-none-any.whl", hash = "sha256:a59e362652f08dcd477c78bb6e7bd9d80a7995bc73ce773050228a348ce2e5bb", size = 1006223, upload-time = "2026-03-09T12:47:15.026Z" },
+]
+
+[[package]]
 name = "six"
 version = "1.16.0"
 source = { registry = "https://pypi.org/simple" }
@@ -726,6 +737,7 @@ source = { editable = "." }
 dependencies = [
     { name = "nbconvert" },
     { name = "nbformat" },
+    { name = "numpy" },
     { name = "pandas" },
     { name = "requests" },
     { name = "t4-lambda-shared", extra = ["mem", "preview"] },
@@ -744,6 +756,7 @@ test = [
 requires-dist = [
     { name = "nbconvert", specifier = "~=7.16" },
     { name = "nbformat", specifier = "~=5.10" },
+    { name = "numpy", specifier = "<2" },
     { name = "pandas", specifier = "~=2.2" },
     { name = "requests", specifier = "~=2.32" },
     { name = "t4-lambda-shared", extras = ["mem", "preview"], url = "https://github.com/quiltdata/quilt/archive/d496dffbfb4b7a2ae05f6c1f7f0cb7d5d43bc984.zip", subdirectory = "lambdas/shared" },
