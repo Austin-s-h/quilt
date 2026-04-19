@@ -969,7 +969,7 @@ def test_local_text_preview_matches_frontend_contract():
     assert html == ""
     assert info == {
         "data": {"head": ["hello local"], "tail": []},
-        "note": "Rows and columns truncated for preview. S3 object contains more data than shown.",
+        "note": "Rows and columns truncated for preview. S3 object may contain more data than shown.",
     }
 
 
@@ -1034,7 +1034,7 @@ def test_local_preview_lambda_reuses_curated_fixture_pack(
     elif fixture_name == "csv":
         assert "<table" in body["html"]
         assert (
-            body["info"]["note"] == "Rows and columns truncated for preview. S3 object contains more data than shown."
+            body["info"]["note"] == "Rows and columns truncated for preview. S3 object may contain more data than shown."
         )
     elif fixture_name == "excel":
         assert "Canada" in body["html"]
