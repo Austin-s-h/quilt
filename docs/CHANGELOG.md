@@ -30,7 +30,7 @@ Entries inside each section should be ordered by type:
 * [Fixed] LOCAL lambda proxy responses now normalize hop-by-hop headers and recompute `Content-Length` to prevent h11 `Too much data for declared Content-Length` protocol errors
 * [Fixed] Default LOCAL `quilt_summarize.json` now expands staged `preview/` fixtures in grouped rows instead of returning an empty summary
 * [Fixed] REAL preview and tabular lambdas now accept LOCAL `/__s3proxy/...` URLs when running through the LOCAL runner
-* [Fixed] FCS preview now falls back to metadata-only parsing for numpy/fcsparser compatibility failures instead of returning 500
+* [Fixed] FCS preview now tries a `flowio` reader path first, then degrades to metadata-only parsing when parser compatibility failures occur instead of returning 500
 * [Fixed] Spreadsheet metadata import now preserves date-only values without timezone drift in LibreOffice and CSV fixtures
 * [Changed] PPTX thumbnailing now reports a clear `Missing required command: libreoffice` error when LibreOffice is not installed
 

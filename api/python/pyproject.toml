@@ -48,12 +48,24 @@ anndata = [
     "anndata>=0.8.0",
 ]
 catalog = [
-    "quilt3_local>=2,<3",
+    "ariadne>=0.26,<1",
     "asgiproxy>=0.2,<0.3",
     "uvicorn>=0.15,<0.18",
     "aiobotocore[boto3]>=2",
+    "cachetools>=5,<6",
+    "fastapi>=0.115,<1",
+    "flowio~=1.4",
+    "fsspec[http]>=2022.1.0",
     "lxml-html-clean>=0.4",
+    "nbconvert~=7.16",
+    "nbformat~=5.10",
+    "openpyxl~=3.1",
+    "pandas~=2.2",
+    "pillow>=10,<13",
+    "psutil~=6.1",
+    "pyarrow~=18.0",
     "pypdfium2>=4,<5",
+    "xlrd>=2,<3",
 ]
 
 [project.urls]

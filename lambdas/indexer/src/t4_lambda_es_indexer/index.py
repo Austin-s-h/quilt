@@ -60,7 +60,7 @@ import boto3
 import botocore
 import nbformat
 from dateutil.tz import tzutc
-from jsonschema import ValidationError, draft7_format_checker, validate
+from jsonschema import Draft7Validator, ValidationError
 from pdfminer.high_level import extract_text as extract_pdf_text
 from tenacity import (
     retry,
@@ -601,15 +601,10 @@ def map_event_name(event: dict):
 def shape_event(event: dict):
     """check event schema, return None if schema check fails"""
     logger_ = get_quilt_logger()
+    validator = Draft7Validator(EVENT_SCHEMA, format_checker=Draft7Validator.FORMAT_CHECKER)
 
     try:
-        validate(
-            instance=event,
-            schema=EVENT_SCHEMA,
-            # format_checker= required for for format:date-time validation
-            # (we also need strict-rfc3339 in requirements.txt)
-            format_checker=draft7_format_checker,
-        )
+        validator.validate(event)
     except ValidationError as error:
         logger_.error("Invalid event format: %s\n%s", error, event)
         return None

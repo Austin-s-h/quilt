@@ -2,6 +2,7 @@
 
 import io
 import os
+import sys
 from contextlib import redirect_stderr
 from urllib.parse import urlparse
 
@@ -9,11 +10,18 @@ import pandas
 import requests
 
 from .. import settings
-from .._upstream import load_module
+from .._upstream import load_module, repo_root
 from .shared.decorator import api, validate
 from .shared.utils import get_default_origins, make_json_response
 
-_shared_preview = load_module("lambdas.shared.preview")
+_repo_root = repo_root()
+if _repo_root is not None:
+    _shared_src = _repo_root / "lambdas" / "shared" / "src"
+    if str(_shared_src) not in sys.path:
+        sys.path.insert(0, str(_shared_src))
+    from t4_lambda_shared import preview as _shared_preview
+else:
+    _shared_preview = load_module("lambdas.shared.preview")
 
 CATALOG_LIMIT_BYTES = _shared_preview.CATALOG_LIMIT_BYTES
 CATALOG_LIMIT_LINES = _shared_preview.CATALOG_LIMIT_LINES

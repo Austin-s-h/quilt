@@ -995,7 +995,7 @@ def test_curated_preview_fixtures_stage_existing_repo_samples(tmp_path):
         ("ipynb", {"input": "ipynb"}, ("nbformat", "nbconvert")),
         ("parquet", {"input": "parquet"}, ()),
         ("vcf", {"input": "vcf"}, ()),
-        ("fcs", {"input": "fcs"}, ("fcsparser",)),
+        ("fcs", {"input": "fcs"}, ("flowio",)),
     ],
 )
 def test_local_preview_lambda_reuses_curated_fixture_pack(
@@ -1024,7 +1024,7 @@ def test_local_preview_lambda_reuses_curated_fixture_pack(
     )
 
     if fixture_name == "fcs" and response["statusCode"] != 200:
-        pytest.skip("FCS preview fixture is blocked by the current fcsparser/NumPy runtime combination")
+        pytest.skip("FCS preview fixture is blocked by the current flowio runtime combination")
 
     body = _read_lambda_json(response)
 
@@ -1050,6 +1050,7 @@ def test_local_preview_lambda_reuses_curated_fixture_pack(
         assert body["info"]["lines"]
     elif fixture_name == "fcs":
         assert body["info"]["metadata"]
+        assert body["info"]["vegaLite"]["$schema"].startswith("https://vega.github.io/schema/vega-lite/")
         assert "<div>" in body["html"]
 
 

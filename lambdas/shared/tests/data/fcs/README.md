@@ -1,5 +1,5 @@
 <!-- markdownlint-disable first-line-h1 -->
-See notebook for original source of files
+See `FCS_flowio.ipynb` for the source of fixture files.
 
-* normal.fcs was Accuri - C6 - A01 H2O.fcs
-* meta-only.fcs was BD - FACS Aria II - Compensation Controls_G710 Stained Control.fcs
+* `normal.fcs` is generated with `flowio.create_fcs` and should parse with full data.
+* `meta_only.fcs` is generated from `normal.fcs` by corrupting `$DATATYPE` so full parsing fails but metadata-only parsing succeeds.

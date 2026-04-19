@@ -3,9 +3,11 @@ Preview helper functions
 """
 import os
 import pathlib
+from io import BytesIO
 from unittest import TestCase
 from unittest.mock import patch
 
+import pandas
 import pyarrow.parquet as pq
 from py_w3c.validators.html.validator import HTMLValidator
 
@@ -133,13 +135,12 @@ class TestPreview(TestCase):
             'normal.fcs': {
                 'columns_string': 'FSC-A,SSC-A,FL1-A,FL2-A,FL3-A,FL4-A,FSC-H,SSC-H,FL1-H,FL2-H,FL3-H,FL4-H,Width,Time',
                 'in_body': '<th>FL3-H</th>',
-                'in_meta_keys': '#P1MaxUsefulDataChannel',
-                'in_meta_values': '491519',
+                'in_meta_keys': '_channel_names_',
+                'in_meta_values': 'FSC-A',
                 'has_warnings': False,
             },
             'meta_only.fcs': {
                 'in_meta_keys': '_channel_names_',
-                'in_meta_values': 'Compensation Controls_G710 Stained Control.fcs',
                 'has_warnings': True,
             },
         }
@@ -151,17 +152,57 @@ class TestPreview(TestCase):
                 if body != "":
                     assert expected_data['in_body'] in body
                     assert not expected_data.get('has_warnings')
+                    assert info['vegaLite']['$schema'].startswith('https://vega.github.io/schema/vega-lite/')
+                    assert info['vegaLite']['encoding']['x']['title'] == 'FSC-A'
+                    assert info['vegaLite']['encoding']['y']['title'] == 'SSC-A'
                 else:
                     assert expected_data['has_warnings']
                     assert info['warnings']
+                    assert 'vegaLite' not in info
                 assert expected_data['in_meta_keys'] in info['metadata'].keys()
-                assert expected_data['in_meta_values'] in info['metadata'].values()
+                if expected_data.get('in_meta_values'):
+                    assert expected_data['in_meta_values'] in info['metadata'][expected_data['in_meta_keys']]
+                else:
+                    assert info['metadata'][expected_data['in_meta_keys']]
                 # when there's a body, check if columns only works
                 if expected_data.get('in_body'):
                     # move to start so we can use the file-like a second time
                     fcs.seek(0)
                     body, info = extract_fcs(fcs, as_html=False)
                     assert body == expected_data['columns_string']
+
+    def test_fcs_parser_matrix_prefers_flowio(self):
+        with patch('t4_lambda_shared.preview._parse_fcs_flowio_full') as flowio_full:
+            flowio_full.return_value = (
+                {'_channel_names_': 'A,B'},
+                pandas.DataFrame([[1, 2]], columns=['A', 'B']),
+            )
+            body, info = extract_fcs(BytesIO(b'irrelevant'), as_html=False)
+            assert body == 'A,B'
+            assert '_channel_names_' in info['metadata']
+            assert info['vegaLite']['encoding']['x']['title'] == 'A'
+            assert info['vegaLite']['encoding']['y']['title'] == 'B'
+            assert 'warnings' not in info
+
+    def test_fcs_parser_matrix_metadata_only(self):
+        with patch('t4_lambda_shared.preview._parse_fcs_flowio_full') as flowio_full, \
+                patch('t4_lambda_shared.preview._parse_fcs_flowio_meta') as flowio_meta:
+            flowio_full.side_effect = RuntimeError('flowio failed')
+            flowio_meta.return_value = {'_channel_names_': 'A,B'}
+            body, info = extract_fcs(BytesIO(b'irrelevant'), as_html=False)
+            assert body == ''
+            assert info['metadata']['_channel_names_'] == 'A,B'
+            assert 'Metadata only' in info['warnings']
+
+    def test_fcs_parser_matrix_all_fail(self):
+        with patch('t4_lambda_shared.preview._parse_fcs_flowio_full') as flowio_full, \
+                patch('t4_lambda_shared.preview._parse_fcs_flowio_meta') as flowio_meta:
+            flowio_full.side_effect = RuntimeError('flowio failed')
+            flowio_meta.side_effect = RuntimeError('flowio meta failed')
+            body, info = extract_fcs(BytesIO(b'irrelevant'), as_html=False)
+            assert body == ''
+            assert 'Unable to parse data or metadata' in info['warnings']
+            assert 'metadata' not in info
 
     def test_long(self):
         """test a text file with lots of lines"""

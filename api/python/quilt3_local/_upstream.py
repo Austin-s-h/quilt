@@ -25,7 +25,25 @@ def package_dir() -> Path:
     return Path(spec.origin).resolve().parent
 
 
+@lru_cache
+def repo_root() -> Path | None:
+    for candidate in Path(__file__).resolve().parents:
+        if (candidate / "shared" / "graphql" / "schema.graphql").exists() and (candidate / "catalog").exists():
+            return candidate
+    return None
+
+
 def resource_path(name: str) -> Path:
+    repo = repo_root()
+    if repo is not None:
+        if name == "schema.graphql":
+            path = repo / "shared" / "graphql" / "schema.graphql"
+            if path.exists():
+                return path
+        if name == "catalog_bundle":
+            path = repo / "catalog" / "build"
+            if path.exists():
+                return path
     return package_dir() / name
 
 

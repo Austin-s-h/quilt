@@ -13,8 +13,18 @@ from .._upstream import load_module
 from .shared.decorator import QUILT_INFO_HEADER, api, validate
 from .shared.utils import get_default_origins, make_json_response
 
-_upstream = load_module("lambdas.thumbnail")
-SIZE_PARAMETER_MAP = _upstream.SIZE_PARAMETER_MAP
+SUPPORTED_SIZES = [
+    (32, 32),
+    (64, 64),
+    (128, 128),
+    (256, 256),
+    (480, 320),
+    (640, 480),
+    (960, 640),
+    (1024, 768),
+    (2048, 1536),
+]
+SIZE_PARAMETER_MAP = {f"w{width}h{height}": (width, height) for width, height in SUPPORTED_SIZES}
 
 _pdf_helper_path = (
     Path(__file__).resolve().parents[4] / "lambdas" / "thumbnail" / "src" / "t4_lambda_thumbnail" / "pdf_thumbnail.py"
@@ -118,4 +128,4 @@ def lambda_handler(event, context):
     args = event.get("queryStringParameters") or {}
     if args.get("input") == "pdf":
         return _pdf_lambda_handler(event, context)
-    return _upstream.lambda_handler(event, context)
+    return load_module("lambdas.thumbnail").lambda_handler(event, context)
