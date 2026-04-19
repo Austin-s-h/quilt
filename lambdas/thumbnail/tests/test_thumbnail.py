@@ -15,6 +15,7 @@ from PIL import Image
 
 import quilt3
 import t4_lambda_thumbnail
+from t4_lambda_thumbnail import pdf_thumbnail
 from t4_lambda_shared.decorator import QUILT_INFO_HEADER
 from t4_lambda_shared.utils import read_body
 
@@ -82,27 +83,25 @@ def test_pdf_thumb_renders_at_configured_dpi_and_downsamples(monkeypatch):
     calls = {}
     source = Image.new("RGB", (2550, 3300), color="white")
 
-    def fake_convert_from_path(path, *, dpi, first_page, last_page):
+    def fake_render_pdf_page(*, path, page, dpi):
         calls.update(
             {
                 "path": path,
                 "dpi": dpi,
-                "first_page": first_page,
-                "last_page": last_page,
+                "page": page,
             }
         )
-        return [source.copy()]
+        return source.copy()
 
     monkeypatch.setenv("PDF_PREVIEW_DPI", "600")
-    monkeypatch.setattr(t4_lambda_thumbnail.pdf2image, "convert_from_path", fake_convert_from_path)
+    monkeypatch.setattr(t4_lambda_thumbnail, "render_pdf_page", fake_render_pdf_page)
 
     thumb, render_dpi = t4_lambda_thumbnail.pdf_thumb(path="/tmp/sample.pdf", page=3, size=1024)
 
     assert calls == {
         "path": "/tmp/sample.pdf",
         "dpi": 300,
-        "first_page": 3,
-        "last_page": 3,
+        "page": 3,
     }
     assert render_dpi == 300
     assert thumb.size == (1024, 1325)
@@ -117,9 +116,9 @@ def test_handle_pdf_reports_render_metadata(monkeypatch):
         lambda **_: (thumb.copy(), 240),
     )
     monkeypatch.setattr(
-        t4_lambda_thumbnail.pdf2image,
-        "pdfinfo_from_path",
-        lambda _path: {"Pages": 25},
+        t4_lambda_thumbnail,
+        "count_pdf_pages",
+        lambda _path: 25,
     )
 
     info, data = t4_lambda_thumbnail.handle_pdf(
@@ -134,6 +133,56 @@ def test_handle_pdf_reports_render_metadata(monkeypatch):
     assert info["pdf_resize_filter"] == "LANCZOS"
     assert info["page_count"] == 25
     assert data
+
+
+def test_render_pdf_page_falls_back_to_pdfium_when_poppler_missing(monkeypatch):
+    calls = {}
+
+    class FakeBitmap:
+        def to_pil(self):
+            return Image.new("RGB", (300, 500), color="white")
+
+    class FakePage:
+        def render(self, *, scale):
+            calls["scale"] = scale
+            return FakeBitmap()
+
+    class FakeDocument:
+        def __init__(self, path):
+            calls["path"] = path
+
+        def __len__(self):
+            return 4
+
+        def __getitem__(self, index):
+            calls["index"] = index
+            return FakePage()
+
+    monkeypatch.setattr(pdf_thumbnail.shutil, "which", lambda _cmd: None)
+    monkeypatch.setattr(pdf_thumbnail.pypdfium2, "PdfDocument", FakeDocument)
+
+    image = pdf_thumbnail.render_pdf_page(path="/tmp/sample.pdf", page=2, dpi=144)
+
+    assert image.size == (300, 500)
+    assert calls == {
+        "path": "/tmp/sample.pdf",
+        "index": 1,
+        "scale": 2,
+    }
+
+
+def test_count_pdf_pages_falls_back_to_pdfium_when_pdfinfo_missing(monkeypatch):
+    class FakeDocument:
+        def __init__(self, path):
+            assert path == "/tmp/sample.pdf"
+
+        def __len__(self):
+            return 17
+
+    monkeypatch.setattr(pdf_thumbnail.shutil, "which", lambda _cmd: None)
+    monkeypatch.setattr(pdf_thumbnail.pypdfium2, "PdfDocument", FakeDocument)
+
+    assert pdf_thumbnail.count_pdf_pages("/tmp/sample.pdf") == 17
 
 
 @responses.activate

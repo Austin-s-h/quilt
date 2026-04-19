@@ -99,7 +99,7 @@ def public_name(name: str) -> str:
 def internal_name(name: str) -> str:
     prefix = f"{LOCAL_PACKAGE_NAMESPACE}/"
     if name.startswith(prefix) and name.count("/") == 1:
-        return name[len(prefix):]
+        return name[len(prefix) :]
     return name
 
 
@@ -141,7 +141,7 @@ async def get_all_package_pointers(bucket: str, filter: T.Optional[str] = None) 
     filter_re = _make_filter_re(filter)
 
     async for obj in aws.list_all_objects(Bucket=bucket, Prefix=NAMED_PACKAGES_PREFIX):
-        name, _sep, pointer = obj["Key"][len(NAMED_PACKAGES_PREFIX):].rpartition("/")
+        name, _sep, pointer = obj["Key"][len(NAMED_PACKAGES_PREFIX) :].rpartition("/")
         if filter_re and not (filter_re.match(name) or filter_re.match(public_name(name))):
             continue
 
@@ -191,7 +191,7 @@ async def get_package_pointers(bucket: str, package: str) -> T.List[RevisionPoin
     tags = {}
 
     async for obj in aws.list_all_objects(Bucket=bucket, Prefix=f"{NAMED_PACKAGES_PREFIX}{package}/"):
-        _name, _sep, pointer = obj["Key"][len(NAMED_PACKAGES_PREFIX):].rpartition("/")
+        _name, _sep, pointer = obj["Key"][len(NAMED_PACKAGES_PREFIX) :].rpartition("/")
         etag = obj["ETag"]
         if _is_timestamp(pointer):
             modified = datetime.datetime.fromtimestamp(int(pointer), datetime.timezone.utc)
@@ -219,10 +219,7 @@ async def get_package_pointers(bucket: str, package: str) -> T.List[RevisionPoin
 async def get_revision_pointer(bucket: str, package: str, hash_or_tag: str) -> RevisionPointer | None:
     pointers = await get_package_pointers(bucket, package)
     if _is_hash(hash_or_tag):
-        hashes = await asyncio.gather(*(
-            resolve_pointer(bucket, package, pointer.pointer)
-            for pointer in pointers
-        ))
+        hashes = await asyncio.gather(*(resolve_pointer(bucket, package, pointer.pointer) for pointer in pointers))
         for pointer, hash_ in zip(pointers, hashes):
             if hash_ == hash_or_tag:
                 return pointer
@@ -282,7 +279,7 @@ async def get_dir(bucket: str, hash_: str, path: str) -> T.Optional[PackageDir]:
         logical_key = record.get("logical_key", "")
         if prefix and not logical_key.startswith(prefix):
             continue
-        relative = logical_key[len(prefix):] if prefix else logical_key
+        relative = logical_key[len(prefix) :] if prefix else logical_key
         if not relative:
             continue
         child, _, remainder = relative.partition("/")
@@ -298,8 +295,7 @@ async def get_dir(bucket: str, hash_: str, path: str) -> T.Optional[PackageDir]:
         metadata = metadata_record.get("meta", {})
 
     dir_entries = [
-        PackageDirEntry(path=_append_path(path, f"{name}/"), size=size)
-        for name, size in sorted(dirs.items())
+        PackageDirEntry(path=_append_path(path, f"{name}/"), size=size) for name, size in sorted(dirs.items())
     ]
     file_entries = [
         PackageFileEntry(

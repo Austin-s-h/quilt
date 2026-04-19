@@ -25,18 +25,18 @@ import bioio_ome_tiff
 import bioio_tifffile
 import dask.array as da
 import numpy as np
-import pdf2image
 import pptx
 import requests
 from bioio import BioImage
-from pdf2image.exceptions import (
-    PDFInfoNotInstalledError,
-    PDFPageCountError,
-    PDFSyntaxError,
-    PopplerNotInstalledError,
-)
 from PIL import Image
 
+from .pdf_thumbnail import (
+    PDFThumbError,
+    count_pdf_pages,
+    get_pdf_render_dpi,
+    render_pdf_page,
+    resize_pdf_page,
+)
 from t4_lambda_shared.decorator import QUILT_INFO_HEADER, api, validate
 from t4_lambda_shared.utils import get_default_origins, make_json_response
 
@@ -69,9 +69,6 @@ SUPPORTED_SIZES = [
 ]
 # Map URL parameters to actual sizes, e.g. 'w128h128' -> (128, 128)
 SIZE_PARAMETER_MAP = {f'w{w}h{h}': (w, h) for w, h in SUPPORTED_SIZES}
-
-DEFAULT_PDF_RENDER_DPI = 300
-MAX_PDF_RENDER_DPI = 300
 
 SCHEMA = {
     'type': 'object',
@@ -308,47 +305,10 @@ def handle_exceptions(*exception_types):
     return decorator
 
 
-class PDFThumbError(Exception):
-    pass
-
-
-def get_pdf_render_dpi() -> int:
-    raw = os.environ.get("PDF_PREVIEW_DPI")
-    if raw is None:
-        return DEFAULT_PDF_RENDER_DPI
-    try:
-        dpi = int(raw)
-    except ValueError as exc:
-        raise PDFThumbError(f"Invalid PDF_PREVIEW_DPI: {raw!r}") from exc
-    return max(72, min(dpi, MAX_PDF_RENDER_DPI))
-
-
-def resize_pdf_page(img: Image.Image, *, size: int) -> Image.Image:
-    if img.width <= size:
-        return img
-
-    height = max(1, round(img.height * size / img.width))
-    return img.resize((size, height), Image.Resampling.LANCZOS)
-
-
 def pdf_thumb(*, path: str, page: int, size: int):
-    try:
-        render_dpi = get_pdf_render_dpi()
-        pages = pdf2image.convert_from_path(
-            path,
-            dpi=render_dpi,
-            first_page=page,
-            last_page=page,
-        )
-        return resize_pdf_page(pages[0], size=size), render_dpi
-    except (
-        IndexError,
-        PDFInfoNotInstalledError,
-        PDFPageCountError,
-        PDFSyntaxError,
-        PopplerNotInstalledError
-    ) as e:
-        raise PDFThumbError(str(e))
+    render_dpi = get_pdf_render_dpi()
+    page_image = render_pdf_page(path=path, page=page, dpi=render_dpi)
+    return resize_pdf_page(page_image, size=size), render_dpi
 
 
 def handle_pdf(*, path: str, page: int, size: int, count_pages: bool):
@@ -361,7 +321,7 @@ def handle_pdf(*, path: str, page: int, size: int, count_pages: bool):
         "pdf_resize_filter": "LANCZOS",
     }
     if count_pages:
-        info["page_count"] = pdf2image.pdfinfo_from_path(path)["Pages"]
+        info["page_count"] = count_pdf_pages(path)
 
     thumbnail_bytes = BytesIO()
     thumb.save(thumbnail_bytes, fmt)

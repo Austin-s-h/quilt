@@ -53,6 +53,7 @@ catalog = [
     "uvicorn>=0.15,<0.18",
     "aiobotocore[boto3]>=2",
     "lxml-html-clean>=0.4",
+    "pypdfium2>=4,<5",
 ]
 
 [project.urls]
@@ -77,6 +78,7 @@ dev = [
     "pytest-subtests",
     "pytest~=8.4",
     "responses",
+    "graphql-core>=3,<4",
     "ruff>=0.12.11",
     "lxml-html-clean>=0.4",
     "quilt3[pyarrow,anndata]",

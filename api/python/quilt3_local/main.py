@@ -10,7 +10,7 @@ import starlette.staticfiles
 
 from ._upstream import resource_path
 from .api import api
-from .lambdas import lambdas
+from .lambdas import lambdas, shutdown_runners
 from .s3proxy import s3proxy
 
 REG_PREFIX = "/__reg"
@@ -26,6 +26,7 @@ async def lifespan(_app: fastapi.FastAPI):
     try:
         yield
     finally:
+        shutdown_runners()
         if proxy_context is not None:
             await proxy_context.close()
 
@@ -79,6 +80,7 @@ app.mount(LAMBDA_PREFIX, lambdas, "Lambda")
 app.mount(S3_PROXY_PREFIX, s3proxy, "S3 Proxy")
 
 if CATALOG_URL:
+
     @app.get("/__webpack_hmr")
     def webpack_hmr():
         return starlette.responses.Response(status_code=404)

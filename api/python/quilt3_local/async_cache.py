@@ -61,6 +61,7 @@ def cached(cache=lambda _: {}, key=cachetools.keys.hashkey):
             cast(Any, wrapper).schedule = schedule
 
         else:
+
             @functools.wraps(fn)
             def wrapper(*args, **kwargs):
                 k = key(*args, **kwargs)

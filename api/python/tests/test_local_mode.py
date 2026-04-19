@@ -9,10 +9,13 @@ from urllib.parse import quote, unquote, urlencode, urlparse
 
 import pytest
 from botocore.exceptions import ClientError
-from graphql import graphql
+try:
+    from graphql import graphql
+    from quilt3_local import buckets
+    from quilt3_local.context import QuiltContext
+except ModuleNotFoundError as exc:
+    pytest.skip(f"missing optional local mode dependency: {exc.name}", allow_module_level=True)
 
-from quilt3_local import buckets
-from quilt3_local.context import QuiltContext
 from tests.preview_fixtures import (
     CURATED_PREVIEW_FIXTURES,
     FIXTURES_BY_NAME,
@@ -80,7 +83,10 @@ def _read_lambda_body(response: dict) -> bytes:
         data = body.encode()
     else:
         data = body
-    if response["headers"].get("Content-Encoding") == "gzip" and response["headers"].get("Content-Type") == "application/json":
+    if (
+        response["headers"].get("Content-Encoding") == "gzip"
+        and response["headers"].get("Content-Type") == "application/json"
+    ):
         return gzip.decompress(data)
     return data
 
@@ -157,7 +163,16 @@ def _app_lifespan(app):
         asyncio.run(manager.__aexit__(None, None, None))
 
 
-def _request_app(app, method: str, path: str, *, params: dict[str, str] | None = None, headers: dict[str, str] | None = None, body: bytes | None = None, json_body=None) -> _ASGIResponse:
+def _request_app(
+    app,
+    method: str,
+    path: str,
+    *,
+    params: dict[str, str] | None = None,
+    headers: dict[str, str] | None = None,
+    body: bytes | None = None,
+    json_body=None,
+) -> _ASGIResponse:
     if json_body is not None:
         body = json.dumps(json_body).encode()
         request_headers = {"content-type": "application/json", **(headers or {})}
@@ -205,10 +220,7 @@ def _request_app(app, method: str, path: str, *, params: dict[str, str] | None =
 
     start = next(message for message in messages if message["type"] == "http.response.start")
     chunks = [message.get("body", b"") for message in messages if message["type"] == "http.response.body"]
-    response_headers = {
-        key.decode().lower(): value.decode()
-        for key, value in start.get("headers", [])
-    }
+    response_headers = {key.decode().lower(): value.decode() for key, value in start.get("headers", [])}
     return _ASGIResponse(start["status"], response_headers, b"".join(chunks))
 
 
@@ -426,11 +438,7 @@ def test_filesystem_default_summarize_expands_preview_fixtures(monkeypatch, tmp_
     body = json.loads(summarize["body"])
     assert summarize["status"] == 200
     assert body[0] == [{"path": "preview/text/short.txt", "title": "short.txt", "expand": True}]
-    assert any(
-        item["path"] == "preview/documents/dog_watermark.pdf"
-        for row in body
-        for item in row
-    )
+    assert any(item["path"] == "preview/documents/dog_watermark.pdf" for row in body for item in row)
     assert all(item["expand"] is True for row in body for item in row)
 
 
@@ -568,12 +576,24 @@ def test_local_main_exposes_config_registry_and_graphql_routes(monkeypatch, tmp_
     with _app_lifespan(local_main.app):
         config = _request_app(local_main.app, "GET", "/config.json")
         creds = _request_app(local_main.app, "GET", "/__reg/api/auth/get_credentials")
-        valid_name = _request_app(local_main.app, "POST", "/__reg/api/package_name_valid", json_body={"name": "local/demo"})
-        invalid_name = _request_app(local_main.app, "POST", "/__reg/api/package_name_valid", json_body={"name": "bad name"})
-        stats = _request_app(local_main.app, "GET", "/__reg/api/search", params={"index": "demo-bucket", "action": "stats"})
-        sample = _request_app(local_main.app, "GET", "/__reg/api/search", params={"index": "demo-bucket", "action": "sample"})
-        images = _request_app(local_main.app, "GET", "/__reg/api/search", params={"index": "demo-bucket", "action": "images"})
-        unsupported = _request_app(local_main.app, "GET", "/__reg/api/search", params={"index": "demo-bucket", "action": "unsupported"})
+        valid_name = _request_app(
+            local_main.app, "POST", "/__reg/api/package_name_valid", json_body={"name": "local/demo"}
+        )
+        invalid_name = _request_app(
+            local_main.app, "POST", "/__reg/api/package_name_valid", json_body={"name": "bad name"}
+        )
+        stats = _request_app(
+            local_main.app, "GET", "/__reg/api/search", params={"index": "demo-bucket", "action": "stats"}
+        )
+        sample = _request_app(
+            local_main.app, "GET", "/__reg/api/search", params={"index": "demo-bucket", "action": "sample"}
+        )
+        images = _request_app(
+            local_main.app, "GET", "/__reg/api/search", params={"index": "demo-bucket", "action": "images"}
+        )
+        unsupported = _request_app(
+            local_main.app, "GET", "/__reg/api/search", params={"index": "demo-bucket", "action": "unsupported"}
+        )
         graphql_response = _request_app(
             local_main.app,
             "POST",
@@ -639,10 +659,10 @@ def test_local_main_exposes_config_registry_and_graphql_routes(monkeypatch, tmp_
     assert graphql_response.json()["data"]["searchPackages"]["firstPage"]["hits"][0]["name"] == "local/demo"
     assert graphql_response.json()["data"]["searchPackages"]["firstPage"]["hits"][0]["hash"] == manifest_hash
     assert graphql_response.json()["data"]["searchObjects"]["__typename"] == "ObjectsSearchResultSet"
-    assert {
-        hit["key"]
-        for hit in graphql_response.json()["data"]["searchObjects"]["firstPage"]["hits"]
-    } >= {"hello.txt", "preview/text/short.txt"}
+    assert {hit["key"] for hit in graphql_response.json()["data"]["searchObjects"]["firstPage"]["hits"]} >= {
+        "hello.txt",
+        "preview/text/short.txt",
+    }
 
 
 def test_local_main_exposes_s3proxy_routes(monkeypatch, tmp_path):
@@ -659,8 +679,12 @@ def test_local_main_exposes_s3proxy_routes(monkeypatch, tmp_path):
             params={"list-type": "2", "prefix": "preview/", "delimiter": "/"},
         )
         legacy_get = _request_app(local_main.app, "GET", "/__s3proxy/us-east-1/demo-bucket/preview/text/short.txt")
-        host_style_head = _request_app(local_main.app, "HEAD", "/__s3proxy/demo-bucket.s3.amazonaws.com/preview/text/short.txt")
-        tagging = _request_app(local_main.app, "GET", "/__s3proxy/us-east-1/demo-bucket/preview/text/short.txt", params={"tagging": ""})
+        host_style_head = _request_app(
+            local_main.app, "HEAD", "/__s3proxy/demo-bucket.s3.amazonaws.com/preview/text/short.txt"
+        )
+        tagging = _request_app(
+            local_main.app, "GET", "/__s3proxy/us-east-1/demo-bucket/preview/text/short.txt", params={"tagging": ""}
+        )
         preflight = _request_app(
             local_main.app,
             "OPTIONS",
@@ -694,27 +718,58 @@ def test_local_main_exposes_lambda_routes(monkeypatch, tmp_path):
     stage_preview_fixtures(bucket_root)
     local_main = _reload_local_main(monkeypatch, tmp_path)
 
-    from quilt3_local.lambdas import preview, tabular_preview
+    from quilt3_local import lambdas as local_lambdas
 
-    monkeypatch.setattr(preview.requests, "get", _mock_requests_get_factory(bucket_root))
-    monkeypatch.setattr(tabular_preview, "urlopen", _mock_tabular_urlopen_factory(bucket_root))
+    class _FakeResponse:
+        def __init__(self, *, status_code: int, content: bytes, headers: dict[str, str]):
+            self.status_code = status_code
+            self.content = content
+            self.headers = headers
+
+    def fake_start_runner(_config):
+        return None
+
+    def fake_request(method, url, *, params, headers, data, timeout):
+        del method, headers, data, timeout
+        if url.startswith("http://127.0.0.1:18082/"):
+            assert ("input", "txt") in params
+            return _FakeResponse(
+                status_code=200,
+                content=b'{"info":{"data":{"head":["Line 1"],"tail":[]}},"html":""}',
+                headers={"content-type": "application/json"},
+            )
+        if url.startswith("http://127.0.0.1:18083/"):
+            assert ("input", "jsonl") in params
+            return _FakeResponse(
+                status_code=200,
+                content=gzip.compress(b"a,b\n1,2\n"),
+                headers={"content-type": "text/csv", "content-encoding": "gzip"},
+            )
+        raise AssertionError(f"Unexpected runner URL: {url}")
+
+    monkeypatch.setattr(local_lambdas, "_start_runner", fake_start_runner)
+    monkeypatch.setattr(local_lambdas.requests, "request", fake_request)
 
     with _app_lifespan(local_main.app):
         preview_response = _request_app(
             local_main.app,
-            "POST",
+            "GET",
             "/__lambda/preview",
             params={
-                "url": _fixture_proxy_url("demo-bucket", FIXTURES_BY_NAME["text"].bucket_key, origin="http://testserver"),
+                "url": _fixture_proxy_url(
+                    "demo-bucket", FIXTURES_BY_NAME["text"].bucket_key, origin="http://testserver"
+                ),
                 "input": "txt",
             },
         )
         tabular_response = _request_app(
             local_main.app,
-            "POST",
+            "GET",
             "/__lambda/tabular-preview",
             params={
-                "url": _fixture_proxy_url("demo-bucket", FIXTURES_BY_NAME["jsonl"].bucket_key, origin="http://testserver"),
+                "url": _fixture_proxy_url(
+                    "demo-bucket", FIXTURES_BY_NAME["jsonl"].bucket_key, origin="http://testserver"
+                ),
                 "input": "jsonl",
             },
         )
@@ -726,6 +781,153 @@ def test_local_main_exposes_lambda_routes(monkeypatch, tmp_path):
     assert tabular_response.headers["content-type"].startswith("text/csv")
     assert tabular_response.headers["content-encoding"] == "gzip"
     assert missing.status_code == 404
+
+
+def test_local_main_proxies_thumbnail_to_real_lambda_runner(monkeypatch, tmp_path):
+    bucket_root = tmp_path / "demo-bucket"
+    bucket_root.mkdir()
+    local_main = _reload_local_main(monkeypatch, tmp_path)
+
+    from quilt3_local import lambdas as local_lambdas
+
+    calls = {}
+
+    class _FakeResponse:
+        status_code = 200
+        content = b"runner-thumb"
+        headers = {
+            "content-type": "image/jpeg",
+            "x-quilt-info": '{"page_count": 8}',
+        }
+
+    def fake_start_runner(_config):
+        return None
+
+    def fake_request(method, url, *, params, headers, data, timeout):
+        calls.update(
+            {
+                "method": method,
+                "url": url,
+                "params": params,
+                "headers": headers,
+                "data": data,
+                "timeout": timeout,
+            }
+        )
+        return _FakeResponse()
+
+    monkeypatch.setattr(local_lambdas, "_start_runner", fake_start_runner)
+    monkeypatch.setattr(local_lambdas.requests, "request", fake_request)
+
+    with _app_lifespan(local_main.app):
+        response = _request_app(
+            local_main.app,
+            "GET",
+            "/__lambda/thumbnail",
+            params={
+                "url": _fixture_proxy_url("demo-bucket", "preview/documents/MUMmer.pdf", origin="http://testserver"),
+                "input": "pdf",
+                "size": "w2048h1536",
+                "countPages": "true",
+            },
+            headers={"origin": "http://localhost:3000"},
+        )
+
+    assert response.status_code == 200
+    assert response.body == b"runner-thumb"
+    assert response.headers["content-type"] == "image/jpeg"
+    assert calls["method"] == "GET"
+    assert calls["url"].endswith("/lambda")
+    assert ("input", "pdf") in calls["params"]
+    assert ("countPages", "true") in calls["params"]
+    assert calls["timeout"] == 120
+
+
+def test_local_main_proxies_preview_to_real_lambda_runner(monkeypatch, tmp_path):
+    local_main = _reload_local_main(monkeypatch, tmp_path)
+
+    from quilt3_local import lambdas as local_lambdas
+
+    calls = {}
+
+    class _FakeResponse:
+        status_code = 200
+        content = b'{"info":{"data":{"head":["Line 1"],"tail":[]}},"html":""}'
+        headers = {
+            "content-type": "application/json",
+        }
+
+    monkeypatch.setattr(local_lambdas, "_start_runner", lambda _config: None)
+
+    def fake_request(method, url, *, params, headers, data, timeout):
+        calls.update({"method": method, "url": url, "params": params, "timeout": timeout})
+        return _FakeResponse()
+
+    monkeypatch.setattr(local_lambdas.requests, "request", fake_request)
+
+    with _app_lifespan(local_main.app):
+        response = _request_app(
+            local_main.app,
+            "GET",
+            "/__lambda/preview",
+            params={
+                "url": _fixture_proxy_url("demo-bucket", "preview/text/short.txt", origin="http://testserver"),
+                "input": "txt",
+            },
+            headers={"origin": "http://localhost:3000"},
+        )
+
+    assert response.status_code == 200
+    assert response.json()["info"]["data"]["head"][0] == "Line 1"
+    assert calls["method"] == "GET"
+    assert calls["url"].endswith("/lambda")
+    assert ("input", "txt") in calls["params"]
+    assert calls["timeout"] == 120
+
+
+def test_local_main_proxies_tabular_to_real_lambda_runner(monkeypatch, tmp_path):
+    local_main = _reload_local_main(monkeypatch, tmp_path)
+
+    from quilt3_local import lambdas as local_lambdas
+
+    calls = {}
+
+    class _FakeResponse:
+        status_code = 200
+        content = gzip.compress(b"a,b\n1,2\n")
+        headers = {
+            "content-type": "text/csv",
+            "content-encoding": "gzip",
+        }
+
+    monkeypatch.setattr(local_lambdas, "_start_runner", lambda _config: None)
+
+    def fake_request(method, url, *, params, headers, data, timeout):
+        calls.update({"method": method, "url": url, "params": params, "timeout": timeout})
+        return _FakeResponse()
+
+    monkeypatch.setattr(local_lambdas.requests, "request", fake_request)
+
+    with _app_lifespan(local_main.app):
+        response = _request_app(
+            local_main.app,
+            "GET",
+            "/__lambda/tabular-preview",
+            params={
+                "url": _fixture_proxy_url("demo-bucket", "preview/tabular/avengers.tsv", origin="http://testserver"),
+                "input": "tsv",
+                "size": "small",
+            },
+            headers={"origin": "http://localhost:3000"},
+        )
+
+    assert response.status_code == 200
+    assert response.headers["content-type"] == "text/csv"
+    assert response.headers["content-encoding"] == "gzip"
+    assert calls["method"] == "GET"
+    assert calls["url"].endswith("/lambda")
+    assert ("input", "tsv") in calls["params"]
+    assert ("size", "small") in calls["params"]
 
 
 def test_local_main_proxy_mode_exposes_webpack_hmr_stub(monkeypatch, tmp_path):
@@ -794,7 +996,9 @@ def test_curated_preview_fixtures_stage_existing_repo_samples(tmp_path):
         ("fcs", {"input": "fcs"}, ("fcsparser",)),
     ],
 )
-def test_local_preview_lambda_reuses_curated_fixture_pack(monkeypatch, tmp_path, fixture_name, query, required_modules):
+def test_local_preview_lambda_reuses_curated_fixture_pack(
+    monkeypatch, tmp_path, fixture_name, query, required_modules
+):
     for module in required_modules:
         pytest.importorskip(module, exc_type=ImportError)
 
@@ -827,7 +1031,9 @@ def test_local_preview_lambda_reuses_curated_fixture_pack(monkeypatch, tmp_path,
         assert body["info"]["data"]["head"][0] == "Line 1"
     elif fixture_name == "csv":
         assert "<table" in body["html"]
-        assert body["info"]["note"] == "Rows and columns truncated for preview. S3 object contains more data than shown."
+        assert (
+            body["info"]["note"] == "Rows and columns truncated for preview. S3 object contains more data than shown."
+        )
     elif fixture_name == "excel":
         assert "Canada" in body["html"]
         assert "Enterprise" in body["html"]
@@ -852,7 +1058,9 @@ def test_local_preview_lambda_reuses_curated_fixture_pack(monkeypatch, tmp_path,
         ("parquet", "parquet", "text/csv"),
     ],
 )
-def test_local_tabular_preview_lambda_reuses_curated_fixture_pack(monkeypatch, tmp_path, fixture_name, input_type, expected_content_type):
+def test_local_tabular_preview_lambda_reuses_curated_fixture_pack(
+    monkeypatch, tmp_path, fixture_name, input_type, expected_content_type
+):
     from quilt3_local.lambdas import tabular_preview
 
     bucket_root = tmp_path / "demo-bucket"
@@ -875,3 +1083,56 @@ def test_local_tabular_preview_lambda_reuses_curated_fixture_pack(monkeypatch, t
     assert response["statusCode"] == 200
     assert response["headers"]["Content-Type"] == expected_content_type
     assert response["headers"]["Content-Encoding"] == "gzip"
+
+
+def test_local_pdf_thumbnail_lambda_reuses_curated_fixture_pack(monkeypatch, tmp_path):
+    from quilt3_local.lambdas import thumbnail
+
+    bucket_root = tmp_path / "demo-bucket"
+    stage_preview_fixtures(bucket_root)
+    fixture = FIXTURES_BY_NAME["pdf"]
+    calls = {}
+
+    monkeypatch.setattr(thumbnail.requests, "get", _mock_requests_get_factory(bucket_root))
+
+    def fake_handle_pdf(*, path: str, page: int, size: int, count_pages: bool):
+        calls.update(
+            {
+                "path": path,
+                "page": page,
+                "size": size,
+                "count_pages": count_pages,
+            }
+        )
+        return {
+            "thumbnail_format": "JPEG",
+            "thumbnail_size": (1024, 1450),
+            "pdf_render_dpi": 300,
+            "pdf_resize_filter": "LANCZOS",
+            "page_count": 8,
+        }, b"pdf-thumb"
+
+    monkeypatch.setattr(thumbnail, "handle_pdf", fake_handle_pdf)
+
+    response = thumbnail.lambda_handler(
+        _make_lambda_event(
+            "thumbnail",
+            {
+                "url": _fixture_proxy_url("demo-bucket", fixture.bucket_key),
+                "input": "pdf",
+                "size": "w1024h768",
+                "page": "4",
+                "countPages": "true",
+            },
+        ),
+        None,
+    )
+
+    assert response["statusCode"] == 200
+    assert response["headers"]["Content-Type"] == "image/jpeg"
+    assert _read_lambda_body(response) == b"pdf-thumb"
+    assert json.loads(response["headers"]["X-Quilt-Info"])["page_count"] == 8
+    assert calls["page"] == 4
+    assert calls["size"] == 1024
+    assert calls["count_pages"] is True
+    assert calls["path"].endswith(".pdf")

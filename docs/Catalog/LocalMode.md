@@ -102,6 +102,20 @@ Open `http://localhost:3000` in your browser. The Python app serves the LOCAL ba
 xdg-open http://localhost:3000
 ```
 
+When the Catalog first hits `/__lambda/*` preview routes in LOCAL mode, the Python
+backend now auto-starts the corresponding repo lambda package in its own local
+`uv` environment and proxies the request to it. This keeps preview, tabular, and
+thumbnail behavior aligned with the real lambda code instead of reimplementing
+those handlers inside `api/python`.
+
+If one of those local lambda runners fails to start, check the per-lambda log in:
+
+```text
+/tmp/quilt-local-lambda-preview.log
+/tmp/quilt-local-lambda-tabular-preview.log
+/tmp/quilt-local-lambda-thumbnail.log
+```
+
 `PYTHONPATH=$PWD` is required so the repo-local `api/python/quilt3_local/` implementation overrides the published `quilt3_local` package during local dev.
 
 ### Clean Restart
@@ -146,21 +160,6 @@ QUILT_CATALOG_URL=http://localhost:3001 \
 
 Set `QUILT_LOCAL_OBJECT_BACKEND=filesystem` to bypass AWS for package and object reads. In this mode, LOCAL serves data from `QUILT_LOCAL_DATA_DIR`.
 
-Expected layout:
-
-```text
-$QUILT_LOCAL_DATA_DIR/
-	<bucket>/
-		hello.txt
-		.quilt/
-			named_packages/
-				<package>/
-					latest
-					1700000000
-			packages/
-				<64-hex-manifest-hash>
-```
-
 Notes:
 
 ```text
@@ -171,16 +170,6 @@ Notes:
 - if a local package name is stored without a namespace, LOCAL exposes it in the UI as local/<name> so existing Catalog package routes still work
 ```
 
-Example launch command:
-
-```bash
-$ cd api/python
-$ PYTHONPATH=$PWD \
-		QUILT_LOCAL_OBJECT_BACKEND=filesystem \
-		QUILT_LOCAL_DATA_DIR=/tmp/quilt-local-data \
-		QUILT_CATALOG_URL=http://localhost:3001 \
-		uv run --python 3.11 --no-dev --extra catalog quilt3 catalog --host localhost --port 3000 --no-browser
-```
 
 ## Canonical Preview Fixtures
 
