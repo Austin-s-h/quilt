@@ -1,6 +1,8 @@
 """
 Generate video previews for videos in S3.
 """
+import os
+import shutil
 import subprocess
 import tempfile
 from urllib.parse import urlparse
@@ -45,7 +47,7 @@ SCHEMA = {
     'additionalProperties': False
 }
 
-FFMPEG = '/opt/bin/ffmpeg'
+FFMPEG = os.getenv('FFMPEG') or shutil.which('ffmpeg') or '/opt/bin/ffmpeg'
 
 # Lambda has a 6MB limit for request and response, however, base64 adds 33% overhead.
 # Also, leave a few KB for the headers.
@@ -100,18 +102,21 @@ def lambda_handler(request):
         ])
 
     with tempfile.NamedTemporaryFile() as output_file:
-        p = subprocess.run([
-            FFMPEG,
-            "-t", str(duration),
-            "-i", url,
-            "-f", FORMATS[format],
-            *format_params,
-            "-timelimit", str(request.context.get_remaining_time_in_millis() // 1000 - 2),  # 2 seconds for padding
-            "-fs", str(file_size),
-            "-y",  # Overwrite output file
-            "-v", "error",  # Only print errors
-            output_file.name
-        ], check=False, stdin=subprocess.DEVNULL, stderr=subprocess.PIPE)
+        try:
+            p = subprocess.run([
+                FFMPEG,
+                "-t", str(duration),
+                "-i", url,
+                "-f", FORMATS[format],
+                *format_params,
+                "-timelimit", str(request.context.get_remaining_time_in_millis() // 1000 - 2),  # 2 seconds for padding
+                "-fs", str(file_size),
+                "-y",  # Overwrite output file
+                "-v", "error",  # Only print errors
+                output_file.name
+            ], check=False, stdin=subprocess.DEVNULL, stderr=subprocess.PIPE)
+        except FileNotFoundError:
+            return make_json_response(500, {'error': f'Missing required command: {FFMPEG}'})
 
         if p.returncode != 0:
             return make_json_response(403, {'error': p.stderr.decode()})

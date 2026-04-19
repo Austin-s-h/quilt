@@ -57,9 +57,33 @@ REAL_LAMBDAS = {
         handler_attr="lambda_handler",
         port=int(os.getenv("QUILT_LOCAL_LAMBDA_THUMBNAIL_PORT", "18081")),
     ),
+    "transcode": RealLambdaConfig(
+        name="transcode",
+        cwd=REPO_ROOT / "lambdas" / "transcode",
+        module="t4_lambda_transcode",
+        handler_attr="lambda_handler",
+        port=int(os.getenv("QUILT_LOCAL_LAMBDA_TRANSCODE_PORT", "18084")),
+    ),
 }
 
 _runner_processes: dict[str, subprocess.Popen] = {}
+
+
+def _normalized_response_headers(headers: dict[str, str], body: bytes) -> dict[str, str]:
+    hop_by_hop = {
+        "connection",
+        "keep-alive",
+        "proxy-authenticate",
+        "proxy-authorization",
+        "te",
+        "trailer",
+        "transfer-encoding",
+        "upgrade",
+        "content-length",
+    }
+    normalized = {k: v for k, v in headers.items() if k.lower() not in hop_by_hop}
+    normalized["content-length"] = str(len(body))
+    return normalized
 
 
 def _runner_log_path(name: str) -> Path:
@@ -157,6 +181,7 @@ def shutdown_runners() -> None:
 
 
 async def _proxy_real_lambda(request: fastapi.Request, config: RealLambdaConfig, path: str):
+    response = None
     try:
         await asyncio.get_running_loop().run_in_executor(None, functools.partial(_start_runner, config))
         req_body = await request.body()
@@ -169,6 +194,7 @@ async def _proxy_real_lambda(request: fastapi.Request, config: RealLambdaConfig,
                 params=list(request.query_params.multi_items()),
                 headers={k: v for k, v in request.headers.items() if k.lower() not in {"host", "content-length"}},
                 data=req_body,
+                stream=True,
                 timeout=120,
             ),
         )
@@ -177,7 +203,15 @@ async def _proxy_real_lambda(request: fastapi.Request, config: RealLambdaConfig,
     except Exception as exc:
         return fastapi.responses.JSONResponse(status_code=500, content={"error": str(exc), "lambda": config.name})
 
-    return fastapi.Response(content=response.content, status_code=response.status_code, headers=dict(response.headers))
+    assert response is not None
+    try:
+        # Keep the exact wire payload to avoid implicit decompression/header mismatch
+        # issues that can trigger h11 LocalProtocolError for Content-Length.
+        raw_body = response.raw.read(decode_content=False)
+        response_headers = _normalized_response_headers(dict(response.headers), raw_body)
+        return fastapi.Response(content=raw_body, status_code=response.status_code, headers=response_headers)
+    finally:
+        response.close()
 
 
 @lambdas.api_route("/{name}", methods=["GET", "POST", "OPTIONS"])
@@ -213,4 +247,5 @@ async def lambda_request(request: fastapi.Request, name: str, path: str = ""):
     else:
         content = body.encode()
 
-    return fastapi.Response(content=content, status_code=result["statusCode"], headers=result["headers"])
+    response_headers = _normalized_response_headers(dict(result["headers"]), content)
+    return fastapi.Response(content=content, status_code=result["statusCode"], headers=response_headers)

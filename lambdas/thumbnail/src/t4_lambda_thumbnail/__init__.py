@@ -272,22 +272,25 @@ def format_aicsimage_to_prepped(img: BioImage) -> da.Array:
 def pptx_to_pdf(*, path: str, page: int):
     with tempfile.TemporaryDirectory() as out_dir:
         with tempfile.TemporaryDirectory() as tmp_dir:
-            subprocess.run(
-                (
-                    "libreoffice",
-                    "--convert-to",
-                    'pdf:impress_pdf_Export:{"PageRange":{"type":"string","value":"%s-%s"}}' % (page, page),
-                    "--outdir",
-                    out_dir,
-                    path,
-                ),
-                check=True,
-                env={
-                    **os.environ,
-                    # This is needed because LibreOffice writes some stuff to $HOME/.config.
-                    "HOME": tmp_dir,
-                },
-            )
+            try:
+                subprocess.run(
+                    (
+                        "libreoffice",
+                        "--convert-to",
+                        'pdf:impress_pdf_Export:{"PageRange":{"type":"string","value":"%s-%s"}}' % (page, page),
+                        "--outdir",
+                        out_dir,
+                        path,
+                    ),
+                    check=True,
+                    env={
+                        **os.environ,
+                        # This is needed because LibreOffice writes some stuff to $HOME/.config.
+                        "HOME": tmp_dir,
+                    },
+                )
+            except FileNotFoundError as exc:
+                raise PDFThumbError("Missing required command: libreoffice") from exc
         yield os.path.join(out_dir, os.path.splitext(os.path.basename(path))[0] + ".pdf")
 
 

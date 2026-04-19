@@ -104,12 +104,12 @@ def extract_fcs(file_, as_html=True):
 
         try:
             meta, data = fcsparser.parse(tmp.name, reformat_meta=True)
-        # ValueError from fcsparser, TypeError from numpy
-        except (ValueError, TypeError, fcsparser.api.ParserFeatureNotImplementedError) as first:
+        # ValueError from fcsparser, TypeError/AttributeError from numpy/fcsparser compatibility
+        except (ValueError, TypeError, AttributeError, fcsparser.api.ParserFeatureNotImplementedError) as first:
             try:
                 meta = fcsparser.parse(tmp.name, reformat_meta=True, meta_data_only=True)
                 info['warnings'] = f"Metadata only. Parse exception: {first}"
-            except (ValueError, fcsparser.api.ParserFeatureNotImplementedError) as second:
+            except (ValueError, TypeError, AttributeError, fcsparser.api.ParserFeatureNotImplementedError) as second:
                 info['warnings'] = f"Unable to parse data or metadata: {second}"
 
     if data is not None:

@@ -25,9 +25,14 @@ Entries inside each section should be ordered by type:
 ### Catalog, Lambdas
 
 * [Added] Add a `poe catalog-test` one-shot LOCAL catalog setup command and stage `dog_watermark.pdf` in the curated LOCAL preview fixture pack
+* [Added] LOCAL lambda runner now supports async handlers and includes unit coverage for unbound/async handler invocation
 * [Fixed] LOCAL S3 proxy responses now handle legacy and host-style routes consistently and include the expected region headers
+* [Fixed] LOCAL lambda proxy responses now normalize hop-by-hop headers and recompute `Content-Length` to prevent h11 `Too much data for declared Content-Length` protocol errors
 * [Fixed] Default LOCAL `quilt_summarize.json` now expands staged `preview/` fixtures in grouped rows instead of returning an empty summary
+* [Fixed] REAL preview and tabular lambdas now accept LOCAL `/__s3proxy/...` URLs when running through the LOCAL runner
+* [Fixed] FCS preview now falls back to metadata-only parsing for numpy/fcsparser compatibility failures instead of returning 500
 * [Fixed] Spreadsheet metadata import now preserves date-only values without timezone drift in LibreOffice and CSV fixtures
+* [Changed] PPTX thumbnailing now reports a clear `Missing required command: libreoffice` error when LibreOffice is not installed
 
 ## 7.3.0 - 2026-04-07
 

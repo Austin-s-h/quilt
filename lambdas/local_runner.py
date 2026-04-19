@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import argparse
+import asyncio
 import importlib
+import inspect
 import json
 import traceback
 import sys
@@ -15,6 +17,13 @@ from urllib.parse import parse_qsl, unquote, urlparse
 def _load_handler(module_name: str, attr_name: str):
     module = importlib.import_module(module_name)
     return getattr(module, attr_name)
+
+
+def _invoke_handler(handler, event, context):
+    result = handler(event, context)
+    if inspect.isawaitable(result):
+        return asyncio.run(result)
+    return result
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -48,7 +57,7 @@ class Handler(BaseHTTPRequestHandler):
             }
 
             try:
-                result = self.handler(args, None)
+                result = _invoke_handler(type(self).handler, args, None)
             except Exception as exc:
                 body = json.dumps({"error": str(exc), "traceback": traceback.format_exc()}).encode()
                 self.send_response(500)

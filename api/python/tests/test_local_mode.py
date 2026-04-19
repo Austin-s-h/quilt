@@ -9,8 +9,10 @@ from urllib.parse import quote, unquote, urlencode, urlparse
 
 import pytest
 from botocore.exceptions import ClientError
+
 try:
     from graphql import graphql
+
     from quilt3_local import buckets
     from quilt3_local.context import QuiltContext
 except ModuleNotFoundError as exc:
