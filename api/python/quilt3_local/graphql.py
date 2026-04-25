@@ -1,6 +1,8 @@
 import asyncio
 import dataclasses
 import datetime
+import functools
+import inspect
 import typing as T
 
 import ariadne
@@ -30,234 +32,37 @@ PackagesSearchResultSetType = ariadne.ObjectType("PackagesSearchResultSet")
 ObjectsSearchResultSetType = ariadne.ObjectType("ObjectsSearchResultSet")
 PackageFileType.set_alias("physicalKey", "physical_key")
 
-LOCAL_SEARCH_TYPE_DEFS = ariadne.gql(
-    """
-        extend type Query {
-            searchObjects(
-                buckets: [String!]
-                searchString: String
-                filter: ObjectsSearchFilter
-            ): ObjectsSearchResult!
-            searchPackages(
-                buckets: [String!]
-                searchString: String
-                filter: PackagesSearchFilter
-                userMetaFilters: [PackageUserMetaPredicate!]
-                latestOnly: Boolean = false
-            ): PackagesSearchResult!
-            searchMoreObjects(after: String!, size: Int): ObjectsSearchMoreResult!
-            searchMorePackages(after: String!, size: Int): PackagesSearchMoreResult!
+
+def _snake_case_input(value: T.Any) -> T.Any:
+    if isinstance(value, dict):
+        return {ariadne.convert_camel_case_to_snake(key): _snake_case_input(val) for key, val in value.items()}
+    if isinstance(value, list):
+        return [_snake_case_input(item) for item in value]
+    return value
+
+
+def convert_kwargs_to_snake_case(func):
+    if inspect.iscoroutinefunction(func):
+
+        @functools.wraps(func)
+        async def wrapped(*args, **kwargs):
+            snake_case_kwargs = {
+                ariadne.convert_camel_case_to_snake(key): _snake_case_input(value)
+                for key, value in kwargs.items()
+            }
+            return await func(*args, **snake_case_kwargs)
+
+        return wrapped
+
+    @functools.wraps(func)
+    def wrapped(*args, **kwargs):
+        snake_case_kwargs = {
+            ariadne.convert_camel_case_to_snake(key): _snake_case_input(value)
+            for key, value in kwargs.items()
         }
+        return func(*args, **snake_case_kwargs)
 
-        enum SearchResultOrder {
-            BEST_MATCH
-            NEWEST
-            OLDEST
-            LEX_ASC
-            LEX_DESC
-        }
-
-        input DatetimeSearchPredicate {
-            gte: Datetime
-            lte: Datetime
-        }
-
-        input NumberSearchPredicate {
-            gte: Float
-            lte: Float
-        }
-
-        input KeywordSearchPredicate {
-            terms: [String!]
-            wildcard: String
-        }
-
-        input TextSearchPredicate {
-            queryString: String!
-        }
-
-        input BooleanSearchPredicate {
-            true: Boolean
-            false: Boolean
-        }
-
-        input ObjectsSearchFilter {
-            modified: DatetimeSearchPredicate
-            size: NumberSearchPredicate
-            ext: KeywordSearchPredicate
-            key: KeywordSearchPredicate
-            content: TextSearchPredicate
-            deleted: BooleanSearchPredicate
-        }
-
-        input PackagesSearchFilter {
-            modified: DatetimeSearchPredicate
-            size: NumberSearchPredicate
-            name: KeywordSearchPredicate
-            hash: KeywordSearchPredicate
-            entries: NumberSearchPredicate
-            comment: TextSearchPredicate
-            workflow: KeywordSearchPredicate
-        }
-
-        input PackageUserMetaPredicate {
-            path: String!
-            datetime: DatetimeSearchPredicate
-            number: NumberSearchPredicate
-            text: TextSearchPredicate
-            keyword: KeywordSearchPredicate
-            boolean: BooleanSearchPredicate
-        }
-
-        type EmptySearchResultSet {
-            _: Boolean
-        }
-
-        type DatetimeExtents {
-            min: Datetime!
-            max: Datetime!
-        }
-
-        type NumberExtents {
-            min: Float!
-            max: Float!
-        }
-
-        type KeywordExtents {
-            values: [String!]!
-        }
-
-        interface IPackageUserMetaFacet {
-            path: String!
-        }
-
-        enum PackageUserMetaFacetType {
-            NUMBER
-            DATETIME
-            KEYWORD
-            TEXT
-            BOOLEAN
-        }
-
-        type NumberPackageUserMetaFacet implements IPackageUserMetaFacet {
-            path: String!
-            extents: NumberExtents!
-        }
-
-        type DatetimePackageUserMetaFacet implements IPackageUserMetaFacet {
-            path: String!
-            extents: DatetimeExtents!
-        }
-
-        type KeywordPackageUserMetaFacet implements IPackageUserMetaFacet {
-            path: String!
-            extents: KeywordExtents!
-        }
-
-        type TextPackageUserMetaFacet implements IPackageUserMetaFacet {
-            path: String!
-        }
-
-        type BooleanPackageUserMetaFacet implements IPackageUserMetaFacet {
-            path: String!
-        }
-
-        type SearchHitObject {
-            id: ID!
-            score: Float!
-            bucket: String!
-            key: String!
-            version: String!
-            size: Float!
-            modified: Datetime!
-            deleted: Boolean!
-            indexedContent: String
-        }
-
-        type ObjectsSearchResultSetPage {
-            cursor: String
-            hits: [SearchHitObject!]!
-        }
-
-        type ObjectsSearchStats {
-            modified: DatetimeExtents!
-            size: NumberExtents!
-            ext: KeywordExtents!
-        }
-
-        type ObjectsSearchResultSet {
-            total: Int!
-            stats: ObjectsSearchStats!
-            firstPage(size: Int, order: SearchResultOrder): ObjectsSearchResultSetPage!
-        }
-
-        union ObjectsSearchResult = ObjectsSearchResultSet | EmptySearchResultSet | InvalidInput | OperationError
-        union ObjectsSearchMoreResult = ObjectsSearchResultSetPage | InvalidInput | OperationError
-
-        type SearchHitPackageEntryMatchLocations {
-            logicalKey: Boolean!
-            physicalKey: Boolean!
-            meta: Boolean!
-            contents: Boolean!
-        }
-
-        type SearchHitPackageMatchingEntry {
-            logicalKey: String!
-            physicalKey: String!
-            size: Float!
-            meta: String
-            matchLocations: SearchHitPackageEntryMatchLocations!
-        }
-
-        type SearchHitPackageMatchLocations {
-            name: Boolean!
-            comment: Boolean!
-            meta: Boolean!
-            workflow: Boolean!
-        }
-
-        type SearchHitPackage {
-            id: ID!
-            score: Float!
-            bucket: String!
-            name: String!
-            pointer: String!
-            hash: String!
-            size: Float!
-            modified: Datetime!
-            totalEntriesCount: Int!
-            comment: String
-            meta: String
-            workflow: JsonRecord
-            matchLocations: SearchHitPackageMatchLocations!
-            matchingEntries: [SearchHitPackageMatchingEntry!]!
-        }
-
-        type PackagesSearchResultSetPage {
-            cursor: String
-            hits: [SearchHitPackage!]!
-        }
-
-        type PackagesSearchStats {
-            modified: DatetimeExtents!
-            size: NumberExtents!
-            entries: NumberExtents!
-            workflow: KeywordExtents!
-            userMeta: [IPackageUserMetaFacet!]!
-            userMetaTruncated: Boolean!
-        }
-
-        type PackagesSearchResultSet {
-            total: Int!
-            stats: PackagesSearchStats!
-            filteredUserMetaFacets(path: String!, type: PackageUserMetaFacetType): [IPackageUserMetaFacet!]!
-            firstPage(size: Int, order: SearchResultOrder): PackagesSearchResultSetPage!
-        }
-
-        union PackagesSearchResult = PackagesSearchResultSet | EmptySearchResultSet | InvalidInput | OperationError
-        union PackagesSearchMoreResult = PackagesSearchResultSetPage | InvalidInput | OperationError
-        """
-)
+    return wrapped
 
 
 @dataclasses.dataclass
@@ -353,7 +158,7 @@ async def package_revision_list_total(package: PackageContext, *_):
 
 
 @PackageRevisionListType.field("page")
-@ariadne.convert_kwargs_to_snake_case
+@convert_kwargs_to_snake_case
 async def package_revision_list_page(package: PackageContext, *_, number: int, per_page: int):
     pointers = await packages.get_package_pointers(package.bucket, package.name)
     offset = (number - 1) * per_page
@@ -382,7 +187,7 @@ async def package_revisions(package: PackageContext, *_):
 
 
 @PackageType.field("revision")
-@ariadne.convert_kwargs_to_snake_case
+@convert_kwargs_to_snake_case
 async def package_revision(package: PackageContext, *_, hash_or_tag: str):
     pointer = await packages.get_revision_pointer(package.bucket, package.name, hash_or_tag)
     return PackageRevisionContext(
@@ -398,7 +203,7 @@ async def package_list_total(package_list: PackageListContext, *_):
 
 
 @PackageListType.field("page")
-@ariadne.convert_kwargs_to_snake_case
+@convert_kwargs_to_snake_case
 async def package_list_page(package_list: PackageListContext, *_, number: int, per_page: int, order: str):
     pointers = await packages.get_all_package_pointers(package_list.bucket, package_list.filter)
     package_names = list(pointers)
@@ -428,7 +233,7 @@ async def query_package(*_, bucket: str, name: str):
 
 
 @QueryType.field("searchPackages")
-@ariadne.convert_kwargs_to_snake_case
+@convert_kwargs_to_snake_case
 async def query_search_packages(
     *_: T.Any,
     buckets: T.Optional[list[str]] = None,
@@ -447,7 +252,7 @@ async def query_search_packages(
 
 
 @QueryType.field("searchObjects")
-@ariadne.convert_kwargs_to_snake_case
+@convert_kwargs_to_snake_case
 async def query_search_objects(
     *_: T.Any,
     buckets: T.Optional[list[str]] = None,
@@ -462,13 +267,13 @@ async def query_search_objects(
 
 
 @QueryType.field("searchMorePackages")
-@ariadne.convert_kwargs_to_snake_case
+@convert_kwargs_to_snake_case
 async def query_search_more_packages(*_, after: str, size: T.Optional[int] = None):
     return await search.search_more_packages(after, size)
 
 
 @QueryType.field("searchMoreObjects")
-@ariadne.convert_kwargs_to_snake_case
+@convert_kwargs_to_snake_case
 async def query_search_more_objects(*_, after: str, size: T.Optional[int] = None):
     return await search.search_more_objects(after, size)
 
@@ -494,7 +299,6 @@ def packages_search_result_filtered_user_meta_facets(*_):
 
 
 @PackagesSearchResultSetType.field("firstPage")
-@ariadne.convert_kwargs_to_snake_case
 def packages_search_result_first_page(result: dict, *_, size: T.Optional[int] = None, order: T.Optional[str] = None):
     return search.package_result_page(result, size=size, order=order)
 
@@ -510,7 +314,6 @@ def objects_search_result_stats(result: dict, *_):
 
 
 @ObjectsSearchResultSetType.field("firstPage")
-@ariadne.convert_kwargs_to_snake_case
 def objects_search_result_first_page(result: dict, *_, size: T.Optional[int] = None, order: T.Optional[str] = None):
     return search.object_result_page(result, size=size, order=order)
 
@@ -518,7 +321,7 @@ def objects_search_result_first_page(result: dict, *_, size: T.Optional[int] = N
 type_defs = ariadne.load_schema_from_path(str(resource_path("schema.graphql")))
 
 schema = ariadne.make_executable_schema(
-    [type_defs, LOCAL_SEARCH_TYPE_DEFS],
+    type_defs,
     QueryType,
     DatetimeScalar,
     PackageListType,

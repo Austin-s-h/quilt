@@ -3,11 +3,14 @@ from __future__ import annotations
 import importlib.util
 import json
 import tempfile
+import textwrap
 import urllib.parse
+import xml.etree.ElementTree as ET
+import zipfile
 from pathlib import Path
 
 import requests
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 
 from .._upstream import load_module
 from .shared.decorator import QUILT_INFO_HEADER, api, validate
@@ -41,12 +44,16 @@ get_pdf_render_dpi = _pdf_helper.get_pdf_render_dpi
 render_pdf_page = _pdf_helper.render_pdf_page
 resize_pdf_page = _pdf_helper.resize_pdf_page
 
+
+class OfficePreviewError(RuntimeError):
+    pass
+
 SCHEMA = {
     "type": "object",
     "properties": {
         "url": {"type": "string"},
         "size": {"enum": list(SIZE_PARAMETER_MAP)},
-        "input": {"enum": ["pdf"]},
+        "input": {"enum": ["pdf", "pptx"]},
         "page": {
             "type": "string",
             "pattern": r"^\d+$",
@@ -95,9 +102,91 @@ def handle_pdf(*, path: str, page: int, size: int, count_pages: bool):
     return info, data
 
 
+def _pptx_slide_paths(archive: zipfile.ZipFile) -> list[str]:
+    def slide_number(name: str) -> int:
+        return int(name.rsplit("slide", 1)[1].split(".", 1)[0])
+
+    return sorted(
+        [name for name in archive.namelist() if name.startswith("ppt/slides/slide") and name.endswith(".xml")],
+        key=slide_number,
+    )
+
+
+def _pptx_slide_text(archive: zipfile.ZipFile, slide_path: str) -> list[str]:
+    root = ET.fromstring(archive.read(slide_path))
+    return [text.strip() for elem in root.iter() if elem.tag.endswith("}t") and (text := elem.text or "").strip()]
+
+
+def _load_font(size: int):
+    try:
+        return ImageFont.truetype("DejaVuSans.ttf", size)
+    except OSError:
+        return ImageFont.load_default()
+
+
+def _render_pptx_preview(lines: list[str], *, slide_number: int, slide_count: int, size: tuple[int, int]) -> bytes:
+    image = Image.new("RGB", size, color=(250, 248, 244))
+    draw = ImageDraw.Draw(image)
+    title_font = _load_font(max(size[0] // 22, 18))
+    body_font = _load_font(max(size[0] // 34, 14))
+    text_color = (36, 40, 46)
+    accent = (195, 131, 62)
+    margin_x = max(size[0] // 14, 32)
+    top = max(size[1] // 12, 28)
+    line_gap = max(size[1] // 60, 10)
+    body_width = max(40, size[0] // 14)
+
+    draw.rounded_rectangle((margin_x, top, size[0] - margin_x, top + 8), radius=4, fill=accent)
+    top += 28
+    draw.text((margin_x, top), f"PowerPoint Preview  {slide_number}/{slide_count}", font=title_font, fill=text_color)
+    top += max(size[1] // 10, 72)
+
+    wrapped_lines: list[str] = []
+    for line in lines:
+        wrapped_lines.extend(textwrap.wrap(line, width=body_width) or [""])
+        if len(wrapped_lines) >= 14:
+            break
+
+    if not wrapped_lines:
+        wrapped_lines = ["This slide contains no extractable text."]
+
+    for line in wrapped_lines[:14]:
+        draw.text((margin_x, top), line, font=body_font, fill=text_color)
+        top += body_font.size + line_gap
+        if top >= size[1] - margin_x:
+            break
+
+    with tempfile.NamedTemporaryFile(suffix=".jpg") as out_file:
+        image.save(out_file, "JPEG", quality=90)
+        out_file.flush()
+        return Path(out_file.name).read_bytes()
+
+
+def handle_pptx(*, path: str, page: int, size: tuple[int, int], count_pages: bool):
+    with zipfile.ZipFile(path) as archive:
+        slide_paths = _pptx_slide_paths(archive)
+        if not slide_paths:
+            raise OfficePreviewError("PowerPoint file contains no slides")
+        if page < 1 or page > len(slide_paths):
+            raise OfficePreviewError(f"Requested slide {page} is out of range")
+
+        slide_count = len(slide_paths)
+        slide_lines = _pptx_slide_text(archive, slide_paths[page - 1])
+
+    data = _render_pptx_preview(slide_lines, slide_number=page, slide_count=slide_count, size=size)
+    info = {
+        "thumbnail_format": "JPEG",
+        "thumbnail_size": size,
+        "office_preview_engine": "local-pptx-text",
+    }
+    if count_pages:
+        info["page_count"] = slide_count
+    return info, data
+
+
 @api(cors_origins=get_default_origins())
 @validate(SCHEMA)
-@handle_exceptions(PDFThumbError)
+@handle_exceptions(PDFThumbError, OfficePreviewError)
 def _pdf_lambda_handler(request):
     url = request.args["url"]
     size = SIZE_PARAMETER_MAP[request.args["size"]]
@@ -112,7 +201,11 @@ def _pdf_lambda_handler(request):
     with tempfile.NamedTemporaryFile(suffix=filename_suffix) as src_file:
         src_file.write(resp.content)
         src_file.flush()
-        info, data = handle_pdf(path=src_file.name, page=page, size=size[0], count_pages=count_pages)
+        input_type = request.args.get("input")
+        if input_type == "pptx":
+            info, data = handle_pptx(path=src_file.name, page=page, size=size, count_pages=count_pages)
+        else:
+            info, data = handle_pdf(path=src_file.name, page=page, size=size[0], count_pages=count_pages)
 
     return (
         200,
@@ -126,6 +219,6 @@ def _pdf_lambda_handler(request):
 
 def lambda_handler(event, context):
     args = event.get("queryStringParameters") or {}
-    if args.get("input") == "pdf":
+    if args.get("input") in {"pdf", "pptx"}:
         return _pdf_lambda_handler(event, context)
     return load_module("lambdas.thumbnail").lambda_handler(event, context)

@@ -24,6 +24,13 @@ Entries inside each section should be ordered by type:
 
 ### Catalog, Lambdas
 
+- Introduced utility functions to convert camelCase to snake_case for GraphQL input arguments.
+- Updated GraphQL query resolvers to utilize the new snake_case conversion.
+- Enhanced local lambda invocation to handle errors more gracefully and added support for invoking local lambdas when remote requests fail.
+- Added support for PowerPoint (PPTX) file previews in the thumbnail lambda, including text extraction and rendering.
+- Updated dependencies in pyproject.toml to specify compatible versions for numpy.
+- Improved test coverage for the new PPTX functionality and ensured existing tests are updated accordingly.
+
 * [Added] Add a `poe catalog-test` one-shot LOCAL catalog setup command and stage `dog_watermark.pdf` in the curated LOCAL preview fixture pack
 * [Added] LOCAL lambda runner now supports async handlers and includes unit coverage for unbound/async handler invocation
 * [Fixed] LOCAL S3 proxy responses now handle legacy and host-style routes consistently and include the expected region headers

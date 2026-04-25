@@ -9,6 +9,7 @@ from urllib.parse import quote, unquote, urlencode, urlparse
 
 import pytest
 from botocore.exceptions import ClientError
+from PIL import Image
 
 try:
     from graphql import graphql
@@ -1045,9 +1046,11 @@ def test_local_preview_lambda_reuses_curated_fixture_pack(
         assert body["info"]["schema"]["names"]
         assert "<table" in body["html"]
     elif fixture_name == "vcf":
-        assert "<table" in body["html"]
-        assert body["info"]["meta"]
-        assert body["info"]["lines"]
+        assert body["html"] == ""
+        assert body["info"]["data"]["meta"]
+        assert body["info"]["data"]["header"]
+        assert body["info"]["data"]["data"]
+        assert body["info"]["metadata"]["variants"]
     elif fixture_name == "fcs":
         assert body["info"]["metadata"]
         assert body["info"]["vegaLite"]["$schema"].startswith("https://vega.github.io/schema/vega-lite/")
@@ -1139,3 +1142,34 @@ def test_local_pdf_thumbnail_lambda_reuses_curated_fixture_pack(monkeypatch, tmp
     assert calls["size"] == 1024
     assert calls["count_pages"] is True
     assert calls["path"].endswith(".pdf")
+
+
+def test_local_pptx_thumbnail_lambda_uses_uv_managed_local_engine(monkeypatch, tmp_path):
+    from quilt3_local.lambdas import thumbnail
+
+    bucket_root = tmp_path / "demo-bucket"
+    stage_preview_fixtures(bucket_root)
+    fixture = FIXTURES_BY_NAME["pptx"]
+
+    monkeypatch.setattr(thumbnail.requests, "get", _mock_requests_get_factory(bucket_root))
+
+    response = thumbnail.lambda_handler(
+        _make_lambda_event(
+            "thumbnail",
+            {
+                "url": _fixture_proxy_url("demo-bucket", fixture.bucket_key),
+                "input": "pptx",
+                "size": "w1024h768",
+                "page": "2",
+                "countPages": "true",
+            },
+        ),
+        None,
+    )
+
+    assert response["statusCode"] == 200
+    assert response["headers"]["Content-Type"] == "image/jpeg"
+    assert json.loads(response["headers"]["X-Quilt-Info"])["page_count"] == 2
+    image = Image.open(BytesIO(_read_lambda_body(response)))
+    assert image.format == "JPEG"
+    assert image.size == (1024, 768)

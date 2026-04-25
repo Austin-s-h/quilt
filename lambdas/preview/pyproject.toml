@@ -5,7 +5,7 @@ requires-python = "==3.13.*"
 dependencies = [
     "nbconvert ~= 7.16",
     "nbformat ~= 5.10",
-    "numpy < 2",
+    "numpy ~= 2.3",
     "pandas ~= 2.2",
     "requests ~= 2.32",
     "t4-lambda-shared[mem,preview]",

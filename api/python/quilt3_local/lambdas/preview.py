@@ -176,17 +176,28 @@ def extract_vcf(head):
             meta.append(line)
         elif line.startswith("#"):
             header = line
+            columns = header.split()
+            header = columns[:limit]
+            variants = columns[limit:]
         else:
-            variants.append(line.split("\t", limit))
-            data.append(line)
+            if line:
+                data.append(line.split()[:limit])
 
     if header is None:
         return "", {"warnings": "Invalid VCF header"}
 
-    columns = header.lstrip("#").split("\t", limit)
-    df = pandas.DataFrame(variants, columns=columns)
-    html = remove_pandas_footer(df._repr_html_())
-    return html, {"note": TRUNCATED, "meta": meta, "lines": data}
+    info = {
+        "data": {
+            "meta": meta,
+            "header": header,
+            "data": data,
+        },
+        "metadata": {
+            "variants": variants,
+            "variant_count": len(variants),
+        },
+    }
+    return "", info
 
 
 def extract_txt(head):

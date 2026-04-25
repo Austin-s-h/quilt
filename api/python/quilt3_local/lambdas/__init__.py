@@ -1,11 +1,15 @@
 import asyncio
 import base64
 import functools
+import inspect
 import os
+import re
 import subprocess
 import tempfile
 import time
+import tomllib
 from dataclasses import dataclass
+from functools import lru_cache
 from pathlib import Path
 
 import fastapi
@@ -24,6 +28,7 @@ lambdas = fastapi.FastAPI()
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
 LAMBDA_RUNNER = REPO_ROOT / "lambdas" / "local_runner.py"
+DEFAULT_LAMBDA_PYTHON = "3.13"
 
 
 @dataclass(frozen=True)
@@ -67,6 +72,46 @@ REAL_LAMBDAS = {
 }
 
 _runner_processes: dict[str, subprocess.Popen] = {}
+
+
+def _truthy_env(name: str) -> bool:
+    return os.getenv(name, "").lower() in {"1", "true", "yes", "on"}
+
+
+def _lambda_env_prefix(name: str) -> str:
+    return re.sub(r"[^A-Z0-9]", "_", name.upper())
+
+
+def _extract_python_version(spec: str | None) -> str | None:
+    if not spec:
+        return None
+    match = re.search(r"(\d+)\.(\d+)", spec)
+    if match is None:
+        return None
+    return f"{match.group(1)}.{match.group(2)}"
+
+
+@lru_cache(maxsize=None)
+def _project_python_version(cwd: Path) -> str | None:
+    pyproject_path = cwd / "pyproject.toml"
+    if not pyproject_path.exists():
+        return None
+
+    with pyproject_path.open("rb") as f:
+        pyproject = tomllib.load(f)
+
+    requires_python = pyproject.get("project", {}).get("requires-python")
+    return _extract_python_version(requires_python)
+
+
+def _configured_lambda_python(config: RealLambdaConfig) -> str:
+    specific_override = os.getenv(f"QUILT_LOCAL_LAMBDA_{_lambda_env_prefix(config.name)}_PYTHON")
+    global_override = os.getenv("QUILT_LOCAL_LAMBDA_PYTHON")
+    return specific_override or global_override or _project_python_version(config.cwd) or DEFAULT_LAMBDA_PYTHON
+
+
+def _strict_lambda_runtime() -> bool:
+    return _truthy_env("QUILT_LOCAL_LAMBDA_STRICT")
 
 
 def _normalized_response_headers(headers: dict[str, str], body: bytes) -> dict[str, str]:
@@ -137,10 +182,14 @@ def _start_runner(config: RealLambdaConfig) -> None:
     log_path = _runner_log_path(config.name)
     log_path.parent.mkdir(parents=True, exist_ok=True)
     log_file = log_path.open("w")
+    python_version = _configured_lambda_python(config)
     proc = subprocess.Popen(
         [
             "uv",
             "run",
+            "--managed-python",
+            "--python",
+            python_version,
             "--no-dev",
             "python",
             str(LAMBDA_RUNNER),
@@ -180,49 +229,7 @@ def shutdown_runners() -> None:
     _runner_processes.clear()
 
 
-async def _proxy_real_lambda(request: fastapi.Request, config: RealLambdaConfig, path: str):
-    response = None
-    try:
-        await asyncio.get_running_loop().run_in_executor(None, functools.partial(_start_runner, config))
-        req_body = await request.body()
-        response = await asyncio.get_running_loop().run_in_executor(
-            None,
-            functools.partial(
-                requests.request,
-                request.method,
-                _real_lambda_url(config, path),
-                params=list(request.query_params.multi_items()),
-                headers={k: v for k, v in request.headers.items() if k.lower() not in {"host", "content-length"}},
-                data=req_body,
-                stream=True,
-                timeout=120,
-            ),
-        )
-    except requests.RequestException as exc:
-        return fastapi.responses.JSONResponse(status_code=502, content={"error": str(exc), "lambda": config.name})
-    except Exception as exc:
-        return fastapi.responses.JSONResponse(status_code=500, content={"error": str(exc), "lambda": config.name})
-
-    assert response is not None
-    try:
-        # Keep the exact wire payload to avoid implicit decompression/header mismatch
-        # issues that can trigger h11 LocalProtocolError for Content-Length.
-        raw_body = response.raw.read(decode_content=False)
-        response_headers = _normalized_response_headers(dict(response.headers), raw_body)
-        return fastapi.Response(content=raw_body, status_code=response.status_code, headers=response_headers)
-    finally:
-        response.close()
-
-
-@lambdas.api_route("/{name}", methods=["GET", "POST", "OPTIONS"])
-@lambdas.api_route("/{name}/{path:path}", methods=["GET", "POST", "OPTIONS"])
-async def lambda_request(request: fastapi.Request, name: str, path: str = ""):
-    if name in REAL_LAMBDAS:
-        return await _proxy_real_lambda(request, REAL_LAMBDAS[name], path)
-
-    if name not in LAMBDAS:
-        raise fastapi.HTTPException(404, "No such lambda")
-
+async def _invoke_local_lambda(request: fastapi.Request, name: str, path: str):
     req_body = await request.body()
     args = {
         "httpMethod": request.method,
@@ -249,3 +256,86 @@ async def lambda_request(request: fastapi.Request, name: str, path: str = ""):
 
     response_headers = _normalized_response_headers(dict(result["headers"]), content)
     return fastapi.Response(content=content, status_code=result["statusCode"], headers=response_headers)
+
+
+async def _proxy_real_lambda(request: fastapi.Request, config: RealLambdaConfig, path: str):
+    response = None
+    try:
+        await asyncio.get_running_loop().run_in_executor(None, functools.partial(_start_runner, config))
+        req_body = await request.body()
+        response = await asyncio.get_running_loop().run_in_executor(
+            None,
+            functools.partial(
+                requests.request,
+                request.method,
+                _real_lambda_url(config, path),
+                **{
+                    **(
+                        {"stream": True}
+                        if (
+                            "stream" in inspect.signature(requests.request).parameters
+                            or any(
+                                param.kind == inspect.Parameter.VAR_KEYWORD
+                                for param in inspect.signature(requests.request).parameters.values()
+                            )
+                        )
+                        else {}
+                    ),
+                    "params": list(request.query_params.multi_items()),
+                    "headers": {
+                        k: v for k, v in request.headers.items() if k.lower() not in {"host", "content-length"}
+                    },
+                    "data": req_body,
+                    "timeout": 120,
+                },
+            ),
+        )
+    except requests.RequestException as exc:
+        if config.name in LAMBDAS and not _strict_lambda_runtime():
+            try:
+                return await _invoke_local_lambda(request, config.name, path)
+            except Exception:
+                pass
+        return fastapi.responses.JSONResponse(status_code=502, content={"error": str(exc), "lambda": config.name})
+    except Exception as exc:
+        if config.name in LAMBDAS and not _strict_lambda_runtime():
+            try:
+                return await _invoke_local_lambda(request, config.name, path)
+            except Exception:
+                pass
+        return fastapi.responses.JSONResponse(status_code=500, content={"error": str(exc), "lambda": config.name})
+
+    assert response is not None
+    if response.status_code >= 500 and config.name in LAMBDAS and not _strict_lambda_runtime():
+        close = getattr(response, "close", None)
+        if callable(close):
+            close()
+        try:
+            return await _invoke_local_lambda(request, config.name, path)
+        except Exception:
+            pass
+
+    raw = getattr(response, "raw", None)
+    if raw is not None and hasattr(raw, "read"):
+        try:
+            raw_body = raw.read(decode_content=False)
+        except TypeError:
+            raw_body = raw.read()
+    else:
+        raw_body = response.content
+    response_headers = _normalized_response_headers(dict(response.headers), raw_body)
+    close = getattr(response, "close", None)
+    if callable(close):
+        close()
+    return fastapi.Response(content=raw_body, status_code=response.status_code, headers=response_headers)
+
+
+@lambdas.api_route("/{name}", methods=["GET", "POST", "OPTIONS"])
+@lambdas.api_route("/{name}/{path:path}", methods=["GET", "POST", "OPTIONS"])
+async def lambda_request(request: fastapi.Request, name: str, path: str = ""):
+    if name in REAL_LAMBDAS:
+        return await _proxy_real_lambda(request, REAL_LAMBDAS[name], path)
+
+    if name not in LAMBDAS:
+        raise fastapi.HTTPException(404, "No such lambda")
+    return await _invoke_local_lambda(request, name, path)
