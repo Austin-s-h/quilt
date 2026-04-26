@@ -7,7 +7,7 @@ import json
 import mimetypes
 from functools import lru_cache
 from pathlib import Path
-from typing import AsyncIterator, Callable, Literal, TypedDict, cast
+from typing import AsyncIterator, Callable, Literal, Optional, TypedDict, cast
 
 import boto3
 from botocore.exceptions import ClientError
@@ -37,7 +37,7 @@ class FilesystemObjectMetadata(FilesystemObjectEntry):
     ContentType: str
 
 
-PageItem = tuple[str, Literal["prefix", "content"], FilesystemObjectEntry | None]
+PageItem = tuple[str, Literal["prefix", "content"], Optional[FilesystemObjectEntry]]
 
 
 CONVENTIONAL_KEY_GROUPS: tuple[tuple[str, ...], ...]
