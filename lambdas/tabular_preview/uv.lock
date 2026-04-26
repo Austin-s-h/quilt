@@ -1276,31 +1276,40 @@ wheels = [
 [[package]]
 name = "t4-lambda-shared"
 version = "0.0.3"
-source = { url = "https://github.com/quiltdata/quilt/archive/d496dffbfb4b7a2ae05f6c1f7f0cb7d5d43bc984.zip", subdirectory = "lambdas/shared" }
+source = { editable = "../shared" }
 dependencies = [
     { name = "jsonschema" },
 ]
-sdist = { hash = "sha256:301e81a066f2f01f114bc94563d444f426501af4938e95c666b0ff3c329da439" }
 
 [package.metadata]
 requires-dist = [
     { name = "awslambdaric", marker = "extra == 'lambda'", specifier = ">=2,<3" },
-    { name = "fcsparser", marker = "extra == 'preview'", specifier = "~=0.2.1" },
+    { name = "flowio", marker = "extra == 'preview'", specifier = "~=1.4" },
     { name = "jsonschema", specifier = ">=2.6.0" },
+    { name = "numpy", marker = "extra == 'preview'", specifier = ">=1.26,<3" },
     { name = "openpyxl", marker = "extra == 'preview'", specifier = "~=3.1" },
-    { name = "pandas", marker = "extra == 'preview'", specifier = "~=2.2" },
+    { name = "pandas", marker = "extra == 'preview'", specifier = "~=2.2.3" },
     { name = "psutil", marker = "extra == 'mem'", specifier = "~=6.1" },
-    { name = "psutil", marker = "extra == 'preview'", specifier = "~=6.1" },
     { name = "pyarrow", marker = "extra == 'preview'", specifier = "~=18.0" },
-    { name = "pytest", marker = "extra == 'tests'" },
-    { name = "pytest-cov", marker = "extra == 'tests'" },
+    { name = "t4-lambda-shared", extras = ["mem"], marker = "extra == 'preview'" },
     { name = "xlrd", marker = "extra == 'preview'", specifier = "~=2.0" },
 ]
-provides-extras = ["tests", "mem", "preview", "lambda"]
+provides-extras = ["mem", "preview", "lambda"]
+
+[package.metadata.requires-dev]
+test = [
+    { name = "py-w3c", specifier = "~=0.3.1" },
+    { name = "pytest", specifier = "~=8.4" },
+    { name = "pytest-cov", specifier = "~=7.0" },
+    { name = "pytest-env", specifier = "~=1.1" },
+    { name = "pytest-mock", specifier = "~=3.15" },
+    { name = "t4-lambda-shared", extras = ["mem", "preview"] },
+    { name = "testfixtures", specifier = "~=6.14.1" },
+]
 
 [[package]]
 name = "t4-lambda-tabular-preview"
-version = "0.1.0"
+version = "0.1.1"
 source = { editable = "." }
 dependencies = [
     { name = "anndata", extra = ["lazy"] },
@@ -1334,7 +1343,7 @@ requires-dist = [
     { name = "pandas", specifier = "~=2.2" },
     { name = "pyarrow", specifier = "~=18.0" },
     { name = "scanpy", specifier = ">=1.8.0" },
-    { name = "t4-lambda-shared", url = "https://github.com/quiltdata/quilt/archive/d496dffbfb4b7a2ae05f6c1f7f0cb7d5d43bc984.zip", subdirectory = "lambdas/shared" },
+    { name = "t4-lambda-shared", editable = "../shared" },
     { name = "xlrd", specifier = ">=2,<3" },
 ]
 

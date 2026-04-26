@@ -1,6 +1,6 @@
 [project]
 name = "t4_lambda_transcode"
-version = "0.1.0"
+version = "0.1.1"
 requires-python = "==3.13.*"
 dependencies = [
     "t4-lambda-shared",
@@ -22,4 +22,4 @@ test = [
 default-groups = ["test"]
 
 [tool.uv.sources]
-t4-lambda-shared = { url = "https://github.com/quiltdata/quilt/archive/d496dffbfb4b7a2ae05f6c1f7f0cb7d5d43bc984.zip", subdirectory = "lambdas/shared" }
+t4-lambda-shared = { path = "../shared", editable = true }
