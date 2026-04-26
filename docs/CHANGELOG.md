@@ -1,4 +1,5 @@
 <!-- markdownlint-disable line-length -->
+<!-- markdownlint-disable no-duplicate-heading -->
 <!--
 Entries inside each section should be ordered by type:
 1. Removed
