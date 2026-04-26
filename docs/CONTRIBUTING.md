@@ -39,8 +39,9 @@ git push -u origin new-branch-name
 ```
 
 If `git push origin ...` returns `403` against the main repository,
-your local `origin` is probably pointing at the upstream repository instead of your fork.
-Repoint `origin` to your fork, or push to a separate fork remote.
+your local `origin` is probably pointing at the upstream repository instead
+of your fork. Repoint `origin` to your fork, or push to a separate fork
+remote.
 
 If you already cloned `quiltdata/quilt` directly, one straightforward fix is:
 
@@ -142,8 +143,8 @@ cd catalog
 npm install
 ```
 
-For the repo's filesystem-backed LOCAL catalog workflow, use the one-shot setup in
-[`docs/Catalog/LocalMode.md`](Catalog/LocalMode.md):
+For the repo's filesystem-backed LOCAL catalog workflow, use the one-shot
+setup in [`docs/Catalog/LocalMode.md`](Catalog/LocalMode.md):
 
 ```bash
 cd api/python

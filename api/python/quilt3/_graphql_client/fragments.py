@@ -50,8 +50,10 @@ class InvalidInputSelectionErrors(BaseModel):
     name: str
     context: Optional[Any]
 
+
 class PermissionSelectionBucket(BaseModel):
     name: str
+
 
 class PermissionSelection(BaseModel):
     bucket: PermissionSelectionBucket
@@ -61,13 +63,13 @@ class PermissionSelection(BaseModel):
 class PolicySummarySelectionPermissions(PermissionSelection):
     pass
 
+
 class PolicySummarySelection(BaseModel):
     id: str
     title: str
     arn: str
     managed: bool
     permissions: list[PolicySummarySelectionPermissions]
-
 
 
 class RoleBucketPermissionSelectionBucket(BaseModel):
@@ -77,6 +79,7 @@ class RoleBucketPermissionSelectionBucket(BaseModel):
 class RoleBucketPermissionSelection(BaseModel):
     bucket: RoleBucketPermissionSelectionBucket
     level: BucketPermissionLevel
+
 
 class ManagedRoleSelection(BaseModel):
     typename__: Literal["ManagedRole"] = Field(alias="__typename")
@@ -146,6 +149,7 @@ class SsoConfigSelection(BaseModel):
     timestamp: datetime
     uploader: SsoConfigSelectionUploader
 
+
 class UserSelection(BaseModel):
     name: str
     email: str
@@ -157,19 +161,17 @@ class UserSelection(BaseModel):
     is_service: bool = Field(alias="isService")
     role: Optional[
         Annotated[
-            Union[UserSelectionRoleUnmanagedRole, UserSelectionRoleManagedRole],
+            UserSelectionRoleUnmanagedRole | UserSelectionRoleManagedRole,
             Field(discriminator="typename__"),
         ]
     ]
     extra_roles: list[
         Annotated[
-            Union[
-                UserSelectionExtraRolesUnmanagedRole,
-                UserSelectionExtraRolesManagedRole,
-            ],
+            UserSelectionExtraRolesUnmanagedRole | UserSelectionExtraRolesManagedRole,
             Field(discriminator="typename__"),
         ]
     ] = Field(alias="extraRoles")
+
 
 class SsoConfigSelectionUploader(UserSelection):
     pass
