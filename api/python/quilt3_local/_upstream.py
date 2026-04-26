@@ -66,5 +66,9 @@ def load_module(name: str = ""):
         raise ImportError(f"Unable to load upstream module: {name or 'quilt3_local'}")
     module = importlib.util.module_from_spec(spec)
     sys.modules[alias] = module
-    spec.loader.exec_module(module)
+    try:
+        spec.loader.exec_module(module)
+    except Exception:
+        sys.modules.pop(alias, None)
+        raise
     return module

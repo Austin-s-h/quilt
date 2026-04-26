@@ -83,7 +83,6 @@ dev = [
     "responses",
     "ruff>=0.12.11",
     "lxml-html-clean>=0.4",
-    "quilt3[pyarrow,anndata]",
 ]
 
 [tool.uv]
@@ -108,13 +107,13 @@ extend = "../../ruff.toml"
 _ensure-clean.cmd = "git diff --exit-code"
 
 test.help = "Run test suite"
-test.cmd = "pytest --disable-warnings"
+test.cmd = "uv run --group dev --with 'numpy>=1.14.0; python_version < \"3.13\"' --with 'numpy>=2.1.0; python_version >= \"3.13\"' --with 'pandas>=0.19.2; python_version < \"3.13\"' --with 'pandas>=2.2.3; python_version >= \"3.13\"' --with 'pyarrow>=0.14.1; python_version < \"3.13\"' --with 'pyarrow>=18.0.0; python_version >= \"3.13\"' --with 'anndata>=0.8.0' --with 'pillow>=10.4.0' pytest --disable-warnings"
 
 test-verbose.help = "Run tests with verbose output"
-test-verbose.cmd = "pytest -v"
+test-verbose.cmd = "uv run --group dev --with 'numpy>=1.14.0; python_version < \"3.13\"' --with 'numpy>=2.1.0; python_version >= \"3.13\"' --with 'pandas>=0.19.2; python_version < \"3.13\"' --with 'pandas>=2.2.3; python_version >= \"3.13\"' --with 'pyarrow>=0.14.1; python_version < \"3.13\"' --with 'pyarrow>=18.0.0; python_version >= \"3.13\"' --with 'anndata>=0.8.0' --with 'pillow>=10.4.0' pytest -v"
 
 test-cov.help = "Run tests with coverage report"
-test-cov.cmd = "pytest --cov=. --cov-report=term-missing"
+test-cov.cmd = "uv run --group dev --with 'numpy>=1.14.0; python_version < \"3.13\"' --with 'numpy>=2.1.0; python_version >= \"3.13\"' --with 'pandas>=0.19.2; python_version < \"3.13\"' --with 'pandas>=2.2.3; python_version >= \"3.13\"' --with 'pyarrow>=0.14.1; python_version < \"3.13\"' --with 'pyarrow>=18.0.0; python_version >= \"3.13\"' --with 'anndata>=0.8.0' --with 'pillow>=10.4.0' pytest --cov=. --cov-report=term-missing"
 
 lint.help = "Run Ruff linter"
 lint.cmd = "ruff check ."
