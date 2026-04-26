@@ -276,41 +276,6 @@ class TestPreview(TestCase):
         assert metadata['$P2S'] == 'SSC|A'
         assert _extract_fcs_channel_names(metadata) == 'FSC-A,SSC|A'
 
-    def test_fcs_scatter_spec_downsamples(self):
-        data = pandas.DataFrame(
-            {
-                'alpha': range(FCS_SCATTER_LIMIT * 2),
-                'beta': range(FCS_SCATTER_LIMIT * 2, FCS_SCATTER_LIMIT * 4),
-            }
-        )
-
-        spec = _build_fcs_scatter_spec(data)
-
-        assert spec['title']['text'] == 'alpha vs beta'
-        assert spec['encoding']['x']['title'] == 'alpha'
-        assert spec['encoding']['y']['title'] == 'beta'
-        assert len(spec['data']['values']) == FCS_SCATTER_LIMIT
-
-    def test_parse_fcs_text_segment(self):
-        text_segment = b'|$PAR|2|$P1N|FSC-A|$P2S|SSC||A|'
-        text_start = 58
-        text_end = text_start + len(text_segment) - 1
-        header = bytearray(b' ' * 58)
-        header[:6] = b'FCS3.0'
-        header[10:18] = f'{text_start:>8}'.encode('ascii')
-        header[18:26] = f'{text_end:>8}'.encode('ascii')
-
-        with tempfile.NamedTemporaryFile() as fcs:
-            fcs.write(header)
-            fcs.write(text_segment)
-            fcs.flush()
-
-            metadata = _parse_fcs_text_segment(fcs.name)
-
-        assert metadata['$P1N'] == 'FSC-A'
-        assert metadata['$P2S'] == 'SSC|A'
-        assert _extract_fcs_channel_names(metadata) == 'FSC-A,SSC|A'
-
     def test_long(self):
         """test a text file with lots of lines"""
         txt = BASE_DIR / 'long.txt'

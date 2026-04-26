@@ -2,7 +2,6 @@
   "family_summaries": {
     "container-lambda": {
       "internal_source_modes": [
-        "GitHub archive URL",
         "path (editable)"
       ],
       "package_paths": [
@@ -12,16 +11,16 @@
       ],
       "recent_dependency_churn_examples": [
         {
+          "sha": "9884ec0",
+          "subject": "fix: lockfile resolution"
+        },
+        {
+          "sha": "af337a7",
+          "subject": "Merge branch 'preview-lambda-7.3.0' into progressive-uv-packaging"
+        },
+        {
           "sha": "66181d8",
           "subject": "fix: Refactor lambda packaging to support committed local path sources"
-        },
-        {
-          "sha": "dfa2fbb",
-          "subject": "fix: update dependency URLs to latest versions"
-        },
-        {
-          "sha": "372a41a",
-          "subject": "chore: wire preview lambda improvements"
         },
         {
           "sha": "2bd0aa1",
@@ -44,20 +43,20 @@
       ],
       "recent_dependency_churn_examples": [
         {
+          "sha": "c554b7b",
+          "subject": "fix: preview format"
+        },
+        {
           "sha": "d3605d6",
           "subject": "fix: include local system and fix admin wraping"
         },
         {
           "sha": "74ab55c",
           "subject": "Merge branch 'quilt3-local-filesystem' into progressive-uv-packaging"
-        },
-        {
-          "sha": "2bd0aa1",
-          "subject": "perf: updates across the board"
         }
       ],
       "resolved_numpy_majors": [
-        1
+        2
       ]
     },
     "shared": {
@@ -68,16 +67,16 @@
       ],
       "recent_dependency_churn_examples": [
         {
+          "sha": "af337a7",
+          "subject": "Merge branch 'preview-lambda-7.3.0' into progressive-uv-packaging"
+        },
+        {
           "sha": "dec67d2",
           "subject": "fix: align shared preview dependencies"
         },
         {
           "sha": "6d6fcf8",
           "subject": "Merge branch 'preview-lambda-shared' into progressive-uv-packaging"
-        },
-        {
-          "sha": "a7bfdc7",
-          "subject": "docs: define progressive uv packaging rollout"
         },
         {
           "sha": "2bd0aa1",
@@ -116,12 +115,12 @@
           "subject": "fix: upgrade ariadne-codegen to 0.16 to fix non-deterministic codegen (#4810)"
         },
         {
-          "sha": "3b8e9c4",
-          "subject": "perf: more linting"
+          "sha": "f52373e",
+          "subject": "perf: lock"
         },
         {
-          "sha": "93ec7b3",
-          "subject": "docs: gendocs modernization"
+          "sha": "3b8e9c4",
+          "subject": "perf: more linting"
         }
       ],
       "resolved_numpy_majors": [
@@ -130,7 +129,6 @@
     },
     "zip-lambda": {
       "internal_source_modes": [
-        "GitHub archive URL",
         "path (editable)"
       ],
       "package_paths": [
@@ -147,6 +145,10 @@
       ],
       "recent_dependency_churn_examples": [
         {
+          "sha": "9884ec0",
+          "subject": "fix: lockfile resolution"
+        },
+        {
           "sha": "2bd0aa1",
           "subject": "perf: updates across the board"
         },
@@ -155,19 +157,16 @@
           "subject": "access_counts: configurable s3.copy() TransferConfig and awscrt (#4746)"
         },
         {
-          "sha": "2950b35",
-          "subject": "Bump urllib3 from 2.5.0 to 2.6.3 in /lambdas/access_counts (#4720)"
-        },
-        {
           "sha": "a0c9d89",
           "subject": "build(deps-dev): bump pytest from 8.4.1 to 9.0.3 in /lambdas/es_ingest (#4820)"
         },
         {
-          "sha": "74c790e",
-          "subject": "build(deps): bump requests from 2.32.4 to 2.33.0 in /lambdas/es_ingest (#4786)"
+          "sha": "2e275a0",
+          "subject": "build(deps-dev): bump pytest from 8.4.2 to 9.0.3 in /lambdas/iceberg (#4821)"
         }
       ],
       "resolved_numpy_majors": [
+        1,
         2
       ]
     }
@@ -180,7 +179,8 @@
       ],
       "deploy_release_boundary": "PyPI-released SDK and CLI package",
       "direct_numpy_constraints": [
-        "optional:pyarrow: numpy>=1.14.0"
+        "optional:pyarrow: numpy>=1.14.0; python_version < '3.13'",
+        "optional:pyarrow: numpy>=2.1.0; python_version >= '3.13'"
       ],
       "distribution_name": "quilt3",
       "internal_source_mode": "none",
@@ -191,20 +191,20 @@
       "python_target": ">=3.9",
       "recent_dependency_churn_examples": [
         {
+          "sha": "c554b7b",
+          "subject": "fix: preview format"
+        },
+        {
           "sha": "d3605d6",
           "subject": "fix: include local system and fix admin wraping"
         },
         {
           "sha": "74ab55c",
           "subject": "Merge branch 'quilt3-local-filesystem' into progressive-uv-packaging"
-        },
-        {
-          "sha": "2bd0aa1",
-          "subject": "perf: updates across the board"
         }
       ],
-      "resolved_numpy_major": 1,
-      "resolved_numpy_version": "1.26.4"
+      "resolved_numpy_major": 2,
+      "resolved_numpy_version": "2.4.4"
     },
     {
       "default_groups": [],
@@ -258,16 +258,16 @@
       "python_target": ">3.9",
       "recent_dependency_churn_examples": [
         {
+          "sha": "f52373e",
+          "subject": "perf: lock"
+        },
+        {
           "sha": "3b8e9c4",
           "subject": "perf: more linting"
         },
         {
           "sha": "93ec7b3",
           "subject": "docs: gendocs modernization"
-        },
-        {
-          "sha": "2bd0aa1",
-          "subject": "perf: updates across the board"
         }
       ],
       "resolved_numpy_major": null,
@@ -283,13 +283,13 @@
       "deploy_release_boundary": "zip lambda artifact built from lambdas/access_counts",
       "direct_numpy_constraints": [],
       "distribution_name": "t4_lambda_access_counts",
-      "internal_source_mode": "GitHub archive URL",
+      "internal_source_mode": "path (editable)",
       "internal_sources": [
         {
           "dependency": "t4_lambda_shared",
-          "mode": "GitHub archive URL",
-          "subdirectory": "lambdas/shared",
-          "url": "https://github.com/quiltdata/quilt/archive/d496dffbfb4b7a2ae05f6c1f7f0cb7d5d43bc984.zip"
+          "editable": true,
+          "mode": "path (editable)",
+          "path": "../shared"
         }
       ],
       "lockfile_path": "lambdas/access_counts/uv.lock",
@@ -298,16 +298,16 @@
       "python_target": "==3.13.*",
       "recent_dependency_churn_examples": [
         {
+          "sha": "9884ec0",
+          "subject": "fix: lockfile resolution"
+        },
+        {
           "sha": "2bd0aa1",
           "subject": "perf: updates across the board"
         },
         {
           "sha": "adae9cd",
           "subject": "access_counts: configurable s3.copy() TransferConfig and awscrt (#4746)"
-        },
-        {
-          "sha": "2950b35",
-          "subject": "Bump urllib3 from 2.5.0 to 2.6.3 in /lambdas/access_counts (#4720)"
         }
       ],
       "resolved_numpy_major": null,
@@ -323,19 +323,19 @@
       "deploy_release_boundary": "zip lambda artifact built from lambdas/es_ingest",
       "direct_numpy_constraints": [],
       "distribution_name": "t4_lambda_es_ingest",
-      "internal_source_mode": "GitHub archive URL",
+      "internal_source_mode": "path (editable)",
       "internal_sources": [
         {
           "dependency": "quilt-shared",
-          "mode": "GitHub archive URL",
-          "subdirectory": "py-shared",
-          "url": "https://github.com/quiltdata/quilt/archive/df53c9ce125ea051e0d1ac41d58796336e202256.zip"
+          "editable": true,
+          "mode": "path (editable)",
+          "path": "../../py-shared"
         },
         {
           "dependency": "t4-lambda-shared",
-          "mode": "GitHub archive URL",
-          "subdirectory": "lambdas/shared",
-          "url": "https://github.com/quiltdata/quilt/archive/d496dffbfb4b7a2ae05f6c1f7f0cb7d5d43bc984.zip"
+          "editable": true,
+          "mode": "path (editable)",
+          "path": "../shared"
         }
       ],
       "lockfile_path": "lambdas/es_ingest/uv.lock",
@@ -344,20 +344,20 @@
       "python_target": "==3.13.*",
       "recent_dependency_churn_examples": [
         {
+          "sha": "9884ec0",
+          "subject": "fix: lockfile resolution"
+        },
+        {
           "sha": "2bd0aa1",
           "subject": "perf: updates across the board"
         },
         {
           "sha": "a0c9d89",
           "subject": "build(deps-dev): bump pytest from 8.4.1 to 9.0.3 in /lambdas/es_ingest (#4820)"
-        },
-        {
-          "sha": "74c790e",
-          "subject": "build(deps): bump requests from 2.32.4 to 2.33.0 in /lambdas/es_ingest (#4786)"
         }
       ],
-      "resolved_numpy_major": null,
-      "resolved_numpy_version": null
+      "resolved_numpy_major": 1,
+      "resolved_numpy_version": "1.26.4"
     },
     {
       "default_groups": [
@@ -369,13 +369,13 @@
       "deploy_release_boundary": "zip lambda artifact built from lambdas/iceberg",
       "direct_numpy_constraints": [],
       "distribution_name": "t4_lambda_iceberg",
-      "internal_source_mode": "GitHub archive URL",
+      "internal_source_mode": "path (editable)",
       "internal_sources": [
         {
           "dependency": "quilt-shared",
-          "mode": "GitHub archive URL",
-          "subdirectory": "py-shared",
-          "url": "https://github.com/quiltdata/quilt/archive/f90584485ba84a9d46fe4c7014f858a4b57738bd.zip"
+          "editable": true,
+          "mode": "path (editable)",
+          "path": "../../py-shared"
         }
       ],
       "lockfile_path": "lambdas/iceberg/uv.lock",
@@ -384,16 +384,16 @@
       "python_target": "==3.13.*",
       "recent_dependency_churn_examples": [
         {
+          "sha": "9884ec0",
+          "subject": "fix: lockfile resolution"
+        },
+        {
           "sha": "2bd0aa1",
           "subject": "perf: updates across the board"
         },
         {
           "sha": "2e275a0",
           "subject": "build(deps-dev): bump pytest from 8.4.2 to 9.0.3 in /lambdas/iceberg (#4821)"
-        },
-        {
-          "sha": "59d9b06",
-          "subject": "Bump urllib3 from 2.5.0 to 2.6.3 in /lambdas/iceberg (#4718)"
         }
       ],
       "resolved_numpy_major": null,
@@ -428,19 +428,19 @@
       "lockfile_path": "lambdas/indexer/uv.lock",
       "package_family": "container-lambda",
       "package_path": "lambdas/indexer",
-      "python_target": "==3.12.*",
+      "python_target": "==3.13.*",
       "recent_dependency_churn_examples": [
+        {
+          "sha": "9884ec0",
+          "subject": "fix: lockfile resolution"
+        },
+        {
+          "sha": "af337a7",
+          "subject": "Merge branch 'preview-lambda-7.3.0' into progressive-uv-packaging"
+        },
         {
           "sha": "66181d8",
           "subject": "fix: Refactor lambda packaging to support committed local path sources"
-        },
-        {
-          "sha": "dfa2fbb",
-          "subject": "fix: update dependency URLs to latest versions"
-        },
-        {
-          "sha": "372a41a",
-          "subject": "chore: wire preview lambda improvements"
         }
       ],
       "resolved_numpy_major": 1,
@@ -456,19 +456,19 @@
       "deploy_release_boundary": "zip lambda artifact built from lambdas/manifest_indexer",
       "direct_numpy_constraints": [],
       "distribution_name": "t4_lambda_manifest_indexer",
-      "internal_source_mode": "GitHub archive URL",
+      "internal_source_mode": "path (editable)",
       "internal_sources": [
         {
           "dependency": "quilt-shared",
-          "mode": "GitHub archive URL",
-          "subdirectory": "py-shared",
-          "url": "https://github.com/quiltdata/quilt/archive/df53c9ce125ea051e0d1ac41d58796336e202256.zip"
+          "editable": true,
+          "mode": "path (editable)",
+          "path": "../../py-shared"
         },
         {
           "dependency": "t4-lambda-shared",
-          "mode": "GitHub archive URL",
-          "subdirectory": "lambdas/shared",
-          "url": "https://github.com/quiltdata/quilt/archive/d496dffbfb4b7a2ae05f6c1f7f0cb7d5d43bc984.zip"
+          "editable": true,
+          "mode": "path (editable)",
+          "path": "../shared"
         }
       ],
       "lockfile_path": "lambdas/manifest_indexer/uv.lock",
@@ -477,20 +477,20 @@
       "python_target": "==3.13.*",
       "recent_dependency_churn_examples": [
         {
+          "sha": "9884ec0",
+          "subject": "fix: lockfile resolution"
+        },
+        {
           "sha": "2bd0aa1",
           "subject": "perf: updates across the board"
         },
         {
           "sha": "97eeb8d",
           "subject": "build(deps-dev): bump pytest from 8.4.1 to 9.0.3 in /lambdas/manifest_indexer (#4819)"
-        },
-        {
-          "sha": "567854c",
-          "subject": "build(deps): bump requests from 2.32.4 to 2.33.0 in /lambdas/manifest_indexer (#4784)"
         }
       ],
-      "resolved_numpy_major": null,
-      "resolved_numpy_version": null
+      "resolved_numpy_major": 1,
+      "resolved_numpy_version": "1.26.4"
     },
     {
       "default_groups": [
@@ -502,13 +502,13 @@
       "deploy_release_boundary": "zip lambda artifact built from lambdas/pkgevents",
       "direct_numpy_constraints": [],
       "distribution_name": "t4_lambda_pkgevents",
-      "internal_source_mode": "GitHub archive URL",
+      "internal_source_mode": "path (editable)",
       "internal_sources": [
         {
           "dependency": "t4-lambda-shared",
-          "mode": "GitHub archive URL",
-          "subdirectory": "lambdas/shared",
-          "url": "https://github.com/quiltdata/quilt/archive/d496dffbfb4b7a2ae05f6c1f7f0cb7d5d43bc984.zip"
+          "editable": true,
+          "mode": "path (editable)",
+          "path": "../shared"
         }
       ],
       "lockfile_path": "lambdas/pkgevents/uv.lock",
@@ -517,16 +517,16 @@
       "python_target": "==3.13.*",
       "recent_dependency_churn_examples": [
         {
+          "sha": "9884ec0",
+          "subject": "fix: lockfile resolution"
+        },
+        {
           "sha": "2bd0aa1",
           "subject": "perf: updates across the board"
         },
         {
           "sha": "e2a55a0",
           "subject": "build(deps-dev): bump pytest from 8.4.2 to 9.0.3 in /lambdas/pkgevents (#4823)"
-        },
-        {
-          "sha": "2f6f550",
-          "subject": "Bump urllib3 from 2.5.0 to 2.6.3 in /lambdas/pkgevents (#4714)"
         }
       ],
       "resolved_numpy_major": null,
@@ -542,13 +542,13 @@
       "deploy_release_boundary": "zip lambda artifact built from lambdas/pkgpush",
       "direct_numpy_constraints": [],
       "distribution_name": "t4_lambda_pkgpush",
-      "internal_source_mode": "GitHub archive URL",
+      "internal_source_mode": "path (editable)",
       "internal_sources": [
         {
           "dependency": "quilt-shared",
-          "mode": "GitHub archive URL",
-          "subdirectory": "py-shared",
-          "url": "https://github.com/quiltdata/quilt/archive/a4b310300bfe1cd5f2b319930b03f5264e82d5e5.zip"
+          "editable": true,
+          "mode": "path (editable)",
+          "path": "../../py-shared"
         }
       ],
       "lockfile_path": "lambdas/pkgpush/uv.lock",
@@ -557,16 +557,16 @@
       "python_target": "==3.13.*",
       "recent_dependency_churn_examples": [
         {
+          "sha": "9884ec0",
+          "subject": "fix: lockfile resolution"
+        },
+        {
           "sha": "2bd0aa1",
           "subject": "perf: updates across the board"
         },
         {
           "sha": "ad91b95",
           "subject": "build(deps-dev): bump pytest from 8.4.2 to 9.0.3 in /lambdas/pkgpush (#4832)"
-        },
-        {
-          "sha": "30484bd",
-          "subject": "build(deps): bump requests from 2.32.5 to 2.33.0 in /lambdas/pkgpush (#4788)"
         }
       ],
       "resolved_numpy_major": null,
@@ -597,16 +597,16 @@
       "python_target": "==3.13.*",
       "recent_dependency_churn_examples": [
         {
+          "sha": "9884ec0",
+          "subject": "fix: lockfile resolution"
+        },
+        {
+          "sha": "af337a7",
+          "subject": "Merge branch 'preview-lambda-7.3.0' into progressive-uv-packaging"
+        },
+        {
           "sha": "2bd0aa1",
           "subject": "perf: updates across the board"
-        },
-        {
-          "sha": "66181d8",
-          "subject": "fix: Refactor lambda packaging to support committed local path sources"
-        },
-        {
-          "sha": "dfa2fbb",
-          "subject": "fix: update dependency URLs to latest versions"
         }
       ],
       "resolved_numpy_major": 2,
@@ -622,13 +622,13 @@
       "deploy_release_boundary": "zip lambda artifact built from lambdas/s3hash",
       "direct_numpy_constraints": [],
       "distribution_name": "t4_lambda_s3hash",
-      "internal_source_mode": "GitHub archive URL",
+      "internal_source_mode": "path (editable)",
       "internal_sources": [
         {
           "dependency": "quilt-shared",
-          "mode": "GitHub archive URL",
-          "subdirectory": "py-shared",
-          "url": "https://github.com/quiltdata/quilt/archive/a4b310300bfe1cd5f2b319930b03f5264e82d5e5.zip"
+          "editable": true,
+          "mode": "path (editable)",
+          "path": "../../py-shared"
         }
       ],
       "lockfile_path": "lambdas/s3hash/uv.lock",
@@ -637,16 +637,16 @@
       "python_target": "==3.13.*",
       "recent_dependency_churn_examples": [
         {
+          "sha": "9884ec0",
+          "subject": "fix: lockfile resolution"
+        },
+        {
           "sha": "2bd0aa1",
           "subject": "perf: updates across the board"
         },
         {
           "sha": "1bc1d52",
           "subject": "build(deps-dev): bump pytest to 9.0.3 and pytest-asyncio to 1.3 in /lambdas/s3hash (#4826)"
-        },
-        {
-          "sha": "0143008",
-          "subject": "build(deps): bump aiohttp from 3.13.3 to 3.13.4 in /lambdas/s3hash (#4798)"
         }
       ],
       "resolved_numpy_major": null,
@@ -672,16 +672,16 @@
       "python_target": ">=3.12",
       "recent_dependency_churn_examples": [
         {
+          "sha": "af337a7",
+          "subject": "Merge branch 'preview-lambda-7.3.0' into progressive-uv-packaging"
+        },
+        {
           "sha": "dec67d2",
           "subject": "fix: align shared preview dependencies"
         },
         {
           "sha": "6d6fcf8",
           "subject": "Merge branch 'preview-lambda-shared' into progressive-uv-packaging"
-        },
-        {
-          "sha": "a7bfdc7",
-          "subject": "docs: define progressive uv packaging rollout"
         }
       ],
       "resolved_numpy_major": 2,
@@ -733,13 +733,13 @@
         "dependencies: numpy ~= 2.3"
       ],
       "distribution_name": "t4_lambda_tabular_preview",
-      "internal_source_mode": "GitHub archive URL",
+      "internal_source_mode": "path (editable)",
       "internal_sources": [
         {
           "dependency": "t4-lambda-shared",
-          "mode": "GitHub archive URL",
-          "subdirectory": "lambdas/shared",
-          "url": "https://github.com/quiltdata/quilt/archive/d496dffbfb4b7a2ae05f6c1f7f0cb7d5d43bc984.zip"
+          "editable": true,
+          "mode": "path (editable)",
+          "path": "../shared"
         }
       ],
       "lockfile_path": "lambdas/tabular_preview/uv.lock",
@@ -748,16 +748,16 @@
       "python_target": "==3.13.*",
       "recent_dependency_churn_examples": [
         {
+          "sha": "9884ec0",
+          "subject": "fix: lockfile resolution"
+        },
+        {
           "sha": "2bd0aa1",
           "subject": "perf: updates across the board"
         },
         {
           "sha": "284e026",
           "subject": "build(deps): bump pillow from 12.1.1 to 12.2.0 in /lambdas/tabular_preview (#4817)"
-        },
-        {
-          "sha": "70eac5a",
-          "subject": "build(deps-dev): bump pytest from 8.4.2 to 9.0.3 in /lambdas/tabular_preview (#4825)"
         }
       ],
       "resolved_numpy_major": 2,
@@ -776,12 +776,13 @@
         "dependencies: numpy~=2.3"
       ],
       "distribution_name": "t4_lambda_thumbnail",
-      "internal_source_mode": "GitHub archive URL",
+      "internal_source_mode": "path (editable)",
       "internal_sources": [
         {
           "dependency": "t4_lambda_shared",
-          "mode": "GitHub archive URL",
-          "specifier": "t4_lambda_shared @ https://github.com/quiltdata/quilt/archive/d496dffbfb4b7a2ae05f6c1f7f0cb7d5d43bc984.zip#subdirectory=lambdas/shared"
+          "editable": true,
+          "mode": "path (editable)",
+          "path": "../shared"
         }
       ],
       "lockfile_path": "lambdas/thumbnail/uv.lock",
@@ -790,16 +791,16 @@
       "python_target": "~=3.13.0",
       "recent_dependency_churn_examples": [
         {
+          "sha": "9884ec0",
+          "subject": "fix: lockfile resolution"
+        },
+        {
+          "sha": "af337a7",
+          "subject": "Merge branch 'preview-lambda-7.3.0' into progressive-uv-packaging"
+        },
+        {
           "sha": "2bd0aa1",
           "subject": "perf: updates across the board"
-        },
-        {
-          "sha": "e946315",
-          "subject": "preview: split consumer updates"
-        },
-        {
-          "sha": "55f410d",
-          "subject": "build(deps): bump lxml from 6.0.2 to 6.1.0 in /lambdas/thumbnail (#4844)"
         }
       ],
       "resolved_numpy_major": 2,
@@ -815,13 +816,13 @@
       "deploy_release_boundary": "zip lambda artifact built from lambdas/transcode",
       "direct_numpy_constraints": [],
       "distribution_name": "t4_lambda_transcode",
-      "internal_source_mode": "GitHub archive URL",
+      "internal_source_mode": "path (editable)",
       "internal_sources": [
         {
           "dependency": "t4-lambda-shared",
-          "mode": "GitHub archive URL",
-          "subdirectory": "lambdas/shared",
-          "url": "https://github.com/quiltdata/quilt/archive/d496dffbfb4b7a2ae05f6c1f7f0cb7d5d43bc984.zip"
+          "editable": true,
+          "mode": "path (editable)",
+          "path": "../shared"
         }
       ],
       "lockfile_path": "lambdas/transcode/uv.lock",
@@ -830,16 +831,16 @@
       "python_target": "==3.13.*",
       "recent_dependency_churn_examples": [
         {
+          "sha": "9884ec0",
+          "subject": "fix: lockfile resolution"
+        },
+        {
           "sha": "2bd0aa1",
           "subject": "perf: updates across the board"
         },
         {
           "sha": "752dd4a",
           "subject": "build(deps-dev): bump pytest from 8.4.2 to 9.0.3 in /lambdas/transcode (#4847)"
-        },
-        {
-          "sha": "4174800",
-          "subject": "transcode: migrate to uv and Python 3.13 (#4655)"
         }
       ],
       "resolved_numpy_major": null,
@@ -901,16 +902,16 @@
       "python_target": ">=3.11,<4",
       "recent_dependency_churn_examples": [
         {
+          "sha": "f52373e",
+          "subject": "perf: lock"
+        },
+        {
           "sha": "74ab55c",
           "subject": "Merge branch 'quilt3-local-filesystem' into progressive-uv-packaging"
         },
         {
           "sha": "2bd0aa1",
           "subject": "perf: updates across the board"
-        },
-        {
-          "sha": "12a7695",
-          "subject": "fix: update requirement export paths and improve build scripts"
         }
       ],
       "resolved_numpy_major": 2,
