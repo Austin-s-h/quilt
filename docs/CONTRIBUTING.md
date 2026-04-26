@@ -65,21 +65,26 @@ inputs stable, so do **not** replace committed lambda archive sources with local
 For the fixed pilot packages, use the helper instead:
 
 ```bash
+repo_root="$(git rev-parse --show-toplevel)"
+
 # Preview: overlay local lambdas/shared after a locked sync
-python .github/scripts/python_packaging.py local-sources apply lambdas/preview
+python "$repo_root/.github/scripts/python_packaging.py" local-sources apply lambdas/preview
 
 # Indexer: overlay local lambdas/shared and py-shared after a locked sync
-python .github/scripts/python_packaging.py local-sources apply lambdas/indexer
+python "$repo_root/.github/scripts/python_packaging.py" local-sources apply lambdas/indexer
 
 # Restore the locked dependency graph
-python .github/scripts/python_packaging.py local-sources restore lambdas/indexer
+python "$repo_root/.github/scripts/python_packaging.py" local-sources restore lambdas/indexer
 ```
 
 Regenerate the committed inventory after packaging-boundary changes:
 
 ```bash
-python .github/scripts/python_packaging.py inventory generate --json .github/python-packaging/inventory.json --csv .github/python-packaging/inventory.csv
-python .github/scripts/python_packaging.py guardrails
+repo_root="$(git rev-parse --show-toplevel)"
+python "$repo_root/.github/scripts/python_packaging.py" inventory generate \
+  --json "$repo_root/.github/python-packaging/inventory.json" \
+  --csv "$repo_root/.github/python-packaging/inventory.csv"
+python "$repo_root/.github/scripts/python_packaging.py" guardrails
 ```
 
 ### Python Testing

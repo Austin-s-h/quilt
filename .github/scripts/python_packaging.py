@@ -14,7 +14,10 @@ from io import StringIO
 from pathlib import Path
 from typing import Any
 
-import tomllib
+try:
+    import tomllib
+except ModuleNotFoundError:
+    import tomli as tomllib
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 INTERNAL_DEPENDENCY_NAMES = {

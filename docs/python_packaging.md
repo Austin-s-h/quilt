@@ -1,5 +1,7 @@
 # Progressive uv Python packaging monorepo
 
+<!-- markdownlint-disable MD013 -->
+
 ## Accepted architecture
 
 The repository should adopt a **progressive uv-first packaging model**:
@@ -112,17 +114,19 @@ That decision is intentional:
 Use `.github/scripts/python_packaging.py` for the pilot packages:
 
 ```bash
+repo_root="$(git rev-parse --show-toplevel)"
+
 # Preview: overlay local lambdas/shared after a locked sync
-python .github/scripts/python_packaging.py local-sources apply lambdas/preview
+python "$repo_root/.github/scripts/python_packaging.py" local-sources apply lambdas/preview
 
 # Indexer: overlay local lambdas/shared and py-shared after a locked sync
-python .github/scripts/python_packaging.py local-sources apply lambdas/indexer
+python "$repo_root/.github/scripts/python_packaging.py" local-sources apply lambdas/indexer
 
 # Inspect whether the pilot package is currently using editable local sources
-python .github/scripts/python_packaging.py local-sources status lambdas/indexer
+python "$repo_root/.github/scripts/python_packaging.py" local-sources status lambdas/indexer
 
 # Restore the package to the locked archive/default dependency graph
-python .github/scripts/python_packaging.py local-sources restore lambdas/indexer
+python "$repo_root/.github/scripts/python_packaging.py" local-sources restore lambdas/indexer
 ```
 
 Notes:
@@ -145,8 +149,9 @@ Notes:
 Run these commands before opening a packaging PR:
 
 ```bash
-python .github/scripts/python_packaging.py guardrails
-python .github/scripts/python_packaging.py inventory check --json .github/python-packaging/inventory.json --csv .github/python-packaging/inventory.csv
+repo_root="$(git rev-parse --show-toplevel)"
+python "$repo_root/.github/scripts/python_packaging.py" guardrails
+python "$repo_root/.github/scripts/python_packaging.py" inventory check --json "$repo_root/.github/python-packaging/inventory.json" --csv "$repo_root/.github/python-packaging/inventory.csv"
 ```
 
 ### Pilot success criteria
@@ -203,9 +208,10 @@ Add the following guidance to packaging-related changes:
 Commands:
 
 ```bash
-python .github/scripts/python_packaging.py inventory generate --json .github/python-packaging/inventory.json --csv .github/python-packaging/inventory.csv
-python .github/scripts/python_packaging.py guardrails
-python .github/scripts/python_packaging.py local-sources apply lambdas/preview
+repo_root="$(git rev-parse --show-toplevel)"
+python "$repo_root/.github/scripts/python_packaging.py" inventory generate --json "$repo_root/.github/python-packaging/inventory.json" --csv "$repo_root/.github/python-packaging/inventory.csv"
+python "$repo_root/.github/scripts/python_packaging.py" guardrails
+python "$repo_root/.github/scripts/python_packaging.py" local-sources apply lambdas/preview
 ```
 
 ## Review checklist for #3
