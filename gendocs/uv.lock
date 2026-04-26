@@ -1533,7 +1533,7 @@ wheels = [
 
 [[package]]
 name = "quilt3"
-version = "7.3.0"
+version = "7.3.1"
 source = { editable = "../api/python" }
 dependencies = [
     { name = "awscrt" },
@@ -1557,10 +1557,12 @@ dependencies = [
 requires-dist = [
     { name = "aiobotocore", extras = ["boto3"], marker = "extra == 'catalog'", specifier = ">=2" },
     { name = "anndata", marker = "extra == 'anndata'", specifier = ">=0.8.0" },
+    { name = "asgiproxy", marker = "extra == 'catalog'", specifier = ">=0.2,<0.3" },
     { name = "awscrt", specifier = ">=0.31.0" },
     { name = "boto3", specifier = ">=1.21.7" },
     { name = "jsonlines", specifier = "==1.2.0" },
     { name = "jsonschema", specifier = ">=3,<5" },
+    { name = "lxml-html-clean", marker = "extra == 'catalog'", specifier = ">=0.4" },
     { name = "numpy", marker = "extra == 'pyarrow'", specifier = ">=1.14.0" },
     { name = "pandas", marker = "extra == 'pyarrow'", specifier = ">=0.19.2" },
     { name = "platformdirs", specifier = ">=2" },
@@ -1578,6 +1580,7 @@ provides-extras = ["pyarrow", "anndata", "catalog"]
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "lxml-html-clean", specifier = ">=0.4" },
     { name = "poethepoet", specifier = ">=0.37.0" },
     { name = "pytest", specifier = "~=8.4" },
     { name = "pytest-cov" },

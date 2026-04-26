@@ -12,7 +12,6 @@ from typing import Any, TypeAlias, cast
 
 import yaml
 
-
 ROOT = Path(__file__).resolve().parent
 LEGACY_CONFIG_PATH = ROOT / "pydocmd.yml"
 GENERATED_DOCS_DIR = (ROOT / "../docs/api-reference").resolve()
