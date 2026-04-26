@@ -39,6 +39,18 @@ jobs:
       - name: Run Ruff linter on entire codebase
         run: uvx ruff@0.12.11 check . --exclude catalog/ --exclude api/python/
 
+  python-packaging-guardrails:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Validate Python packaging policy and inventory
+        run: |
+          python .github/scripts/python_packaging.py guardrails
+          python .github/scripts/python_packaging.py inventory check --json docs/python_packaging_inventory.json --csv docs/python_packaging_inventory.csv
+
   # Enable once the rest of the codebase is formatted
   # format-rest:
   #   runs-on: ubuntu-latest
