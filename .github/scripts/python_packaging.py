@@ -423,10 +423,11 @@ def guardrails() -> int:
     failures: list[str] = []
 
     expected_py_ci = [
-        "uv export --locked --no-emit-project --no-emit-local --no-hashes --directory lambdas/${{ matrix.path }} -o requirements.txt --no-default-groups",
-        "uv export --locked --no-emit-project --no-emit-local --no-hashes --directory lambdas/${{ matrix.path }} -o test-requirements.txt --only-group test",
-        'python -m pip install -t deps --no-deps -r requirements.txt "${local_targets[@]}" lambdas/${{ matrix.path }}',
-        "python -m pip install -r test-requirements.txt",
+        'req_dir="$RUNNER_TEMP/lambda-requirements/${{ matrix.path }}"',
+        'uv export --locked --no-emit-project --no-emit-local --no-hashes --directory lambdas/${{ matrix.path }} -o "$req_dir/requirements.txt" --no-default-groups',
+        'uv export --locked --no-emit-project --no-emit-local --no-hashes --directory lambdas/${{ matrix.path }} -o "$req_dir/test-requirements.txt" --only-group test',
+        'python -m pip install -t deps --no-deps -r "$req_dir/requirements.txt" "${local_targets[@]}" lambdas/${{ matrix.path }}',
+        'python -m pip install -r "$req_dir/test-requirements.txt"',
     ]
     py_ci = (REPO_ROOT / ".github/workflows/py-ci.yml").read_text()
     for needle in expected_py_ci:
@@ -434,10 +435,10 @@ def guardrails() -> int:
             failures.append(f".github/workflows/py-ci.yml is missing expected export contract: {needle}")
 
     build_zip = (REPO_ROOT / "lambdas/scripts/build_zip.sh").read_text()
-    expected_build_zip = 'uv export --locked --no-emit-project --no-emit-local --no-hashes --directory "$FUNCTION_DIR" -o requirements.txt --no-default-groups'
+    expected_build_zip = 'uv export --locked --no-emit-project --no-emit-local --no-hashes --directory "$FUNCTION_DIR" -o "$requirements_file" --no-default-groups'
     if expected_build_zip not in build_zip:
         failures.append("lambdas/scripts/build_zip.sh no longer preserves the per-directory export contract")
-    expected_build_zip_install = 'uv pip install --no-compile --no-deps --target . -r requirements.txt "${install_targets[@]}"'
+    expected_build_zip_install = 'uv pip install --no-compile --no-deps --target . -r "$requirements_file" "${install_targets[@]}"'
     if expected_build_zip_install not in build_zip:
         failures.append("lambdas/scripts/build_zip.sh no longer installs from the exported requirements.txt in the build directory")
 

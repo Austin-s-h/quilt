@@ -31,14 +31,15 @@ mkdir out
 cd out
 
 # install everything into a temporary directory
+requirements_file="$PWD/requirements.txt"
 install_targets=("$FUNCTION_DIR")
 if [[ -n "$REPO_ROOT" && -n "$PACKAGE_PATH" && -f "$REPO_ROOT/.github/scripts/python_packaging.py" ]]; then
     mapfile -t local_install_targets < <(python "$REPO_ROOT/.github/scripts/python_packaging.py" install-targets "$PACKAGE_PATH")
     install_targets=("${local_install_targets[@]}" "$FUNCTION_DIR")
 fi
 
-uv export --locked --no-emit-project --no-emit-local --no-hashes --directory "$FUNCTION_DIR" -o requirements.txt --no-default-groups
-uv pip install --no-compile --no-deps --target . -r requirements.txt "${install_targets[@]}"
+uv export --locked --no-emit-project --no-emit-local --no-hashes --directory "$FUNCTION_DIR" -o "$requirements_file" --no-default-groups
+uv pip install --no-compile --no-deps --target . -r "$requirements_file" "${install_targets[@]}"
 python3 -m compileall -b .
 
 # add binaries
