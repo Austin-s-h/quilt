@@ -778,6 +778,7 @@ requires-dist = [
     { name = "boto3", specifier = ">=1.21.7" },
     { name = "jsonlines", specifier = "==1.2.0" },
     { name = "jsonschema", specifier = ">=3,<5" },
+    { name = "lxml-html-clean", marker = "extra == 'catalog'", specifier = ">=0.4" },
     { name = "numpy", marker = "extra == 'pyarrow'", specifier = ">=1.14.0" },
     { name = "pandas", marker = "extra == 'pyarrow'", specifier = ">=0.19.2" },
     { name = "platformdirs", specifier = ">=2" },
@@ -795,12 +796,14 @@ provides-extras = ["pyarrow", "anndata", "catalog"]
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "lxml-html-clean", specifier = ">=0.4" },
     { name = "poethepoet", specifier = ">=0.37.0" },
     { name = "pytest", specifier = "~=8.4" },
     { name = "pytest-cov" },
     { name = "pytest-env" },
     { name = "pytest-subtests" },
     { name = "quilt3", extras = ["pyarrow", "anndata"] },
+    { name = "quilt3-local", specifier = ">=2,<3" },
     { name = "responses" },
     { name = "ruff", specifier = ">=0.12.11" },
 ]
@@ -986,7 +989,7 @@ wheels = [
 
 [[package]]
 name = "testdocs"
-version = "0.1.0"
+version = "0.2.0"
 source = { virtual = "." }
 dependencies = [
     { name = "altair" },

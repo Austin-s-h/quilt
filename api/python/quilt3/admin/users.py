@@ -126,7 +126,9 @@ def set_role(
         extra_roles: Additional roles to assign to the user.
         append: If True, append the extra roles to the existing roles. If False, replace the existing roles.
     """
-    result = util.unwrap_result(util.get_client().users_set_role(name=name, role=role, extra_roles=extra_roles, append=append))
+    result = util.unwrap_result(
+        util.get_client().users_set_role(name=name, role=role, extra_roles=extra_roles, append=append)
+    )
     if result is None:
         raise exceptions.UserNotFoundError()
     return util.handle_user_mutation(result)

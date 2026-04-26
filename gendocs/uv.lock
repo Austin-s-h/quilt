@@ -1587,6 +1587,7 @@ dev = [
     { name = "pytest-env" },
     { name = "pytest-subtests" },
     { name = "quilt3", extras = ["pyarrow", "anndata"] },
+    { name = "quilt3-local", specifier = ">=2,<3" },
     { name = "responses" },
     { name = "ruff", specifier = ">=0.12.11" },
 ]
