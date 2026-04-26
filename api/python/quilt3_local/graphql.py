@@ -33,6 +33,8 @@ PackageFileType.set_alias("physicalKey", "physical_key")
 LOCAL_SEARCH_TYPE_DEFS = ariadne.gql(
     """
         extend type Query {
+            buckets: [BucketConfig!]!
+            bucket(name: String!): BucketConfig
             searchObjects(
                 buckets: [String!]
                 searchString: String
@@ -290,8 +292,18 @@ async def query_bucket_configs(*_):
     return await buckets.list_bucket_configs()
 
 
+@QueryType.field("buckets")
+async def query_buckets(*_):
+    return await buckets.list_bucket_configs()
+
+
 @QueryType.field("bucketConfig")
 async def query_bucket_config(*_, name: str):
+    return await buckets.get_bucket_config(name)
+
+
+@QueryType.field("bucket")
+async def query_bucket(*_, name: str):
     return await buckets.get_bucket_config(name)
 
 
