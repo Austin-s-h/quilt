@@ -56,6 +56,32 @@ so you don't have to do anything else.
 
 Run `uv run poe` to see all configured tasks (or refer to `pyproject.toml`).
 
+### Python packaging pilot workflow
+
+The repository's progressive `uv` packaging rollout keeps lambda export/build
+inputs stable, so do **not** replace committed lambda archive sources with local
+`path` sources by hand.
+
+For the fixed pilot packages, use the helper instead:
+
+```bash
+# Preview: overlay local lambdas/shared after a locked sync
+python .github/scripts/python_packaging.py local-sources apply lambdas/preview
+
+# Indexer: overlay local lambdas/shared and py-shared after a locked sync
+python .github/scripts/python_packaging.py local-sources apply lambdas/indexer
+
+# Restore the locked dependency graph
+python .github/scripts/python_packaging.py local-sources restore lambdas/indexer
+```
+
+Regenerate the committed inventory after packaging-boundary changes:
+
+```bash
+python .github/scripts/python_packaging.py inventory generate --json docs/python_packaging_inventory.json --csv docs/python_packaging_inventory.csv
+python .github/scripts/python_packaging.py guardrails
+```
+
 ### Python Testing
 
 All new code contributions are expected to have complete unit test

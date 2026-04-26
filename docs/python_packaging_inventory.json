@@ -1,0 +1,893 @@
+{
+  "family_summaries": {
+    "container-lambda": {
+      "internal_source_modes": [
+        "GitHub archive URL"
+      ],
+      "package_paths": [
+        "lambdas/indexer",
+        "lambdas/tabular_preview",
+        "lambdas/thumbnail"
+      ],
+      "recent_dependency_churn_examples": [
+        {
+          "sha": "b166e0a",
+          "subject": "build(deps): bump lxml from 6.0.2 to 6.1.0 in /lambdas/indexer (#4845)"
+        },
+        {
+          "sha": "72b5a53",
+          "subject": "build(deps): bump pillow from 12.1.1 to 12.2.0 in /lambdas/indexer (#4818)"
+        },
+        {
+          "sha": "c42c1a3",
+          "subject": "build(deps-dev): bump pytest from 8.4.2 to 9.0.3 in /lambdas/indexer (#4827)"
+        },
+        {
+          "sha": "284e026",
+          "subject": "build(deps): bump pillow from 12.1.1 to 12.2.0 in /lambdas/tabular_preview (#4817)"
+        },
+        {
+          "sha": "70eac5a",
+          "subject": "build(deps-dev): bump pytest from 8.4.2 to 9.0.3 in /lambdas/tabular_preview (#4825)"
+        }
+      ],
+      "resolved_numpy_majors": [
+        1,
+        2
+      ]
+    },
+    "sdk": {
+      "internal_source_modes": [],
+      "package_paths": [
+        "api/python"
+      ],
+      "recent_dependency_churn_examples": [
+        {
+          "sha": "f84f99b",
+          "subject": "fix: upgrade ariadne-codegen to 0.16 to fix non-deterministic codegen (#4810)"
+        },
+        {
+          "sha": "095c14b",
+          "subject": "Quilt3 v7.3.0 (#4808)"
+        },
+        {
+          "sha": "dac3eab",
+          "subject": "build(deps): bump aiohttp from 3.13.1 to 3.13.4 in /api/python (#4796)"
+        }
+      ],
+      "resolved_numpy_majors": [
+        1
+      ]
+    },
+    "shared": {
+      "internal_source_modes": [],
+      "package_paths": [
+        "lambdas/shared",
+        "py-shared"
+      ],
+      "recent_dependency_churn_examples": [
+        {
+          "sha": "e5dbe54",
+          "subject": "shared: migrate to uv and Python 3.13 (#4652)"
+        },
+        {
+          "sha": "a4b3103",
+          "subject": "shared: Add CRC64NVME checksum type support (#4623)"
+        },
+        {
+          "sha": "f905844",
+          "subject": "py-shared: add athena/iceberg utils (#4595)"
+        },
+        {
+          "sha": "df53c9c",
+          "subject": "py-shared: add utilities for ES ingest (#4433)"
+        }
+      ],
+      "resolved_numpy_majors": [
+        1
+      ]
+    },
+    "tooling": {
+      "internal_source_modes": [
+        "path (editable)"
+      ],
+      "package_paths": [
+        "api/python/quilt3-graphql",
+        "gendocs",
+        "testdocs"
+      ],
+      "recent_dependency_churn_examples": [
+        {
+          "sha": "f84f99b",
+          "subject": "fix: upgrade ariadne-codegen to 0.16 to fix non-deterministic codegen (#4810)"
+        },
+        {
+          "sha": "1e335d6",
+          "subject": "quilt3: API Keys (#4690)"
+        },
+        {
+          "sha": "ccbd3ee",
+          "subject": "build(deps): bump nbconvert from 7.17.0 to 7.17.1 in /gendocs (#4841)"
+        },
+        {
+          "sha": "095c14b",
+          "subject": "Quilt3 v7.3.0 (#4808)"
+        },
+        {
+          "sha": "9a75156",
+          "subject": "build(deps): bump tornado from 6.5.2 to 6.5.5 in /gendocs (#4761)"
+        }
+      ],
+      "resolved_numpy_majors": [
+        2
+      ]
+    },
+    "zip-lambda": {
+      "internal_source_modes": [
+        "GitHub archive URL"
+      ],
+      "package_paths": [
+        "lambdas/access_counts",
+        "lambdas/es_ingest",
+        "lambdas/iceberg",
+        "lambdas/manifest_indexer",
+        "lambdas/pkgevents",
+        "lambdas/pkgpush",
+        "lambdas/preview",
+        "lambdas/s3hash",
+        "lambdas/status_reports",
+        "lambdas/transcode"
+      ],
+      "recent_dependency_churn_examples": [
+        {
+          "sha": "adae9cd",
+          "subject": "access_counts: configurable s3.copy() TransferConfig and awscrt (#4746)"
+        },
+        {
+          "sha": "2950b35",
+          "subject": "Bump urllib3 from 2.5.0 to 2.6.3 in /lambdas/access_counts (#4720)"
+        },
+        {
+          "sha": "64ad2eb",
+          "subject": "access_counts: migrate to uv and Python 3.13 (#4618)"
+        },
+        {
+          "sha": "a0c9d89",
+          "subject": "build(deps-dev): bump pytest from 8.4.1 to 9.0.3 in /lambdas/es_ingest (#4820)"
+        },
+        {
+          "sha": "74c790e",
+          "subject": "build(deps): bump requests from 2.32.4 to 2.33.0 in /lambdas/es_ingest (#4786)"
+        }
+      ],
+      "resolved_numpy_majors": [
+        1
+      ]
+    }
+  },
+  "packages": [
+    {
+      "default_groups": [],
+      "dependency_groups": [
+        "dev"
+      ],
+      "deploy_release_boundary": "PyPI-released SDK and CLI package",
+      "direct_numpy_constraints": [
+        "optional:pyarrow: numpy>=1.14.0"
+      ],
+      "distribution_name": "quilt3",
+      "internal_source_mode": "none",
+      "internal_sources": [],
+      "lockfile_path": "api/python/uv.lock",
+      "package_family": "sdk",
+      "package_path": "api/python",
+      "python_target": ">=3.9",
+      "recent_dependency_churn_examples": [
+        {
+          "sha": "f84f99b",
+          "subject": "fix: upgrade ariadne-codegen to 0.16 to fix non-deterministic codegen (#4810)"
+        },
+        {
+          "sha": "095c14b",
+          "subject": "Quilt3 v7.3.0 (#4808)"
+        },
+        {
+          "sha": "dac3eab",
+          "subject": "build(deps): bump aiohttp from 3.13.1 to 3.13.4 in /api/python (#4796)"
+        }
+      ],
+      "resolved_numpy_major": 1,
+      "resolved_numpy_version": "1.26.4"
+    },
+    {
+      "default_groups": [],
+      "dependency_groups": [
+        "dev"
+      ],
+      "deploy_release_boundary": "in-repo GraphQL code generation package consumed by api/python",
+      "direct_numpy_constraints": [],
+      "distribution_name": "quilt3-graphql-codegen",
+      "internal_source_mode": "none",
+      "internal_sources": [],
+      "lockfile_path": "api/python/quilt3-graphql/uv.lock",
+      "package_family": "tooling",
+      "package_path": "api/python/quilt3-graphql",
+      "python_target": ">=3.12",
+      "recent_dependency_churn_examples": [
+        {
+          "sha": "f84f99b",
+          "subject": "fix: upgrade ariadne-codegen to 0.16 to fix non-deterministic codegen (#4810)"
+        },
+        {
+          "sha": "1e335d6",
+          "subject": "quilt3: API Keys (#4690)"
+        }
+      ],
+      "resolved_numpy_major": null,
+      "resolved_numpy_version": null
+    },
+    {
+      "default_groups": [],
+      "dependency_groups": [],
+      "deploy_release_boundary": "in-repo documentation generation tool",
+      "direct_numpy_constraints": [],
+      "distribution_name": "quilt3-gendocs",
+      "internal_source_mode": "path (editable)",
+      "internal_sources": [
+        {
+          "dependency": "quilt3",
+          "editable": true,
+          "mode": "path (editable)",
+          "path": "../api/python"
+        }
+      ],
+      "lockfile_path": "gendocs/uv.lock",
+      "package_family": "tooling",
+      "package_path": "gendocs",
+      "python_target": "==3.9.*",
+      "recent_dependency_churn_examples": [
+        {
+          "sha": "ccbd3ee",
+          "subject": "build(deps): bump nbconvert from 7.17.0 to 7.17.1 in /gendocs (#4841)"
+        },
+        {
+          "sha": "095c14b",
+          "subject": "Quilt3 v7.3.0 (#4808)"
+        },
+        {
+          "sha": "9a75156",
+          "subject": "build(deps): bump tornado from 6.5.2 to 6.5.5 in /gendocs (#4761)"
+        }
+      ],
+      "resolved_numpy_major": null,
+      "resolved_numpy_version": null
+    },
+    {
+      "default_groups": [
+        "test"
+      ],
+      "dependency_groups": [
+        "test"
+      ],
+      "deploy_release_boundary": "zip lambda artifact built from lambdas/access_counts",
+      "direct_numpy_constraints": [],
+      "distribution_name": "t4_lambda_access_counts",
+      "internal_source_mode": "GitHub archive URL",
+      "internal_sources": [
+        {
+          "dependency": "t4_lambda_shared",
+          "mode": "GitHub archive URL",
+          "subdirectory": "lambdas/shared",
+          "url": "https://github.com/quiltdata/quilt/archive/d496dffbfb4b7a2ae05f6c1f7f0cb7d5d43bc984.zip"
+        }
+      ],
+      "lockfile_path": "lambdas/access_counts/uv.lock",
+      "package_family": "zip-lambda",
+      "package_path": "lambdas/access_counts",
+      "python_target": "==3.13.*",
+      "recent_dependency_churn_examples": [
+        {
+          "sha": "adae9cd",
+          "subject": "access_counts: configurable s3.copy() TransferConfig and awscrt (#4746)"
+        },
+        {
+          "sha": "2950b35",
+          "subject": "Bump urllib3 from 2.5.0 to 2.6.3 in /lambdas/access_counts (#4720)"
+        },
+        {
+          "sha": "64ad2eb",
+          "subject": "access_counts: migrate to uv and Python 3.13 (#4618)"
+        }
+      ],
+      "resolved_numpy_major": null,
+      "resolved_numpy_version": null
+    },
+    {
+      "default_groups": [
+        "test"
+      ],
+      "dependency_groups": [
+        "test"
+      ],
+      "deploy_release_boundary": "zip lambda artifact built from lambdas/es_ingest",
+      "direct_numpy_constraints": [],
+      "distribution_name": "t4_lambda_es_ingest",
+      "internal_source_mode": "GitHub archive URL",
+      "internal_sources": [
+        {
+          "dependency": "quilt-shared",
+          "mode": "GitHub archive URL",
+          "subdirectory": "py-shared",
+          "url": "https://github.com/quiltdata/quilt/archive/df53c9ce125ea051e0d1ac41d58796336e202256.zip"
+        },
+        {
+          "dependency": "t4-lambda-shared",
+          "mode": "GitHub archive URL",
+          "subdirectory": "lambdas/shared",
+          "url": "https://github.com/quiltdata/quilt/archive/d496dffbfb4b7a2ae05f6c1f7f0cb7d5d43bc984.zip"
+        }
+      ],
+      "lockfile_path": "lambdas/es_ingest/uv.lock",
+      "package_family": "zip-lambda",
+      "package_path": "lambdas/es_ingest",
+      "python_target": "==3.13.*",
+      "recent_dependency_churn_examples": [
+        {
+          "sha": "a0c9d89",
+          "subject": "build(deps-dev): bump pytest from 8.4.1 to 9.0.3 in /lambdas/es_ingest (#4820)"
+        },
+        {
+          "sha": "74c790e",
+          "subject": "build(deps): bump requests from 2.32.4 to 2.33.0 in /lambdas/es_ingest (#4786)"
+        },
+        {
+          "sha": "eae6cd3",
+          "subject": "build(deps): bump orjson from 3.10.18 to 3.11.6 in /lambdas/es_ingest (#4767)"
+        }
+      ],
+      "resolved_numpy_major": null,
+      "resolved_numpy_version": null
+    },
+    {
+      "default_groups": [
+        "test"
+      ],
+      "dependency_groups": [
+        "test"
+      ],
+      "deploy_release_boundary": "zip lambda artifact built from lambdas/iceberg",
+      "direct_numpy_constraints": [],
+      "distribution_name": "t4_lambda_iceberg",
+      "internal_source_mode": "GitHub archive URL",
+      "internal_sources": [
+        {
+          "dependency": "quilt-shared",
+          "mode": "GitHub archive URL",
+          "subdirectory": "py-shared",
+          "url": "https://github.com/quiltdata/quilt/archive/f90584485ba84a9d46fe4c7014f858a4b57738bd.zip"
+        }
+      ],
+      "lockfile_path": "lambdas/iceberg/uv.lock",
+      "package_family": "zip-lambda",
+      "package_path": "lambdas/iceberg",
+      "python_target": "==3.13.*",
+      "recent_dependency_churn_examples": [
+        {
+          "sha": "2e275a0",
+          "subject": "build(deps-dev): bump pytest from 8.4.2 to 9.0.3 in /lambdas/iceberg (#4821)"
+        },
+        {
+          "sha": "59d9b06",
+          "subject": "Bump urllib3 from 2.5.0 to 2.6.3 in /lambdas/iceberg (#4718)"
+        },
+        {
+          "sha": "11258ec",
+          "subject": "fix lambda zip builds (#4656)"
+        }
+      ],
+      "resolved_numpy_major": null,
+      "resolved_numpy_version": null
+    },
+    {
+      "default_groups": [
+        "test"
+      ],
+      "dependency_groups": [
+        "prod",
+        "test"
+      ],
+      "deploy_release_boundary": "container lambda image built from lambdas/indexer",
+      "direct_numpy_constraints": [],
+      "distribution_name": "t4_lambda_es_indexer",
+      "internal_source_mode": "GitHub archive URL",
+      "internal_sources": [
+        {
+          "dependency": "quilt-shared",
+          "mode": "GitHub archive URL",
+          "subdirectory": "py-shared",
+          "url": "https://github.com/quiltdata/quilt/archive/df53c9ce125ea051e0d1ac41d58796336e202256.zip"
+        },
+        {
+          "dependency": "t4-lambda-shared",
+          "mode": "GitHub archive URL",
+          "subdirectory": "lambdas/shared",
+          "url": "https://github.com/quiltdata/quilt/archive/d496dffbfb4b7a2ae05f6c1f7f0cb7d5d43bc984.zip"
+        }
+      ],
+      "lockfile_path": "lambdas/indexer/uv.lock",
+      "package_family": "container-lambda",
+      "package_path": "lambdas/indexer",
+      "python_target": "==3.12.*",
+      "recent_dependency_churn_examples": [
+        {
+          "sha": "b166e0a",
+          "subject": "build(deps): bump lxml from 6.0.2 to 6.1.0 in /lambdas/indexer (#4845)"
+        },
+        {
+          "sha": "72b5a53",
+          "subject": "build(deps): bump pillow from 12.1.1 to 12.2.0 in /lambdas/indexer (#4818)"
+        },
+        {
+          "sha": "c42c1a3",
+          "subject": "build(deps-dev): bump pytest from 8.4.2 to 9.0.3 in /lambdas/indexer (#4827)"
+        }
+      ],
+      "resolved_numpy_major": 1,
+      "resolved_numpy_version": "1.26.4"
+    },
+    {
+      "default_groups": [
+        "test"
+      ],
+      "dependency_groups": [
+        "test"
+      ],
+      "deploy_release_boundary": "zip lambda artifact built from lambdas/manifest_indexer",
+      "direct_numpy_constraints": [],
+      "distribution_name": "t4_lambda_manifest_indexer",
+      "internal_source_mode": "GitHub archive URL",
+      "internal_sources": [
+        {
+          "dependency": "quilt-shared",
+          "mode": "GitHub archive URL",
+          "subdirectory": "py-shared",
+          "url": "https://github.com/quiltdata/quilt/archive/df53c9ce125ea051e0d1ac41d58796336e202256.zip"
+        },
+        {
+          "dependency": "t4-lambda-shared",
+          "mode": "GitHub archive URL",
+          "subdirectory": "lambdas/shared",
+          "url": "https://github.com/quiltdata/quilt/archive/d496dffbfb4b7a2ae05f6c1f7f0cb7d5d43bc984.zip"
+        }
+      ],
+      "lockfile_path": "lambdas/manifest_indexer/uv.lock",
+      "package_family": "zip-lambda",
+      "package_path": "lambdas/manifest_indexer",
+      "python_target": "==3.13.*",
+      "recent_dependency_churn_examples": [
+        {
+          "sha": "97eeb8d",
+          "subject": "build(deps-dev): bump pytest from 8.4.1 to 9.0.3 in /lambdas/manifest_indexer (#4819)"
+        },
+        {
+          "sha": "567854c",
+          "subject": "build(deps): bump requests from 2.32.4 to 2.33.0 in /lambdas/manifest_indexer (#4784)"
+        },
+        {
+          "sha": "b46b46c",
+          "subject": "build(deps): bump pygments from 2.19.2 to 2.20.0 in /lambdas/manifest_indexer (#4795)"
+        }
+      ],
+      "resolved_numpy_major": null,
+      "resolved_numpy_version": null
+    },
+    {
+      "default_groups": [
+        "test"
+      ],
+      "dependency_groups": [
+        "test"
+      ],
+      "deploy_release_boundary": "zip lambda artifact built from lambdas/pkgevents",
+      "direct_numpy_constraints": [],
+      "distribution_name": "t4_lambda_pkgevents",
+      "internal_source_mode": "GitHub archive URL",
+      "internal_sources": [
+        {
+          "dependency": "t4-lambda-shared",
+          "mode": "GitHub archive URL",
+          "subdirectory": "lambdas/shared",
+          "url": "https://github.com/quiltdata/quilt/archive/d496dffbfb4b7a2ae05f6c1f7f0cb7d5d43bc984.zip"
+        }
+      ],
+      "lockfile_path": "lambdas/pkgevents/uv.lock",
+      "package_family": "zip-lambda",
+      "package_path": "lambdas/pkgevents",
+      "python_target": "==3.13.*",
+      "recent_dependency_churn_examples": [
+        {
+          "sha": "e2a55a0",
+          "subject": "build(deps-dev): bump pytest from 8.4.2 to 9.0.3 in /lambdas/pkgevents (#4823)"
+        },
+        {
+          "sha": "2f6f550",
+          "subject": "Bump urllib3 from 2.5.0 to 2.6.3 in /lambdas/pkgevents (#4714)"
+        },
+        {
+          "sha": "85ac187",
+          "subject": "pkgevents: migrate to uv and Python 3.13 (#4647)"
+        }
+      ],
+      "resolved_numpy_major": null,
+      "resolved_numpy_version": null
+    },
+    {
+      "default_groups": [
+        "test"
+      ],
+      "dependency_groups": [
+        "test"
+      ],
+      "deploy_release_boundary": "zip lambda artifact built from lambdas/pkgpush",
+      "direct_numpy_constraints": [],
+      "distribution_name": "t4_lambda_pkgpush",
+      "internal_source_mode": "GitHub archive URL",
+      "internal_sources": [
+        {
+          "dependency": "quilt-shared",
+          "mode": "GitHub archive URL",
+          "subdirectory": "py-shared",
+          "url": "https://github.com/quiltdata/quilt/archive/a4b310300bfe1cd5f2b319930b03f5264e82d5e5.zip"
+        }
+      ],
+      "lockfile_path": "lambdas/pkgpush/uv.lock",
+      "package_family": "zip-lambda",
+      "package_path": "lambdas/pkgpush",
+      "python_target": "==3.13.*",
+      "recent_dependency_churn_examples": [
+        {
+          "sha": "ad91b95",
+          "subject": "build(deps-dev): bump pytest from 8.4.2 to 9.0.3 in /lambdas/pkgpush (#4832)"
+        },
+        {
+          "sha": "30484bd",
+          "subject": "build(deps): bump requests from 2.32.5 to 2.33.0 in /lambdas/pkgpush (#4788)"
+        },
+        {
+          "sha": "064fc09",
+          "subject": "Bump urllib3 from 2.5.0 to 2.6.3 in /lambdas/pkgpush (#4713)"
+        }
+      ],
+      "resolved_numpy_major": null,
+      "resolved_numpy_version": null
+    },
+    {
+      "default_groups": [
+        "test"
+      ],
+      "dependency_groups": [
+        "test"
+      ],
+      "deploy_release_boundary": "zip lambda artifact built from lambdas/preview",
+      "direct_numpy_constraints": [],
+      "distribution_name": "t4_lambda_preview",
+      "internal_source_mode": "GitHub archive URL",
+      "internal_sources": [
+        {
+          "dependency": "t4-lambda-shared",
+          "mode": "GitHub archive URL",
+          "subdirectory": "lambdas/shared",
+          "url": "https://github.com/quiltdata/quilt/archive/d496dffbfb4b7a2ae05f6c1f7f0cb7d5d43bc984.zip"
+        }
+      ],
+      "lockfile_path": "lambdas/preview/uv.lock",
+      "package_family": "zip-lambda",
+      "package_path": "lambdas/preview",
+      "python_target": "==3.13.*",
+      "recent_dependency_churn_examples": [
+        {
+          "sha": "928e58e",
+          "subject": "build(deps): bump nbconvert from 7.17.0 to 7.17.1 in /lambdas/preview (#4842)"
+        },
+        {
+          "sha": "7c101a6",
+          "subject": "build(deps-dev): bump pytest from 8.4.2 to 9.0.3 in /lambdas/preview (#4822)"
+        },
+        {
+          "sha": "b23f742",
+          "subject": "build(deps): bump requests from 2.32.4 to 2.33.0 in /lambdas/preview (#4785)"
+        }
+      ],
+      "resolved_numpy_major": 1,
+      "resolved_numpy_version": "1.26.4"
+    },
+    {
+      "default_groups": [
+        "test"
+      ],
+      "dependency_groups": [
+        "test"
+      ],
+      "deploy_release_boundary": "zip lambda artifact built from lambdas/s3hash",
+      "direct_numpy_constraints": [],
+      "distribution_name": "t4_lambda_s3hash",
+      "internal_source_mode": "GitHub archive URL",
+      "internal_sources": [
+        {
+          "dependency": "quilt-shared",
+          "mode": "GitHub archive URL",
+          "subdirectory": "py-shared",
+          "url": "https://github.com/quiltdata/quilt/archive/a4b310300bfe1cd5f2b319930b03f5264e82d5e5.zip"
+        }
+      ],
+      "lockfile_path": "lambdas/s3hash/uv.lock",
+      "package_family": "zip-lambda",
+      "package_path": "lambdas/s3hash",
+      "python_target": "==3.13.*",
+      "recent_dependency_churn_examples": [
+        {
+          "sha": "1bc1d52",
+          "subject": "build(deps-dev): bump pytest to 9.0.3 and pytest-asyncio to 1.3 in /lambdas/s3hash (#4826)"
+        },
+        {
+          "sha": "0143008",
+          "subject": "build(deps): bump aiohttp from 3.13.3 to 3.13.4 in /lambdas/s3hash (#4798)"
+        },
+        {
+          "sha": "234cf36",
+          "subject": "Bump aiohttp from 3.13.2 to 3.13.3 in /lambdas/s3hash (#4709)"
+        }
+      ],
+      "resolved_numpy_major": null,
+      "resolved_numpy_version": null
+    },
+    {
+      "default_groups": [
+        "test"
+      ],
+      "dependency_groups": [
+        "test"
+      ],
+      "deploy_release_boundary": "shared internal lambda support library consumed by lambda packages",
+      "direct_numpy_constraints": [],
+      "distribution_name": "t4_lambda_shared",
+      "internal_source_mode": "none",
+      "internal_sources": [],
+      "lockfile_path": "lambdas/shared/uv.lock",
+      "package_family": "shared",
+      "package_path": "lambdas/shared",
+      "python_target": ">=3.12",
+      "recent_dependency_churn_examples": [
+        {
+          "sha": "e5dbe54",
+          "subject": "shared: migrate to uv and Python 3.13 (#4652)"
+        }
+      ],
+      "resolved_numpy_major": 1,
+      "resolved_numpy_version": "1.26.4"
+    },
+    {
+      "default_groups": [
+        "test"
+      ],
+      "dependency_groups": [
+        "test"
+      ],
+      "deploy_release_boundary": "zip lambda artifact built from lambdas/status_reports",
+      "direct_numpy_constraints": [],
+      "distribution_name": "t4_lambda_status_reports",
+      "internal_source_mode": "none",
+      "internal_sources": [],
+      "lockfile_path": "lambdas/status_reports/uv.lock",
+      "package_family": "zip-lambda",
+      "package_path": "lambdas/status_reports",
+      "python_target": "==3.13.*",
+      "recent_dependency_churn_examples": [
+        {
+          "sha": "418a625",
+          "subject": "build(deps-dev): bump pytest from 8.4.2 to 9.0.3 in /lambdas/status_reports (#4829)"
+        },
+        {
+          "sha": "09b2b3c",
+          "subject": "build(deps): bump aiohttp from 3.13.3 to 3.13.4 in /lambdas/status_reports (#4800)"
+        },
+        {
+          "sha": "589542b",
+          "subject": "Bump aiohttp from 3.13.2 to 3.13.3 in /lambdas/status_reports (#4707)"
+        }
+      ],
+      "resolved_numpy_major": null,
+      "resolved_numpy_version": null
+    },
+    {
+      "default_groups": [
+        "test"
+      ],
+      "dependency_groups": [
+        "prod",
+        "test"
+      ],
+      "deploy_release_boundary": "container lambda image built from lambdas/tabular_preview",
+      "direct_numpy_constraints": [
+        "dependencies: numpy ~= 2.3"
+      ],
+      "distribution_name": "t4_lambda_tabular_preview",
+      "internal_source_mode": "GitHub archive URL",
+      "internal_sources": [
+        {
+          "dependency": "t4-lambda-shared",
+          "mode": "GitHub archive URL",
+          "subdirectory": "lambdas/shared",
+          "url": "https://github.com/quiltdata/quilt/archive/d496dffbfb4b7a2ae05f6c1f7f0cb7d5d43bc984.zip"
+        }
+      ],
+      "lockfile_path": "lambdas/tabular_preview/uv.lock",
+      "package_family": "container-lambda",
+      "package_path": "lambdas/tabular_preview",
+      "python_target": "==3.13.*",
+      "recent_dependency_churn_examples": [
+        {
+          "sha": "284e026",
+          "subject": "build(deps): bump pillow from 12.1.1 to 12.2.0 in /lambdas/tabular_preview (#4817)"
+        },
+        {
+          "sha": "70eac5a",
+          "subject": "build(deps-dev): bump pytest from 8.4.2 to 9.0.3 in /lambdas/tabular_preview (#4825)"
+        },
+        {
+          "sha": "8ead1ab",
+          "subject": "build(deps): bump aiohttp from 3.13.3 to 3.13.4 in /lambdas/tabular_preview (#4797)"
+        }
+      ],
+      "resolved_numpy_major": 2,
+      "resolved_numpy_version": "2.3.5"
+    },
+    {
+      "default_groups": [
+        "test"
+      ],
+      "dependency_groups": [
+        "prod",
+        "test"
+      ],
+      "deploy_release_boundary": "container lambda image built from lambdas/thumbnail",
+      "direct_numpy_constraints": [
+        "dependencies: numpy~=2.3"
+      ],
+      "distribution_name": "t4_lambda_thumbnail",
+      "internal_source_mode": "GitHub archive URL",
+      "internal_sources": [
+        {
+          "dependency": "t4_lambda_shared",
+          "mode": "GitHub archive URL",
+          "specifier": "t4_lambda_shared @ https://github.com/quiltdata/quilt/archive/d496dffbfb4b7a2ae05f6c1f7f0cb7d5d43bc984.zip#subdirectory=lambdas/shared"
+        }
+      ],
+      "lockfile_path": "lambdas/thumbnail/uv.lock",
+      "package_family": "container-lambda",
+      "package_path": "lambdas/thumbnail",
+      "python_target": "~=3.13.0",
+      "recent_dependency_churn_examples": [
+        {
+          "sha": "55f410d",
+          "subject": "build(deps): bump lxml from 6.0.2 to 6.1.0 in /lambdas/thumbnail (#4844)"
+        },
+        {
+          "sha": "5515b57",
+          "subject": "build(deps): bump pillow from 12.1.1 to 12.2.0 in /lambdas/thumbnail (#4830)"
+        },
+        {
+          "sha": "db11217",
+          "subject": "build(deps-dev): bump pytest from 8.4.2 to 9.0.3 in /lambdas/thumbnail (#4824)"
+        }
+      ],
+      "resolved_numpy_major": 2,
+      "resolved_numpy_version": "2.3.4"
+    },
+    {
+      "default_groups": [
+        "test"
+      ],
+      "dependency_groups": [
+        "test"
+      ],
+      "deploy_release_boundary": "zip lambda artifact built from lambdas/transcode",
+      "direct_numpy_constraints": [],
+      "distribution_name": "t4_lambda_transcode",
+      "internal_source_mode": "GitHub archive URL",
+      "internal_sources": [
+        {
+          "dependency": "t4-lambda-shared",
+          "mode": "GitHub archive URL",
+          "subdirectory": "lambdas/shared",
+          "url": "https://github.com/quiltdata/quilt/archive/d496dffbfb4b7a2ae05f6c1f7f0cb7d5d43bc984.zip"
+        }
+      ],
+      "lockfile_path": "lambdas/transcode/uv.lock",
+      "package_family": "zip-lambda",
+      "package_path": "lambdas/transcode",
+      "python_target": "==3.13.*",
+      "recent_dependency_churn_examples": [
+        {
+          "sha": "752dd4a",
+          "subject": "build(deps-dev): bump pytest from 8.4.2 to 9.0.3 in /lambdas/transcode (#4847)"
+        },
+        {
+          "sha": "4174800",
+          "subject": "transcode: migrate to uv and Python 3.13 (#4655)"
+        }
+      ],
+      "resolved_numpy_major": null,
+      "resolved_numpy_version": null
+    },
+    {
+      "default_groups": [
+        "test"
+      ],
+      "dependency_groups": [
+        "test"
+      ],
+      "deploy_release_boundary": "shared internal Python library consumed by lambdas/services",
+      "direct_numpy_constraints": [],
+      "distribution_name": "quilt-shared",
+      "internal_source_mode": "none",
+      "internal_sources": [],
+      "lockfile_path": "py-shared/uv.lock",
+      "package_family": "shared",
+      "package_path": "py-shared",
+      "python_target": ">= 3.9, < 4",
+      "recent_dependency_churn_examples": [
+        {
+          "sha": "a4b3103",
+          "subject": "shared: Add CRC64NVME checksum type support (#4623)"
+        },
+        {
+          "sha": "f905844",
+          "subject": "py-shared: add athena/iceberg utils (#4595)"
+        },
+        {
+          "sha": "df53c9c",
+          "subject": "py-shared: add utilities for ES ingest (#4433)"
+        }
+      ],
+      "resolved_numpy_major": null,
+      "resolved_numpy_version": null
+    },
+    {
+      "default_groups": [],
+      "dependency_groups": [],
+      "deploy_release_boundary": "in-repo documentation codeblock validation tool",
+      "direct_numpy_constraints": [],
+      "distribution_name": "testdocs",
+      "internal_source_mode": "path (editable)",
+      "internal_sources": [
+        {
+          "dependency": "quilt3",
+          "editable": true,
+          "mode": "path (editable)",
+          "path": "../api/python"
+        }
+      ],
+      "lockfile_path": "testdocs/uv.lock",
+      "package_family": "tooling",
+      "package_path": "testdocs",
+      "python_target": "==3.9.*",
+      "recent_dependency_churn_examples": [
+        {
+          "sha": "095c14b",
+          "subject": "Quilt3 v7.3.0 (#4808)"
+        },
+        {
+          "sha": "0b2ee43",
+          "subject": "Quilt3 v7.2.0 (#4716)"
+        },
+        {
+          "sha": "cb0dd64",
+          "subject": "quilt3 crc64nvme verification (#4696)"
+        }
+      ],
+      "resolved_numpy_major": 2,
+      "resolved_numpy_version": "2.0.2"
+    }
+  ]
+}
