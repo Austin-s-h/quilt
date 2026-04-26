@@ -12,16 +12,16 @@
       ],
       "recent_dependency_churn_examples": [
         {
+          "sha": "66181d8",
+          "subject": "fix: Refactor lambda packaging to support committed local path sources"
+        },
+        {
           "sha": "dfa2fbb",
           "subject": "fix: update dependency URLs to latest versions"
         },
         {
           "sha": "372a41a",
           "subject": "chore: wire preview lambda improvements"
-        },
-        {
-          "sha": "e946315",
-          "subject": "preview: split consumer updates"
         },
         {
           "sha": "284e026",
@@ -427,16 +427,16 @@
       "python_target": "==3.12.*",
       "recent_dependency_churn_examples": [
         {
+          "sha": "66181d8",
+          "subject": "fix: Refactor lambda packaging to support committed local path sources"
+        },
+        {
           "sha": "dfa2fbb",
           "subject": "fix: update dependency URLs to latest versions"
         },
         {
           "sha": "372a41a",
           "subject": "chore: wire preview lambda improvements"
-        },
-        {
-          "sha": "e946315",
-          "subject": "preview: split consumer updates"
         }
       ],
       "resolved_numpy_major": 1,
@@ -593,16 +593,16 @@
       "python_target": "==3.13.*",
       "recent_dependency_churn_examples": [
         {
+          "sha": "66181d8",
+          "subject": "fix: Refactor lambda packaging to support committed local path sources"
+        },
+        {
           "sha": "dfa2fbb",
           "subject": "fix: update dependency URLs to latest versions"
         },
         {
           "sha": "372a41a",
           "subject": "chore: wire preview lambda improvements"
-        },
-        {
-          "sha": "e946315",
-          "subject": "preview: split consumer updates"
         }
       ],
       "resolved_numpy_major": 2,
@@ -890,8 +890,12 @@
       "lockfile_path": "testdocs/uv.lock",
       "package_family": "tooling",
       "package_path": "testdocs",
-      "python_target": "==3.9.*",
+      "python_target": ">=3.11,<4",
       "recent_dependency_churn_examples": [
+        {
+          "sha": "12a7695",
+          "subject": "fix: update requirement export paths and improve build scripts"
+        },
         {
           "sha": "095c14b",
           "subject": "Quilt3 v7.3.0 (#4808)"
@@ -899,10 +903,6 @@
         {
           "sha": "0b2ee43",
           "subject": "Quilt3 v7.2.0 (#4716)"
-        },
-        {
-          "sha": "cb0dd64",
-          "subject": "quilt3 crc64nvme verification (#4696)"
         }
       ],
       "resolved_numpy_major": 2,

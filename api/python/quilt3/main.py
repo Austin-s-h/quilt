@@ -106,8 +106,9 @@ cloud services aside of S3.
 
 def _launch_local_catalog(*, host: str, port: int):
     try:
-        import uvicorn
-        from quilt3_local.main import app
+        import uvicorn # ruff: noqa I001
+        from quilt3_local.main import app # ruff: noqa I001
+
     except ModuleNotFoundError as e:
         if e.name in (
             'uvicorn',
