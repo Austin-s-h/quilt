@@ -9,11 +9,12 @@ import os
 import re
 import subprocess
 import sys
-import tomllib
 from dataclasses import dataclass
+from io import StringIO
 from pathlib import Path
 from typing import Any
 
+import tomllib
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 INTERNAL_DEPENDENCY_NAMES = {
@@ -296,7 +297,7 @@ def render_artifacts() -> tuple[str, str]:
             python_target=project.get("requires-python", "unspecified"),
             lockfile_path=(lockfile.relative_to(REPO_ROOT).as_posix() if lockfile.exists() else "none"),
             dependency_groups=sorted((pyproject.get("dependency-groups") or {}).keys()),
-            default_groups=sorted((((pyproject.get("tool") or {}).get("uv") or {}).get("default-groups") or [])),
+            default_groups=sorted(((pyproject.get("tool") or {}).get("uv") or {}).get("default-groups") or []),
             deploy_release_boundary=deploy_boundary_for(package_path, family),
             internal_source_mode=("; ".join(internal_modes) if internal_modes else "none"),
             internal_sources=internal_sources,
@@ -356,8 +357,6 @@ def render_artifacts() -> tuple[str, str]:
         "resolved_numpy_major",
         "recent_dependency_churn_examples",
     ]
-    from io import StringIO
-
     csv_buffer = StringIO()
     writer = csv.DictWriter(csv_buffer, fieldnames=csv_fieldnames, lineterminator="\n")
     writer.writeheader()

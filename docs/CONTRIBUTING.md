@@ -78,7 +78,7 @@ python .github/scripts/python_packaging.py local-sources restore lambdas/indexer
 Regenerate the committed inventory after packaging-boundary changes:
 
 ```bash
-python .github/scripts/python_packaging.py inventory generate --json docs/python_packaging_inventory.json --csv docs/python_packaging_inventory.csv
+python .github/scripts/python_packaging.py inventory generate --json .github/python-packaging/inventory.json --csv .github/python-packaging/inventory.csv
 python .github/scripts/python_packaging.py guardrails
 ```
 

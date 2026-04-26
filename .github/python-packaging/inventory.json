@@ -67,6 +67,10 @@
       ],
       "recent_dependency_churn_examples": [
         {
+          "sha": "a7bfdc7",
+          "subject": "docs: define progressive uv packaging rollout"
+        },
+        {
           "sha": "e5dbe54",
           "subject": "shared: migrate to uv and Python 3.13 (#4652)"
         },
@@ -658,6 +662,10 @@
       "package_path": "lambdas/shared",
       "python_target": ">=3.12",
       "recent_dependency_churn_examples": [
+        {
+          "sha": "a7bfdc7",
+          "subject": "docs: define progressive uv packaging rollout"
+        },
         {
           "sha": "e5dbe54",
           "subject": "shared: migrate to uv and Python 3.13 (#4652)"
