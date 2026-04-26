@@ -789,7 +789,7 @@ requires-dist = [
     { name = "nbformat", specifier = "~=5.10" },
     { name = "pandas", specifier = "~=2.2" },
     { name = "requests", specifier = "~=2.32" },
-    { name = "t4-lambda-shared", extras = ["mem", "preview"], editable = "../shared" },
+    { name = "t4-lambda-shared", extras = ["mem", "preview"], url = "https://github.com/quiltdata/quilt/archive/d496dffbfb4b7a2ae05f6c1f7f0cb7d5d43bc984.zip", subdirectory = "lambdas/shared" },
 ]
 
 [package.metadata.requires-dev]
@@ -804,10 +804,11 @@ test = [
 [[package]]
 name = "t4-lambda-shared"
 version = "0.0.3"
-source = { editable = "../shared" }
+source = { url = "https://github.com/quiltdata/quilt/archive/d496dffbfb4b7a2ae05f6c1f7f0cb7d5d43bc984.zip", subdirectory = "lambdas/shared" }
 dependencies = [
     { name = "jsonschema" },
 ]
+sdist = { hash = "sha256:301e81a066f2f01f114bc94563d444f426501af4938e95c666b0ff3c329da439" }
 
 [package.optional-dependencies]
 mem = [
@@ -836,18 +837,7 @@ requires-dist = [
     { name = "t4-lambda-shared", extras = ["mem"], marker = "extra == 'preview'" },
     { name = "xlrd", marker = "extra == 'preview'", specifier = "~=2.0" },
 ]
-provides-extras = ["mem", "preview", "lambda"]
-
-[package.metadata.requires-dev]
-test = [
-    { name = "py-w3c", specifier = "~=0.3.1" },
-    { name = "pytest", specifier = "~=8.4" },
-    { name = "pytest-cov", specifier = "~=7.0" },
-    { name = "pytest-env", specifier = "~=1.1" },
-    { name = "pytest-mock", specifier = "~=3.15" },
-    { name = "t4-lambda-shared", extras = ["mem", "preview"] },
-    { name = "testfixtures", specifier = "~=6.14.1" },
-]
+provides-extras = ["tests", "mem", "preview", "lambda"]
 
 [[package]]
 name = "tinycss2"

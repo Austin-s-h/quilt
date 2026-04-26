@@ -17,7 +17,7 @@ Entries inside each section should be ordered by type:
 
 # Changelog
 
-## unreleased - 2026-04-18
+## unreleased
 
 ### Python API
 
@@ -29,6 +29,8 @@ Entries inside each section should be ordered by type:
 * [Fixed] LOCAL S3 proxy responses now handle legacy and host-style routes consistently and include the expected region headers
 * [Fixed] Default LOCAL `quilt_summarize.json` now expands staged `preview/` fixtures in grouped rows instead of returning an empty summary
 * [Fixed] Spreadsheet metadata import now preserves date-only values without timezone drift in LibreOffice and CSV fixtures
+* [Added] FCS previews now use `flowio` parsing and include Vega scatter plot visualizations in Catalog.
+* [Fixed] Improve preview reliability for FCS, PDF thumbnails, and Excel tabular previews.
 
 ## 7.3.0 - 2026-04-07
 
