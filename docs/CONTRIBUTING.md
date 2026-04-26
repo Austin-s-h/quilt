@@ -58,28 +58,28 @@ Run `uv run poe` to see all configured tasks (or refer to `pyproject.toml`).
 
 ### Python packaging pilot workflow
 
-The repository's progressive `uv` packaging rollout keeps lambda export/build
-inputs stable, so do **not** replace committed lambda archive sources with local
-`path` sources by hand.
+The repository's progressive `uv` packaging rollout now supports committed local
+path sources for the fixed pilot lambda consumers, while keeping exported
+requirements free of local `../shared`-style entries.
 
-For the fixed pilot packages, use the helper instead:
+For the fixed pilot packages, a normal locked sync is enough:
 
 ```bash
-# Preview: overlay local lambdas/shared after a locked sync
-python .github/scripts/python_packaging.py local-sources apply lambdas/preview
+cd lambdas/preview
+uv sync --locked
 
-# Indexer: overlay local lambdas/shared and py-shared after a locked sync
-python .github/scripts/python_packaging.py local-sources apply lambdas/indexer
-
-# Restore the locked dependency graph
-python .github/scripts/python_packaging.py local-sources restore lambdas/indexer
+cd ../indexer
+uv sync --locked
 ```
 
 Regenerate the committed inventory after packaging-boundary changes:
 
 ```bash
-python .github/scripts/python_packaging.py inventory generate --json .github/python-packaging/inventory.json --csv .github/python-packaging/inventory.csv
-python .github/scripts/python_packaging.py guardrails
+repo_root="$(git rev-parse --show-toplevel)"
+python "$repo_root/.github/scripts/python_packaging.py" inventory generate \
+  --json "$repo_root/.github/python-packaging/inventory.json" \
+  --csv "$repo_root/.github/python-packaging/inventory.csv"
+python "$repo_root/.github/scripts/python_packaging.py" guardrails
 ```
 
 ### Python Testing

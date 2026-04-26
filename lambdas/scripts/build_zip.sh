@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+set -euo pipefail
 
 # Make sure "*" expands to an empty list rather than a literal "*" if there are no matches.
 shopt -s nullglob
@@ -11,6 +11,10 @@ error() {
 }
 
 [ -f "/.dockerenv" ] || error "This should only run inside a lambda container."
+
+FUNCTION_DIR="${FUNCTION_DIR:-/lambda/function}"
+REPO_ROOT="${REPO_ROOT:-}"
+PACKAGE_PATH="${PACKAGE_PATH:-}"
 
 dnf --setopt=install_weak_deps=0 install -y \
     gcc \
@@ -27,13 +31,19 @@ mkdir out
 cd out
 
 # install everything into a temporary directory
-uv export --locked --no-emit-project --no-hashes --directory /lambda/function/ -o requirements.txt --no-default-groups
-uv pip install --no-compile --no-deps --target . -r /lambda/function/requirements.txt /lambda/function/
+install_targets=("$FUNCTION_DIR")
+if [[ -n "$REPO_ROOT" && -n "$PACKAGE_PATH" && -f "$REPO_ROOT/.github/scripts/python_packaging.py" ]]; then
+    mapfile -t local_install_targets < <(python "$REPO_ROOT/.github/scripts/python_packaging.py" install-targets "$PACKAGE_PATH")
+    install_targets=("${local_install_targets[@]}" "$FUNCTION_DIR")
+fi
+
+uv export --locked --no-emit-project --no-emit-local --no-hashes --directory "$FUNCTION_DIR" -o requirements.txt --no-default-groups
+uv pip install --no-compile --no-deps --target . -r "$FUNCTION_DIR/requirements.txt" "${install_targets[@]}"
 python3 -m compileall -b .
 
 # add binaries
-if [ -f /lambda/function/quilt_binaries.json ]; then
-    url=$(cat /lambda/function/quilt_binaries.json | jq -r '.s3zip')
+if [ -f "$FUNCTION_DIR/quilt_binaries.json" ]; then
+    url=$(cat "$FUNCTION_DIR/quilt_binaries.json" | jq -r '.s3zip')
     echo "Adding binary deps from $url"
     bin_zip=$(realpath "$(mktemp)")
     curl -o "$bin_zip" "$url"
