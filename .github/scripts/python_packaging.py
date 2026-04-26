@@ -425,6 +425,8 @@ def guardrails() -> int:
     expected_py_ci = [
         "uv export --locked --no-emit-project --no-emit-local --no-hashes --directory lambdas/${{ matrix.path }} -o requirements.txt --no-default-groups",
         "uv export --locked --no-emit-project --no-emit-local --no-hashes --directory lambdas/${{ matrix.path }} -o test-requirements.txt --only-group test",
+        'python -m pip install -t deps --no-deps -r requirements.txt "${local_targets[@]}" lambdas/${{ matrix.path }}',
+        "python -m pip install -r test-requirements.txt",
     ]
     py_ci = (REPO_ROOT / ".github/workflows/py-ci.yml").read_text()
     for needle in expected_py_ci:
@@ -435,11 +437,25 @@ def guardrails() -> int:
     expected_build_zip = 'uv export --locked --no-emit-project --no-emit-local --no-hashes --directory "$FUNCTION_DIR" -o requirements.txt --no-default-groups'
     if expected_build_zip not in build_zip:
         failures.append("lambdas/scripts/build_zip.sh no longer preserves the per-directory export contract")
+    expected_build_zip_install = 'uv pip install --no-compile --no-deps --target . -r requirements.txt "${install_targets[@]}"'
+    if expected_build_zip_install not in build_zip:
+        failures.append("lambdas/scripts/build_zip.sh no longer installs from the exported requirements.txt in the build directory")
 
     shared_pyproject = load_toml(REPO_ROOT / "lambdas/shared/pyproject.toml")
     shared_target = ((shared_pyproject.get("project") or {}).get("requires-python")) or ""
     if "3.12" not in shared_target:
         failures.append("lambdas/shared must remain compatible with Python 3.12 for the issue #6 pilot set")
+
+    for dockerfile_path in (
+        REPO_ROOT / "lambdas/indexer/Dockerfile",
+        REPO_ROOT / "lambdas/thumbnail/Dockerfile",
+        REPO_ROOT / "lambdas/tabular_preview/Dockerfile",
+    ):
+        dockerfile = dockerfile_path.read_text()
+        if "--group=prod" in dockerfile and "--no-default-groups" not in dockerfile:
+            failures.append(
+                f"{dockerfile_path.relative_to(REPO_ROOT)} must disable default groups when syncing the prod image environment"
+            )
 
     for pyproject_path in repo_owned_pyprojects():
         package_path = pyproject_path.parent.relative_to(REPO_ROOT).as_posix()
