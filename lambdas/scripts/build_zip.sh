@@ -38,7 +38,7 @@ if [[ -n "$REPO_ROOT" && -n "$PACKAGE_PATH" && -f "$REPO_ROOT/.github/scripts/py
 fi
 
 uv export --locked --no-emit-project --no-emit-local --no-hashes --directory "$FUNCTION_DIR" -o requirements.txt --no-default-groups
-uv pip install --no-compile --no-deps --target . -r "$FUNCTION_DIR/requirements.txt" "${install_targets[@]}"
+uv pip install --no-compile --no-deps --target . -r requirements.txt "${install_targets[@]}"
 python3 -m compileall -b .
 
 # add binaries
