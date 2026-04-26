@@ -765,7 +765,7 @@ requires-dist = [
     { name = "nbformat", specifier = "~=5.10" },
     { name = "pandas", specifier = "~=2.2" },
     { name = "requests", specifier = "~=2.32" },
-    { name = "t4-lambda-shared", extras = ["mem", "preview"], url = "https://github.com/Austin-s-h/quilt/archive/0b5f5d7e49c403cb46de18a6980c9f09b44dbf6d.zip", subdirectory = "lambdas/shared" },
+    { name = "t4-lambda-shared", extras = ["mem", "preview"], url = "https://github.com/Austin-s-h/quilt/archive/cd45755d5f455663b9d64b4de4d85954ac1cad7f.zip", subdirectory = "lambdas/shared" },
 ]
 
 [package.metadata.requires-dev]
@@ -780,11 +780,11 @@ test = [
 [[package]]
 name = "t4-lambda-shared"
 version = "0.0.3"
-source = { url = "https://github.com/Austin-s-h/quilt/archive/0b5f5d7e49c403cb46de18a6980c9f09b44dbf6d.zip", subdirectory = "lambdas/shared" }
+source = { url = "https://github.com/Austin-s-h/quilt/archive/cd45755d5f455663b9d64b4de4d85954ac1cad7f.zip", subdirectory = "lambdas/shared" }
 dependencies = [
     { name = "jsonschema" },
 ]
-sdist = { hash = "sha256:1bd570a790b97152f30bb8548db3013c9428ed524b4083b35cc1a0e6c4057611" }
+sdist = { hash = "sha256:c6f6ac34d7063ba4138ebfe581a1f5d16ccf4504b88d65daa8be8a59b2384a90" }
 
 [package.optional-dependencies]
 mem = [

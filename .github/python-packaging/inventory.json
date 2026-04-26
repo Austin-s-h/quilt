@@ -412,13 +412,13 @@
           "dependency": "quilt-shared",
           "mode": "url",
           "subdirectory": "py-shared",
-          "url": "https://github.com/Austin-s-h/quilt/archive/0b5f5d7e49c403cb46de18a6980c9f09b44dbf6d.zip"
+          "url": "https://github.com/Austin-s-h/quilt/archive/cd45755d5f455663b9d64b4de4d85954ac1cad7f.zip"
         },
         {
           "dependency": "t4-lambda-shared",
           "mode": "url",
           "subdirectory": "lambdas/shared",
-          "url": "https://github.com/Austin-s-h/quilt/archive/0b5f5d7e49c403cb46de18a6980c9f09b44dbf6d.zip"
+          "url": "https://github.com/Austin-s-h/quilt/archive/cd45755d5f455663b9d64b4de4d85954ac1cad7f.zip"
         }
       ],
       "lockfile_path": "lambdas/indexer/uv.lock",
@@ -584,7 +584,7 @@
           "dependency": "t4-lambda-shared",
           "mode": "url",
           "subdirectory": "lambdas/shared",
-          "url": "https://github.com/Austin-s-h/quilt/archive/0b5f5d7e49c403cb46de18a6980c9f09b44dbf6d.zip"
+          "url": "https://github.com/Austin-s-h/quilt/archive/cd45755d5f455663b9d64b4de4d85954ac1cad7f.zip"
         }
       ],
       "lockfile_path": "lambdas/preview/uv.lock",

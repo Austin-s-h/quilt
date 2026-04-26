@@ -36,8 +36,8 @@ the exact set of files included may differ between attempts.
 
 - Use the `quilt3` Python API's `Package.set_dir()` method, which has no such
   limitation
-- Use the [Packaging Engine](../Catalog/Packaging.md) to automate package
-  creation from S3 prefixes
+- Use the [Packaging Engine][catalog-packaging] to automate package creation
+  from S3 prefixes
 - Split your data into multiple packages, each under the 1,000 file limit
 
 ### API
@@ -49,4 +49,7 @@ compute instance in the same region as your Quilt S3 buckets, is recommended.
 
 ### Metadata
 
-See [Metadata for teams](../Catalog/Metadata.md).
+See [Metadata for teams][catalog-metadata].
+
+[catalog-packaging]: https://docs.quilt.bio/quilt-platform-catalog-user/packaging
+[catalog-metadata]: https://github.com/quiltdata/quilt/blob/master/docs/Catalog/Metadata.md
