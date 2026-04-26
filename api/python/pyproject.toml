@@ -40,9 +40,12 @@ dependencies = [
 
 [project.optional-dependencies]
 pyarrow = [
-    "numpy>=1.14.0",
-    "pandas>=0.19.2",
-    "pyarrow>=0.14.1",
+    "numpy>=1.14.0; python_version < '3.13'",
+    "numpy>=2.1.0; python_version >= '3.13'",
+    "pandas>=0.19.2; python_version < '3.13'",
+    "pandas>=2.2.3; python_version >= '3.13'",
+    "pyarrow>=0.14.1; python_version < '3.13'",
+    "pyarrow>=18.0.0; python_version >= '3.13'",
 ]
 anndata = [
     "anndata>=0.8.0",
@@ -89,6 +92,12 @@ conflicts = [
         { group = "dev" },
         { extra = "catalog" },
     ],
+]
+override-dependencies = [
+    "numpy>=2.1.0; python_version >= '3.13'",
+    "pandas>=2.2.3; python_version >= '3.13'",
+    "pillow>=10.4.0; python_version >= '3.13'",
+    "pyarrow>=18.0.0; python_version >= '3.13'",
 ]
 
 [tool.ruff]
