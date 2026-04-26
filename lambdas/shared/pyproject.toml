@@ -14,7 +14,7 @@ preview = [
     "flowio~=1.4",
     "numpy>=1.26,<3",
     "openpyxl~=3.1",
-    "pandas~=2.2",
+    "pandas~=2.2.3",
     "pyarrow~=18.0",
     "t4_lambda_shared[mem]",
     "xlrd~=2.0",
