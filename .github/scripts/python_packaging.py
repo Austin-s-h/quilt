@@ -93,7 +93,9 @@ class PackageRecord:
             "internal_source_mode": self.internal_source_mode,
             "direct_numpy_constraint": "; ".join(self.direct_numpy_constraints) or "none",
             "resolved_numpy_version": self.resolved_numpy_version or "none",
-            "resolved_numpy_major": str(self.resolved_numpy_major) if self.resolved_numpy_major is not None else "none",
+            "resolved_numpy_major": str(self.resolved_numpy_major)
+            if self.resolved_numpy_major is not None
+            else "none",
             "recent_dependency_churn_examples": " | ".join(
                 f"{entry['sha']} {entry['subject']}" for entry in self.recent_dependency_churn_examples
             )
@@ -438,9 +440,13 @@ def guardrails() -> int:
     expected_build_zip = 'uv export --locked --no-emit-project --no-emit-local --no-hashes --directory "$FUNCTION_DIR" -o "$requirements_file" --no-default-groups'
     if expected_build_zip not in build_zip:
         failures.append("lambdas/scripts/build_zip.sh no longer preserves the per-directory export contract")
-    expected_build_zip_install = 'uv pip install --no-compile --no-deps --target . -r "$requirements_file" "${install_targets[@]}"'
+    expected_build_zip_install = (
+        'uv pip install --no-compile --no-deps --target . -r "$requirements_file" "${install_targets[@]}"'
+    )
     if expected_build_zip_install not in build_zip:
-        failures.append("lambdas/scripts/build_zip.sh no longer installs from the exported requirements.txt in the build directory")
+        failures.append(
+            "lambdas/scripts/build_zip.sh no longer installs from the exported requirements.txt in the build directory"
+        )
 
     shared_pyproject = load_toml(REPO_ROOT / "lambdas/shared/pyproject.toml")
     shared_target = ((shared_pyproject.get("project") or {}).get("requires-python")) or ""
@@ -526,7 +532,9 @@ def local_sources_apply(package_path: str) -> int:
     overrides = pilot_overrides_for(package_path)
     run(["uv", "sync", "--locked"], cwd=project_dir)
     if not overrides:
-        print(f"{package_path}: no override sources required; repo defaults are already correct for this pilot package.")
+        print(
+            f"{package_path}: no override sources required; repo defaults are already correct for this pilot package."
+        )
         return 0
     python_path = venv_python(project_dir)
     for _dist_name, source_path in overrides:
@@ -580,9 +588,7 @@ for name in names:
             break
     print(name)
     print(direct or "no direct_url.json")
-""" % (
-        repr(names),
-    )
+""" % (repr(names),)
     run([str(python_path), "-c", script], cwd=project_dir)
     return 0
 

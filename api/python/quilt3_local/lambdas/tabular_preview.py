@@ -70,9 +70,8 @@ class GzipOutputBuffer(gzip.GzipFile):
         super().__exit__(exc_type, exc_val, exc_tb)
 
     def write(self, data) -> int:
-        if (
-            (self.max_size is not None and self._uncompressed_size + len(data) > self.max_size)
-            or (self.compressed_max_size is not None and self._fileobj.tell() + len(data) > self.compressed_max_size)
+        if (self.max_size is not None and self._uncompressed_size + len(data) > self.max_size) or (
+            self.compressed_max_size is not None and self._fileobj.tell() + len(data) > self.compressed_max_size
         ):
             raise self.Full
         written = super().write(data)
@@ -90,10 +89,7 @@ def write_data_as_arrow(data, schema, max_size):
         with pyarrow.ipc.new_file(sink, schema) as writer:
             for batch in data:
                 batch_size = pyarrow.ipc.get_record_batch_size(batch)
-                if (
-                    (max_size is not None and sink.tell() + batch_size > max_size)
-                    or buf.tell() + batch_size > MAX_OUT
-                ):
+                if (max_size is not None and sink.tell() + batch_size > max_size) or buf.tell() + batch_size > MAX_OUT:
                     truncated = True
                     break
                 writer.write(batch)
@@ -129,11 +125,17 @@ def preview_csv(url, compression, max_out_size, *, delimiter: str = ","):
         parse_options=pyarrow.csv.ParseOptions(delimiter=delimiter, invalid_row_handler=invalid_row_handler),
     )
     output_data, output_truncated = write_data_as_arrow(table, table.schema, None)
-    return 200, output_data, {
-        "Content-Type": "application/vnd.apache.arrow.file",
-        "Content-Encoding": "gzip",
-        QUILT_INFO_HEADER: json.dumps({"truncated": input_truncated or output_truncated, "rows_skipped": rows_skipped}),
-    }
+    return (
+        200,
+        output_data,
+        {
+            "Content-Type": "application/vnd.apache.arrow.file",
+            "Content-Encoding": "gzip",
+            QUILT_INFO_HEADER: json.dumps(
+                {"truncated": input_truncated or output_truncated, "rows_skipped": rows_skipped}
+            ),
+        },
+    )
 
 
 def preview_jsonl(url, compression, max_out_size):
@@ -142,11 +144,15 @@ def preview_jsonl(url, compression, max_out_size):
         input_data, input_truncated = read_lines(src, max_input_size)
     df = pandas.read_json(io.BytesIO(input_data), lines=True)
     output_data, output_truncated = write_pandas_as_csv(df, max_out_size)
-    return 200, output_data, {
-        "Content-Type": "text/csv",
-        "Content-Encoding": "gzip",
-        QUILT_INFO_HEADER: json.dumps({"truncated": input_truncated or output_truncated}),
-    }
+    return (
+        200,
+        output_data,
+        {
+            "Content-Type": "text/csv",
+            "Content-Encoding": "gzip",
+            QUILT_INFO_HEADER: json.dumps({"truncated": input_truncated or output_truncated}),
+        },
+    )
 
 
 def preview_excel(url, compression, max_out_size):
@@ -154,11 +160,15 @@ def preview_excel(url, compression, max_out_size):
         data = src.read()
     df = pandas.read_excel(data)
     output_data, output_truncated = write_pandas_as_csv(df, max_out_size)
-    return 200, output_data, {
-        "Content-Type": "text/csv",
-        "Content-Encoding": "gzip",
-        QUILT_INFO_HEADER: json.dumps({"truncated": output_truncated}),
-    }
+    return (
+        200,
+        output_data,
+        {
+            "Content-Type": "text/csv",
+            "Content-Encoding": "gzip",
+            QUILT_INFO_HEADER: json.dumps({"truncated": output_truncated}),
+        },
+    )
 
 
 def preview_parquet(url, compression, max_out_size):
@@ -166,11 +176,15 @@ def preview_parquet(url, compression, max_out_size):
         parquet_file = pyarrow.parquet.ParquetFile(src, pre_buffer=True)
         df = parquet_file.read().to_pandas()
     output_data, output_truncated = write_pandas_as_csv(df, max_out_size)
-    return 200, output_data, {
-        "Content-Type": "text/csv",
-        "Content-Encoding": "gzip",
-        QUILT_INFO_HEADER: json.dumps({"truncated": output_truncated}),
-    }
+    return (
+        200,
+        output_data,
+        {
+            "Content-Type": "text/csv",
+            "Content-Encoding": "gzip",
+            QUILT_INFO_HEADER: json.dumps({"truncated": output_truncated}),
+        },
+    )
 
 
 SCHEMA = {
@@ -192,7 +206,9 @@ SCHEMA = {
 def lambda_handler(request):
     url = request.args["url"]
     if not _is_valid_source_url(url):
-        return make_json_response(400, {"title": "Invalid url=. Expected S3 virtual-host URL or local object proxy URL."})
+        return make_json_response(
+            400, {"title": "Invalid url=. Expected S3 virtual-host URL or local object proxy URL."}
+        )
 
     input_type = request.args["input"]
     compression = request.args.get("compression")

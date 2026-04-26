@@ -75,6 +75,7 @@ def _expand_legacy_object_spec(spec: LegacySpec) -> list[str]:
         patterns.extend(_expand_legacy_object_spec(value))
     return patterns
 
+
 def _normalize_page_target(page_target: str) -> str:
     return page_target.split("<<", 1)[0].strip()
 
