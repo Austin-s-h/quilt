@@ -36,10 +36,10 @@ The committed inventory captures **19** repository-owned Python packages:
 ### Key findings
 
 - Every repository-owned Python package already has its own `pyproject.toml` and `uv.lock`.
-- Lambda CI and zip builds depend on per-directory `uv export --locked --no-emit-project`, which makes committed local `path` sources unsafe for lambda packages today.
+- Lambda CI and zip builds now use per-directory `uv export --locked --no-emit-project --no-emit-local`, then explicitly install any committed local source packages, so pilot lambdas can use local path sources without leaking `../shared`-style entries into exported requirements.
 - Internal package sourcing is mixed:
   - `gendocs` and `testdocs` already use editable local path sources for `quilt3`
-  - most lambdas still point at GitHub archive URLs for `lambdas/shared` and/or `py-shared`; the preview pilot now pins `preview` and `indexer` to this branch's fork archive snapshot
+  - most lambdas still point at GitHub archive URLs for `lambdas/shared` and/or `py-shared`; the preview pilot now commits local path sources for `preview` and `indexer`
   - `thumbnail` embeds a direct archive URL dependency instead of using `[tool.uv.sources]`
 - Python targets remain intentionally different:
   - `api/python` supports `>=3.9`
@@ -70,8 +70,8 @@ Use `.github/python-packaging/inventory.json` as the execution input and `.githu
 | `sdk` | publishable SDK/CLI surface (`api/python`) | `dev`; extras remain extras when they are published user-facing options | no local-source defaults required | keep broad published compatibility; document that the current dev lock resolves NumPy 2 |
 | `tooling` | in-repo docs/codegen tools | no default group unless required; use `dev` only when the tool has an active contributor task surface | local editable path sources are acceptable because tooling is not exported into lambda artifacts | follow the tool’s own runtime; no repo-wide policy forced |
 | `shared` | reusable internal libraries (`py-shared`, `lambdas/shared`) | `test` by default | remain independently locked; consumers may override to local editable installs during development | `py-shared` stays NumPy 1 on the Elasticsearch path while `lambdas/shared` owns the NumPy 2 preview/helper surface |
-| `zip-lambda` | per-directory zip artifact | `test` by default; `prod` only where export/build commands need a runtime-only split | keep committed archive/default sources for publish/export flows; use explicit local override workflow for development | no forced NumPy policy; only opt into NumPy where the lambda actually needs it |
-| `container-lambda` | per-directory container image | `test` by default; `prod` only when container/runtime build separation needs it | same as zip lambdas: preserve committed export/build inputs, use explicit local overrides for development | model NumPy-major boundaries explicitly; `indexer` remains NumPy 1 while preview-oriented containers stay on NumPy 2 |
+| `zip-lambda` | per-directory zip artifact | `test` by default; `prod` only where export/build commands need a runtime-only split | keep archive/default sources by default, but allow the pilot lambdas to commit local path sources when export/install scripts strip local paths from exported requirements and reinstall the local packages explicitly | no forced NumPy policy; only opt into NumPy where the lambda actually needs it |
+| `container-lambda` | per-directory container image | `test` by default; `prod` only when container/runtime build separation needs it | same as zip lambdas: allow committed local path sources only when the Docker build context includes the local packages and installs them non-editably | model NumPy-major boundaries explicitly; `indexer` remains NumPy 1 while preview-oriented containers stay on NumPy 2 |
 
 ### Group conventions
 
@@ -101,49 +101,43 @@ The pilot stays on the issue-defined representative set:
 
 ### Explicit source-mode decision
 
-For the pilot, **repository defaults stay unchanged for lambda packages** and **local development uses an explicit override workflow** instead of committed lambda `path` sources.
+For the pilot, `lambdas/preview` and `lambdas/indexer` now commit local path sources for their internal dependencies.
 
 That decision is intentional:
 
-- committed lambda `path` sources made `uv export --locked --no-emit-project` emit local path entries like `../shared`
-- that changes the zip/container packaging contract, which issue #3 explicitly forbids in the first move
+- `uv export --locked --no-emit-project --no-emit-local` preserves the per-directory lock/export surface while omitting local path entries like `../shared`
+- zip builds and lambda test installs explicitly reinstall committed local source packages after exporting requirements, so artifact shape stays stable
+- the `indexer` container build now uses the repository root as build context so local `py-shared` and `lambdas/shared` sources are available during `uv sync`
 - `gendocs` already uses a safe editable path source because it is tooling, not a lambda export surface
 
-### Local override workflow
+### Pilot default workflow
 
-Use `.github/scripts/python_packaging.py` for the pilot packages:
+For the pilot lambda consumers, a normal locked sync now uses the committed local path sources directly:
 
 ```bash
-repo_root="$(git rev-parse --show-toplevel)"
+cd lambdas/preview
+uv sync --locked
 
-# Preview: overlay local lambdas/shared after a locked sync
-python "$repo_root/.github/scripts/python_packaging.py" local-sources apply lambdas/preview
-
-# Indexer: overlay local lambdas/shared and py-shared after a locked sync
-python "$repo_root/.github/scripts/python_packaging.py" local-sources apply lambdas/indexer
-
-# Inspect whether the pilot package is currently using editable local sources
-python "$repo_root/.github/scripts/python_packaging.py" local-sources status lambdas/indexer
-
-# Restore the package to the locked archive/default dependency graph
-python "$repo_root/.github/scripts/python_packaging.py" local-sources restore lambdas/indexer
+cd ../indexer
+uv sync --locked
 ```
 
 Notes:
 
-- `py-shared`, `lambdas/shared`, and `gendocs` are part of the fixed pilot set but do not need extra overlay steps.
+- `py-shared`, `lambdas/shared`, and `gendocs` are part of the fixed pilot set but do not need extra consumer-side wiring.
 - `lambdas/shared` now declares `requires-python >=3.12` so the local pilot can compose with both `indexer` (3.12) and `preview` (3.13) without changing its independent lockfile ownership.
+- `.github/scripts/python_packaging.py install-targets <package>` prints the committed local path source directories that the zip build and CI install steps re-add after export.
 
 ## CI and packaging guardrails (#7)
 
 ### Guardrails
 
-`python .github/scripts/python_packaging.py guardrails` enforces the first-phase packaging contract:
+`python .github/scripts/python_packaging.py guardrails` enforces the pilot packaging contract:
 
-- lambda packages must not commit local `path`, `workspace`, or editable internal sources
+- only the fixed pilot consumers (`lambdas/preview`, `lambdas/indexer`) may commit local `path` / editable internal sources
 - lambda packages must not commit direct file/path internal dependencies
-- `.github/workflows/py-ci.yml` must keep the per-directory export contract for `requirements.txt` and `test-requirements.txt`
-- `lambdas/scripts/build_zip.sh` must keep the per-directory `uv export --locked --no-emit-project` contract
+- `.github/workflows/py-ci.yml` must keep the per-directory export contract for `requirements.txt` and `test-requirements.txt`, using `--no-emit-local`
+- `lambdas/scripts/build_zip.sh` must keep the per-directory `uv export --locked --no-emit-project --no-emit-local` contract
 - `lambdas/shared` must remain compatible with Python 3.12 so the fixed pilot set stays valid
 
 Run these commands before opening a packaging PR:
@@ -158,9 +152,9 @@ python "$repo_root/.github/scripts/python_packaging.py" inventory check --json "
 
 The pilot is successful only if all of the following remain true:
 
-- local development for `lambdas/indexer` and `lambdas/preview` can use local editable overrides instead of internal GitHub archive sources
+- local development for `lambdas/indexer` and `lambdas/preview` uses committed local path sources instead of internal GitHub archive sources
 - lambda export still produces requirements from the per-directory lockfile without local path entries
-- zip and container packaging behavior remain unchanged
+- zip and container packaging still install the correct local shared packages without changing artifact shape
 - no global workspace or cross-package lock coupling is introduced
 
 ### Rollback triggers
@@ -169,7 +163,7 @@ Pause or back out the pilot if:
 
 - a lambda export begins emitting local path entries or otherwise changes deploy artifact shape
 - lockfile churn spreads outside the intended pilot packages without a deliberate migration step
-- keeping the pilot working requires a workspace-style global assumption
+- keeping the pilot working requires a workspace-style global assumption instead of per-package local path sources
 - the dev-vs-CI/release source model becomes ambiguous again
 
 ## Rollout plan (#8)
@@ -178,7 +172,7 @@ Migrate the remaining packages in reviewable batches:
 
 | Batch | Packages | Why this order |
 | --- | --- | --- |
-| 1. Shared + pilot dependents | already covered by `py-shared`, `lambdas/shared`, `preview`, `indexer`, `gendocs` | proves the override workflow and NumPy split without broad churn |
+| 1. Shared + pilot dependents | already covered by `py-shared`, `lambdas/shared`, `preview`, `indexer`, `gendocs` | proves the committed local-path pilot and NumPy split without broad churn |
 | 2. Archive-backed zip lambdas using `py-shared` only | `s3hash`, `pkgpush`, `iceberg` | simplest shared-library consumers after the pilot |
 | 3. Archive-backed zip lambdas using `lambdas/shared` only | `access_counts`, `pkgevents`, `transcode` | validates the lambda-shared-only path after preview/indexer |
 | 4. Mixed internal-source zip lambdas | `es_ingest`, `manifest_indexer` | highest-friction zip lambdas because they consume both shared packages |

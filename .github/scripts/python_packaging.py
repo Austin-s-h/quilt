@@ -32,6 +32,10 @@ PILOT_LOCAL_SOURCE_OVERRIDES = {
     "lambdas/indexer": ["lambdas/shared", "py-shared"],
     "lambdas/preview": ["lambdas/shared"],
 }
+PILOT_COMMITTED_LOCAL_SOURCE_PACKAGES = {
+    "lambdas/indexer",
+    "lambdas/preview",
+}
 PILOT_PACKAGE_SET = {
     "py-shared",
     "lambdas/shared",
@@ -207,6 +211,32 @@ def internal_sources_for(pyproject: dict[str, Any]) -> list[dict[str, Any]]:
         rows.append(row)
 
     return rows
+
+
+def path_source_targets_for(project_dir: Path) -> list[Path]:
+    pyproject = load_toml(project_dir / "pyproject.toml")
+    sources = ((pyproject.get("tool") or {}).get("uv") or {}).get("sources") or {}
+    targets: list[Path] = []
+    for source in sources.values():
+        if not isinstance(source, dict):
+            continue
+        path = source.get("path")
+        if not isinstance(path, str):
+            continue
+        target = (project_dir / path).resolve()
+        if not target.exists():
+            raise FileNotFoundError(f"Local source path does not exist: {target}")
+        targets.append(target)
+    return targets
+
+
+def has_committed_local_sources(package_path: str) -> bool:
+    project_dir = REPO_ROOT / package_path
+    pyproject = load_toml(project_dir / "pyproject.toml")
+    return any(
+        source.get("mode", "").startswith("path") or source.get("mode") == "workspace"
+        for source in internal_sources_for(pyproject)
+    )
 
 
 def numpy_constraints_for(pyproject: dict[str, Any]) -> list[str]:
@@ -393,8 +423,8 @@ def guardrails() -> int:
     failures: list[str] = []
 
     expected_py_ci = [
-        "uv export --locked --no-emit-project --no-hashes --directory lambdas/${{ matrix.path }} -o requirements.txt --no-default-groups",
-        "uv export --locked --no-emit-project --no-hashes --directory lambdas/${{ matrix.path }} -o test-requirements.txt --only-group test",
+        "uv export --locked --no-emit-project --no-emit-local --no-hashes --directory lambdas/${{ matrix.path }} -o requirements.txt --no-default-groups",
+        "uv export --locked --no-emit-project --no-emit-local --no-hashes --directory lambdas/${{ matrix.path }} -o test-requirements.txt --only-group test",
     ]
     py_ci = (REPO_ROOT / ".github/workflows/py-ci.yml").read_text()
     for needle in expected_py_ci:
@@ -402,7 +432,7 @@ def guardrails() -> int:
             failures.append(f".github/workflows/py-ci.yml is missing expected export contract: {needle}")
 
     build_zip = (REPO_ROOT / "lambdas/scripts/build_zip.sh").read_text()
-    expected_build_zip = "uv export --locked --no-emit-project --no-hashes --directory /lambda/function/ -o requirements.txt --no-default-groups"
+    expected_build_zip = 'uv export --locked --no-emit-project --no-emit-local --no-hashes --directory "$FUNCTION_DIR" -o requirements.txt --no-default-groups'
     if expected_build_zip not in build_zip:
         failures.append("lambdas/scripts/build_zip.sh no longer preserves the per-directory export contract")
 
@@ -416,13 +446,16 @@ def guardrails() -> int:
         if not package_path.startswith("lambdas/"):
             continue
         pyproject = load_toml(pyproject_path)
+        allow_local_sources = package_path in PILOT_COMMITTED_LOCAL_SOURCE_PACKAGES
         for source in internal_sources_for(pyproject):
             mode = source.get("mode", "")
             dependency = source.get("dependency", "<unknown>")
             if mode.startswith("path") or mode == "workspace":
-                failures.append(f"{package_path} commits a lambda local source for {dependency}: {mode}")
+                if not allow_local_sources:
+                    failures.append(f"{package_path} commits a lambda local source for {dependency}: {mode}")
             if source.get("editable") is True:
-                failures.append(f"{package_path} commits an editable lambda source for {dependency}")
+                if not allow_local_sources:
+                    failures.append(f"{package_path} commits an editable lambda source for {dependency}")
             specifier = source.get("specifier", "")
             if "@ file:" in specifier or "@ ../" in specifier or "@ ./" in specifier:
                 failures.append(f"{package_path} commits a file/path direct dependency for {dependency}")
@@ -470,6 +503,9 @@ def local_sources_apply(package_path: str) -> int:
     project_dir = REPO_ROOT / package_path
     if not project_dir.exists():
         raise FileNotFoundError(package_path)
+    if has_committed_local_sources(package_path):
+        print(f"{package_path}: repo defaults already use local internal sources; nothing to apply.")
+        return 0
     overrides = pilot_overrides_for(package_path)
     run(["uv", "sync", "--locked"], cwd=project_dir)
     if not overrides:
@@ -489,6 +525,9 @@ def local_sources_restore(package_path: str) -> int:
     project_dir = REPO_ROOT / package_path
     if not project_dir.exists():
         raise FileNotFoundError(package_path)
+    if has_committed_local_sources(package_path):
+        print(f"{package_path}: repo defaults already use local internal sources; nothing to restore.")
+        return 0
     pilot_overrides_for(package_path)
     run(["uv", "sync", "--locked"], cwd=project_dir)
     print(f"{package_path}: restored the locked dependency graph.")
@@ -499,6 +538,11 @@ def local_sources_status(package_path: str) -> int:
     project_dir = REPO_ROOT / package_path
     if not project_dir.exists():
         raise FileNotFoundError(package_path)
+    if has_committed_local_sources(package_path):
+        print(f"{package_path}: repo defaults already use local internal sources:")
+        for target in path_source_targets_for(project_dir):
+            print(target.relative_to(REPO_ROOT))
+        return 0
     overrides = pilot_overrides_for(package_path)
     if not overrides:
         print(f"{package_path}: no override sources required.")
@@ -551,6 +595,12 @@ def main() -> int:
         command = local_subparsers.add_parser(name)
         command.add_argument("package_path", help="Repo-relative package path (for example: lambdas/preview)")
 
+    install_targets = subparsers.add_parser(
+        "install-targets",
+        help="Print committed local path source directories for a package, one absolute path per line.",
+    )
+    install_targets.add_argument("package_path", help="Repo-relative package path (for example: lambdas/preview)")
+
     args = parser.parse_args()
 
     if args.command == "inventory":
@@ -571,6 +621,11 @@ def main() -> int:
         if args.local_sources_command == "restore":
             return local_sources_restore(args.package_path)
         return local_sources_status(args.package_path)
+
+    if args.command == "install-targets":
+        for target in path_source_targets_for(REPO_ROOT / args.package_path):
+            print(target)
+        return 0
 
     raise AssertionError(f"Unhandled command: {args.command}")
 

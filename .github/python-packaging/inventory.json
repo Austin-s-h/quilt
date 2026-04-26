@@ -3,7 +3,7 @@
     "container-lambda": {
       "internal_source_modes": [
         "GitHub archive URL",
-        "url"
+        "path (editable)"
       ],
       "package_paths": [
         "lambdas/indexer",
@@ -12,16 +12,16 @@
       ],
       "recent_dependency_churn_examples": [
         {
+          "sha": "dfa2fbb",
+          "subject": "fix: update dependency URLs to latest versions"
+        },
+        {
           "sha": "372a41a",
           "subject": "chore: wire preview lambda improvements"
         },
         {
           "sha": "e946315",
           "subject": "preview: split consumer updates"
-        },
-        {
-          "sha": "b166e0a",
-          "subject": "build(deps): bump lxml from 6.0.2 to 6.1.0 in /lambdas/indexer (#4845)"
         },
         {
           "sha": "284e026",
@@ -131,7 +131,7 @@
     "zip-lambda": {
       "internal_source_modes": [
         "GitHub archive URL",
-        "url"
+        "path (editable)"
       ],
       "package_paths": [
         "lambdas/access_counts",
@@ -406,19 +406,19 @@
       "deploy_release_boundary": "container lambda image built from lambdas/indexer",
       "direct_numpy_constraints": [],
       "distribution_name": "t4_lambda_es_indexer",
-      "internal_source_mode": "url",
+      "internal_source_mode": "path (editable)",
       "internal_sources": [
         {
           "dependency": "quilt-shared",
-          "mode": "url",
-          "subdirectory": "py-shared",
-          "url": "https://github.com/Austin-s-h/quilt/archive/cd45755d5f455663b9d64b4de4d85954ac1cad7f.zip"
+          "editable": true,
+          "mode": "path (editable)",
+          "path": "../../py-shared"
         },
         {
           "dependency": "t4-lambda-shared",
-          "mode": "url",
-          "subdirectory": "lambdas/shared",
-          "url": "https://github.com/Austin-s-h/quilt/archive/cd45755d5f455663b9d64b4de4d85954ac1cad7f.zip"
+          "editable": true,
+          "mode": "path (editable)",
+          "path": "../shared"
         }
       ],
       "lockfile_path": "lambdas/indexer/uv.lock",
@@ -427,16 +427,16 @@
       "python_target": "==3.12.*",
       "recent_dependency_churn_examples": [
         {
+          "sha": "dfa2fbb",
+          "subject": "fix: update dependency URLs to latest versions"
+        },
+        {
           "sha": "372a41a",
           "subject": "chore: wire preview lambda improvements"
         },
         {
           "sha": "e946315",
           "subject": "preview: split consumer updates"
-        },
-        {
-          "sha": "b166e0a",
-          "subject": "build(deps): bump lxml from 6.0.2 to 6.1.0 in /lambdas/indexer (#4845)"
         }
       ],
       "resolved_numpy_major": 1,
@@ -578,13 +578,13 @@
       "deploy_release_boundary": "zip lambda artifact built from lambdas/preview",
       "direct_numpy_constraints": [],
       "distribution_name": "t4_lambda_preview",
-      "internal_source_mode": "url",
+      "internal_source_mode": "path (editable)",
       "internal_sources": [
         {
           "dependency": "t4-lambda-shared",
-          "mode": "url",
-          "subdirectory": "lambdas/shared",
-          "url": "https://github.com/Austin-s-h/quilt/archive/cd45755d5f455663b9d64b4de4d85954ac1cad7f.zip"
+          "editable": true,
+          "mode": "path (editable)",
+          "path": "../shared"
         }
       ],
       "lockfile_path": "lambdas/preview/uv.lock",
@@ -593,16 +593,16 @@
       "python_target": "==3.13.*",
       "recent_dependency_churn_examples": [
         {
+          "sha": "dfa2fbb",
+          "subject": "fix: update dependency URLs to latest versions"
+        },
+        {
           "sha": "372a41a",
           "subject": "chore: wire preview lambda improvements"
         },
         {
           "sha": "e946315",
           "subject": "preview: split consumer updates"
-        },
-        {
-          "sha": "928e58e",
-          "subject": "build(deps): bump nbconvert from 7.17.0 to 7.17.1 in /lambdas/preview (#4842)"
         }
       ],
       "resolved_numpy_major": 2,
