@@ -2,7 +2,8 @@
   "family_summaries": {
     "container-lambda": {
       "internal_source_modes": [
-        "GitHub archive URL"
+        "GitHub archive URL",
+        "url"
       ],
       "package_paths": [
         "lambdas/indexer",
@@ -11,16 +12,16 @@
       ],
       "recent_dependency_churn_examples": [
         {
+          "sha": "e946315",
+          "subject": "preview: split consumer updates"
+        },
+        {
           "sha": "b166e0a",
           "subject": "build(deps): bump lxml from 6.0.2 to 6.1.0 in /lambdas/indexer (#4845)"
         },
         {
           "sha": "72b5a53",
           "subject": "build(deps): bump pillow from 12.1.1 to 12.2.0 in /lambdas/indexer (#4818)"
-        },
-        {
-          "sha": "c42c1a3",
-          "subject": "build(deps-dev): bump pytest from 8.4.2 to 9.0.3 in /lambdas/indexer (#4827)"
         },
         {
           "sha": "284e026",
@@ -67,28 +68,29 @@
       ],
       "recent_dependency_churn_examples": [
         {
+          "sha": "dec67d2",
+          "subject": "fix: align shared preview dependencies"
+        },
+        {
+          "sha": "6d6fcf8",
+          "subject": "Merge branch 'preview-lambda-shared' into progressive-uv-packaging"
+        },
+        {
           "sha": "a7bfdc7",
           "subject": "docs: define progressive uv packaging rollout"
         },
         {
-          "sha": "e5dbe54",
-          "subject": "shared: migrate to uv and Python 3.13 (#4652)"
+          "sha": "0b5f5d7",
+          "subject": "fix: restore es numpy cap"
         },
         {
-          "sha": "a4b3103",
-          "subject": "shared: Add CRC64NVME checksum type support (#4623)"
-        },
-        {
-          "sha": "f905844",
-          "subject": "py-shared: add athena/iceberg utils (#4595)"
-        },
-        {
-          "sha": "df53c9c",
-          "subject": "py-shared: add utilities for ES ingest (#4433)"
+          "sha": "20d03ba",
+          "subject": "fix: Refactor FCS scatter plot handling and improve test coverage"
         }
       ],
       "resolved_numpy_majors": [
-        1
+        1,
+        2
       ]
     },
     "tooling": {
@@ -128,7 +130,8 @@
     },
     "zip-lambda": {
       "internal_source_modes": [
-        "GitHub archive URL"
+        "GitHub archive URL",
+        "url"
       ],
       "package_paths": [
         "lambdas/access_counts",
@@ -165,7 +168,7 @@
         }
       ],
       "resolved_numpy_majors": [
-        1
+        2
       ]
     }
   },
@@ -403,19 +406,19 @@
       "deploy_release_boundary": "container lambda image built from lambdas/indexer",
       "direct_numpy_constraints": [],
       "distribution_name": "t4_lambda_es_indexer",
-      "internal_source_mode": "GitHub archive URL",
+      "internal_source_mode": "url",
       "internal_sources": [
         {
           "dependency": "quilt-shared",
-          "mode": "GitHub archive URL",
+          "mode": "url",
           "subdirectory": "py-shared",
-          "url": "https://github.com/quiltdata/quilt/archive/df53c9ce125ea051e0d1ac41d58796336e202256.zip"
+          "url": "https://github.com/Austin-s-h/quilt/archive/0b5f5d7e49c403cb46de18a6980c9f09b44dbf6d.zip"
         },
         {
           "dependency": "t4-lambda-shared",
-          "mode": "GitHub archive URL",
+          "mode": "url",
           "subdirectory": "lambdas/shared",
-          "url": "https://github.com/quiltdata/quilt/archive/d496dffbfb4b7a2ae05f6c1f7f0cb7d5d43bc984.zip"
+          "url": "https://github.com/Austin-s-h/quilt/archive/0b5f5d7e49c403cb46de18a6980c9f09b44dbf6d.zip"
         }
       ],
       "lockfile_path": "lambdas/indexer/uv.lock",
@@ -424,16 +427,16 @@
       "python_target": "==3.12.*",
       "recent_dependency_churn_examples": [
         {
+          "sha": "e946315",
+          "subject": "preview: split consumer updates"
+        },
+        {
           "sha": "b166e0a",
           "subject": "build(deps): bump lxml from 6.0.2 to 6.1.0 in /lambdas/indexer (#4845)"
         },
         {
           "sha": "72b5a53",
           "subject": "build(deps): bump pillow from 12.1.1 to 12.2.0 in /lambdas/indexer (#4818)"
-        },
-        {
-          "sha": "c42c1a3",
-          "subject": "build(deps-dev): bump pytest from 8.4.2 to 9.0.3 in /lambdas/indexer (#4827)"
         }
       ],
       "resolved_numpy_major": 1,
@@ -575,13 +578,13 @@
       "deploy_release_boundary": "zip lambda artifact built from lambdas/preview",
       "direct_numpy_constraints": [],
       "distribution_name": "t4_lambda_preview",
-      "internal_source_mode": "GitHub archive URL",
+      "internal_source_mode": "url",
       "internal_sources": [
         {
           "dependency": "t4-lambda-shared",
-          "mode": "GitHub archive URL",
+          "mode": "url",
           "subdirectory": "lambdas/shared",
-          "url": "https://github.com/quiltdata/quilt/archive/d496dffbfb4b7a2ae05f6c1f7f0cb7d5d43bc984.zip"
+          "url": "https://github.com/Austin-s-h/quilt/archive/0b5f5d7e49c403cb46de18a6980c9f09b44dbf6d.zip"
         }
       ],
       "lockfile_path": "lambdas/preview/uv.lock",
@@ -590,20 +593,20 @@
       "python_target": "==3.13.*",
       "recent_dependency_churn_examples": [
         {
+          "sha": "e946315",
+          "subject": "preview: split consumer updates"
+        },
+        {
           "sha": "928e58e",
           "subject": "build(deps): bump nbconvert from 7.17.0 to 7.17.1 in /lambdas/preview (#4842)"
         },
         {
           "sha": "7c101a6",
           "subject": "build(deps-dev): bump pytest from 8.4.2 to 9.0.3 in /lambdas/preview (#4822)"
-        },
-        {
-          "sha": "b23f742",
-          "subject": "build(deps): bump requests from 2.32.4 to 2.33.0 in /lambdas/preview (#4785)"
         }
       ],
-      "resolved_numpy_major": 1,
-      "resolved_numpy_version": "1.26.4"
+      "resolved_numpy_major": 2,
+      "resolved_numpy_version": "2.4.4"
     },
     {
       "default_groups": [
@@ -653,7 +656,9 @@
         "test"
       ],
       "deploy_release_boundary": "shared internal lambda support library consumed by lambda packages",
-      "direct_numpy_constraints": [],
+      "direct_numpy_constraints": [
+        "optional:preview: numpy>=1.26,<3"
+      ],
       "distribution_name": "t4_lambda_shared",
       "internal_source_mode": "none",
       "internal_sources": [],
@@ -663,16 +668,20 @@
       "python_target": ">=3.12",
       "recent_dependency_churn_examples": [
         {
-          "sha": "a7bfdc7",
-          "subject": "docs: define progressive uv packaging rollout"
+          "sha": "dec67d2",
+          "subject": "fix: align shared preview dependencies"
         },
         {
-          "sha": "e5dbe54",
-          "subject": "shared: migrate to uv and Python 3.13 (#4652)"
+          "sha": "6d6fcf8",
+          "subject": "Merge branch 'preview-lambda-shared' into progressive-uv-packaging"
+        },
+        {
+          "sha": "a7bfdc7",
+          "subject": "docs: define progressive uv packaging rollout"
         }
       ],
-      "resolved_numpy_major": 1,
-      "resolved_numpy_version": "1.26.4"
+      "resolved_numpy_major": 2,
+      "resolved_numpy_version": "2.4.4"
     },
     {
       "default_groups": [
@@ -777,16 +786,16 @@
       "python_target": "~=3.13.0",
       "recent_dependency_churn_examples": [
         {
+          "sha": "e946315",
+          "subject": "preview: split consumer updates"
+        },
+        {
           "sha": "55f410d",
           "subject": "build(deps): bump lxml from 6.0.2 to 6.1.0 in /lambdas/thumbnail (#4844)"
         },
         {
           "sha": "5515b57",
           "subject": "build(deps): bump pillow from 12.1.1 to 12.2.0 in /lambdas/thumbnail (#4830)"
-        },
-        {
-          "sha": "db11217",
-          "subject": "build(deps-dev): bump pytest from 8.4.2 to 9.0.3 in /lambdas/thumbnail (#4824)"
         }
       ],
       "resolved_numpy_major": 2,
@@ -836,7 +845,9 @@
         "test"
       ],
       "deploy_release_boundary": "shared internal Python library consumed by lambdas/services",
-      "direct_numpy_constraints": [],
+      "direct_numpy_constraints": [
+        "optional:es: numpy < 2"
+      ],
       "distribution_name": "quilt-shared",
       "internal_source_mode": "none",
       "internal_sources": [],
@@ -846,20 +857,20 @@
       "python_target": ">= 3.9, < 4",
       "recent_dependency_churn_examples": [
         {
-          "sha": "a4b3103",
-          "subject": "shared: Add CRC64NVME checksum type support (#4623)"
+          "sha": "0b5f5d7",
+          "subject": "fix: restore es numpy cap"
         },
         {
-          "sha": "f905844",
-          "subject": "py-shared: add athena/iceberg utils (#4595)"
+          "sha": "dec67d2",
+          "subject": "fix: align shared preview dependencies"
         },
         {
-          "sha": "df53c9c",
-          "subject": "py-shared: add utilities for ES ingest (#4433)"
+          "sha": "20d03ba",
+          "subject": "fix: Refactor FCS scatter plot handling and improve test coverage"
         }
       ],
-      "resolved_numpy_major": null,
-      "resolved_numpy_version": null
+      "resolved_numpy_major": 1,
+      "resolved_numpy_version": "1.26.4"
     },
     {
       "default_groups": [],

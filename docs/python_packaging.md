@@ -37,7 +37,7 @@ The committed inventory captures **19** repository-owned Python packages:
 - Lambda CI and zip builds depend on per-directory `uv export --locked --no-emit-project`, which makes committed local `path` sources unsafe for lambda packages today.
 - Internal package sourcing is mixed:
   - `gendocs` and `testdocs` already use editable local path sources for `quilt3`
-  - most lambdas still point at `quiltdata/quilt` archive URLs for `lambdas/shared` and/or `py-shared`
+  - most lambdas still point at GitHub archive URLs for `lambdas/shared` and/or `py-shared`; the preview pilot now pins `preview` and `indexer` to this branch's fork archive snapshot
   - `thumbnail` embeds a direct archive URL dependency instead of using `[tool.uv.sources]`
 - Python targets remain intentionally different:
   - `api/python` supports `>=3.9`
@@ -67,7 +67,7 @@ Use `.github/python-packaging/inventory.json` as the execution input and `.githu
 | --- | --- | --- | --- | --- |
 | `sdk` | publishable SDK/CLI surface (`api/python`) | `dev`; extras remain extras when they are published user-facing options | no local-source defaults required | keep broad published compatibility; document that the current dev lock resolves NumPy 2 |
 | `tooling` | in-repo docs/codegen tools | no default group unless required; use `dev` only when the tool has an active contributor task surface | local editable path sources are acceptable because tooling is not exported into lambda artifacts | follow the tool’s own runtime; no repo-wide policy forced |
-| `shared` | reusable internal libraries (`py-shared`, `lambdas/shared`) | `test` by default | remain independently locked; consumers may override to local editable installs during development | `py-shared` stays NumPy-agnostic; `lambdas/shared` owns the NumPy 2 preview/helper surface |
+| `shared` | reusable internal libraries (`py-shared`, `lambdas/shared`) | `test` by default | remain independently locked; consumers may override to local editable installs during development | `py-shared` stays NumPy 1 on the Elasticsearch path while `lambdas/shared` owns the NumPy 2 preview/helper surface |
 | `zip-lambda` | per-directory zip artifact | `test` by default; `prod` only where export/build commands need a runtime-only split | keep committed archive/default sources for publish/export flows; use explicit local override workflow for development | no forced NumPy policy; only opt into NumPy where the lambda actually needs it |
 | `container-lambda` | per-directory container image | `test` by default; `prod` only when container/runtime build separation needs it | same as zip lambdas: preserve committed export/build inputs, use explicit local overrides for development | model NumPy-major boundaries explicitly; `indexer` remains NumPy 1 while preview-oriented containers stay on NumPy 2 |
 

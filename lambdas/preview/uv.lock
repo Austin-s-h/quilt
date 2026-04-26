@@ -765,7 +765,7 @@ requires-dist = [
     { name = "nbformat", specifier = "~=5.10" },
     { name = "pandas", specifier = "~=2.2" },
     { name = "requests", specifier = "~=2.32" },
-    { name = "t4-lambda-shared", extras = ["mem", "preview"], url = "https://github.com/Austin-s-h/quilt/archive/4d39a6091ab16eee77c020cf5ffa0f8740da35de.zip", subdirectory = "lambdas/shared" },
+    { name = "t4-lambda-shared", extras = ["mem", "preview"], url = "https://github.com/Austin-s-h/quilt/archive/0b5f5d7e49c403cb46de18a6980c9f09b44dbf6d.zip", subdirectory = "lambdas/shared" },
 ]
 
 [package.metadata.requires-dev]
@@ -780,11 +780,11 @@ test = [
 [[package]]
 name = "t4-lambda-shared"
 version = "0.0.3"
-source = { url = "https://github.com/Austin-s-h/quilt/archive/4d39a6091ab16eee77c020cf5ffa0f8740da35de.zip", subdirectory = "lambdas/shared" }
+source = { url = "https://github.com/Austin-s-h/quilt/archive/0b5f5d7e49c403cb46de18a6980c9f09b44dbf6d.zip", subdirectory = "lambdas/shared" }
 dependencies = [
     { name = "jsonschema" },
 ]
-sdist = { hash = "sha256:17dae922f271ff098a9a1de047426c7644d314863b3257a86ac2f5b4559b7153" }
+sdist = { hash = "sha256:1bd570a790b97152f30bb8548db3013c9428ed524b4083b35cc1a0e6c4057611" }
 
 [package.optional-dependencies]
 mem = [
@@ -807,7 +807,7 @@ requires-dist = [
     { name = "jsonschema", specifier = ">=2.6.0" },
     { name = "numpy", marker = "extra == 'preview'", specifier = ">=1.26,<3" },
     { name = "openpyxl", marker = "extra == 'preview'", specifier = "~=3.1" },
-    { name = "pandas", marker = "extra == 'preview'", specifier = "~=2.2" },
+    { name = "pandas", marker = "extra == 'preview'", specifier = "~=2.2.3" },
     { name = "psutil", marker = "extra == 'mem'", specifier = "~=6.1" },
     { name = "pyarrow", marker = "extra == 'preview'", specifier = "~=18.0" },
     { name = "t4-lambda-shared", extras = ["mem"], marker = "extra == 'preview'" },
