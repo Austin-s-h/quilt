@@ -76,6 +76,7 @@ dev = [
     "pytest-env",
     "pytest-subtests",
     "pytest~=8.4",
+    "quilt3-local>=2,<3",
     "responses",
     "ruff>=0.12.11",
     "lxml-html-clean>=0.4",

@@ -7,7 +7,7 @@ def get() -> T.Optional[types.SSOConfig]:
     """
     Get the current SSO configuration.
     """
-    result = util.get_client().sso_config_get()
+    result = util.unwrap_result(util.get_client().sso_config_get())
     return None if result is None else types.SSOConfig.from_gql(result)
 
 
@@ -15,5 +15,5 @@ def set(config: T.Optional[str]) -> T.Optional[types.SSOConfig]:
     """
     Set the SSO configuration. Pass `None` to remove SSO configuration.
     """
-    result = util.get_client().sso_config_set(config)
-    return None if result is None else types.SSOConfig.from_gql(util.handle_errors(result))
+    result = util.handle_errors(util.get_client().sso_config_set(config))
+    return None if result is None else types.SSOConfig.from_gql(result)
