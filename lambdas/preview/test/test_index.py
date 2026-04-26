@@ -242,8 +242,10 @@ class TestIndex:
         body = json.loads(read_body(resp))
         assert resp['statusCode'] == 200, 'preview failed on nb_1200727.ipynb'
         body_html = body['html']
-        # isclose bc string sizes differ, e.g. on Linux
-        assert math.isclose(len(body_html), 18084, abs_tol=300), "Hmm, didn't chop nb_1200727.ipynb"
+        assert 'SVD of Minute-Market-Data' in body_html, 'missing expected notebook contents'
+        assert '<span class="n">batch_size</span>' in body_html, 'missing expected final code cell'
+        assert "<pre>['SEE', 'SE', 'SHW', 'SIG'," not in body_html, "Hmm, didn't chop nb_1200727.ipynb"
+        assert len(body_html.encode()) < 19_000, "Hmm, didn't chop nb_1200727.ipynb"
 
     @responses.activate
     def test_ipynb_exclude(self):

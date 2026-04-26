@@ -361,9 +361,21 @@ def _convert_I16_to_L(arr):
     return Image.fromarray((arr // 256).astype('uint8'))
 
 
+def _convert_high_bit_depth_color(arr):
+    # Pillow cannot build images directly from uint16 RGB(A) ndarrays.
+    if arr.dtype == np.uint16 and arr.ndim == 3 and arr.shape[2] in (3, 4):
+        return Image.fromarray((arr // 256).astype('uint8'))
+
+    return None
+
+
 def generate_thumbnail(arr, size):
+    converted = _convert_high_bit_depth_color(arr)
+    if converted is not None:
+        img = converted
+    else:
     # Send to Image object for thumbnail generation and saving to bytes
-    img = Image.fromarray(arr)
+        img = Image.fromarray(arr)
 
     # The mode I;16 has limited resamplers for scaling, and throws an error.
     # Rather than use a non-default poor-quality resampler, convert to a better-handled mode.

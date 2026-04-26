@@ -22,13 +22,13 @@ import rfc3986
 # Must be done before importing quilt3.
 os.environ["QUILT_DISABLE_CACHE"] = "true"  # noqa: E402
 import quilt3
+import quilt3.checksums
 import quilt3.data_transfer
 import quilt3.telemetry
 import quilt3.util
 import quilt3.workflows
 from quilt3.backends import get_package_registry
 from quilt3.backends.s3 import S3PackageRegistryV1
-from quilt3.data_transfer import CHECKSUM_MAX_PARTS, get_checksum_chunksize, is_mpu
 from quilt3.util import PhysicalKey
 from quilt_shared.aws import AWSCredentials
 from quilt_shared.const import LAMBDA_READ_TIMEOUT
@@ -219,13 +219,13 @@ def try_get_compliant_sha256_chunked(s3_client: S3Client, pk: PhysicalKey, file_
     try:
         # Small files should be handled by complete_entries_metadata() via HeadObject
         # Return early to avoid expensive GetObjectAttributes call
-        if not is_mpu(file_size):
+        if not quilt3.checksums.is_mpu(file_size):
             return None
 
         resp = s3_client.get_object_attributes(
             **S3ObjectSource.from_pk(pk).boto_args,
             ObjectAttributes=["Checksum", "ObjectParts", "ObjectSize"],
-            MaxParts=CHECKSUM_MAX_PARTS,
+            MaxParts=quilt3.checksums.CHECKSUM_MAX_PARTS,
         )
 
         checksum_value = resp.get("Checksum", {}).get("ChecksumSHA256")
@@ -234,7 +234,7 @@ def try_get_compliant_sha256_chunked(s3_client: S3Client, pk: PhysicalKey, file_
 
         # Calculate expected part size (same logic as s3hash lambda)
         # We already checked is_mpu(file_size) above, so this is safe
-        part_size = get_checksum_chunksize(file_size)
+        part_size = quilt3.checksums.get_checksum_chunksize(file_size)
 
         object_parts = resp.get("ObjectParts")
         if object_parts is None:
@@ -339,7 +339,7 @@ def try_get_precomputed_from_head(
                 # For small files with SHA256 FULL_OBJECT, compute sha2-256-chunked by double hashing.
                 # This is much cheaper than copy_object (no data transfer, just local hash).
                 # For large files, SHA256_CHUNKED needs GetObjectAttributes with part validation.
-                if not is_mpu(file_size):
+                if not quilt3.checksums.is_mpu(file_size):
                     checksum_bytes = base64.b64decode(checksum_value)
                     return Checksum.sha256_chunked_from_parts([checksum_bytes])
                 # Large file: skip for now, will be validated in calculate_pkg_hashes()
@@ -456,7 +456,7 @@ def calculate_pkg_hashes(
 
             comp_futures.append(
                 s3hash_pool.submit(compute_via_s3hash, entry)
-                if is_mpu(entry.size)
+                if quilt3.checksums.is_mpu(entry.size)
                 else local_pool.submit(compute_via_copy, entry)
             )
 
