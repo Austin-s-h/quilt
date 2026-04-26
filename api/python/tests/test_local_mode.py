@@ -867,22 +867,24 @@ def test_local_preview_lambda_reuses_curated_fixture_pack(
         assert "<table" in body["html"]
     elif fixture_name == "vcf":
         assert "<table" in body["html"]
-        assert body["info"]["meta"]
-        assert body["info"]["lines"]
+        assert body["info"]["data"]["meta"]
+        assert body["info"]["data"]["data"]
+        assert "variant_count" in body["info"]["metadata"]
     elif fixture_name == "fcs":
         assert body["info"]["metadata"]
         assert "<div>" in body["html"]
 
 
 @pytest.mark.parametrize(
-    ("fixture_name", "input_type", "expected_content_type"),
+    ("fixture_name", "input_type", "size", "expected_content_type"),
     [
-        ("jsonl", "jsonl", "text/csv"),
-        ("parquet", "parquet", "text/csv"),
+        ("jsonl", "jsonl", "small", "text/csv"),
+        ("parquet", "parquet", "small", "text/csv"),
+        ("tsv", "tsv", "medium", "application/vnd.apache.arrow.file"),
     ],
 )
 def test_local_tabular_preview_lambda_reuses_curated_fixture_pack(
-    monkeypatch, tmp_path, fixture_name, input_type, expected_content_type
+    monkeypatch, tmp_path, fixture_name, input_type, size, expected_content_type
 ):
     from quilt3_local.lambdas import tabular_preview
 
@@ -898,6 +900,7 @@ def test_local_tabular_preview_lambda_reuses_curated_fixture_pack(
             {
                 "url": _fixture_proxy_url("demo-bucket", fixture.bucket_key),
                 "input": input_type,
+                "size": size,
             },
         ),
         None,
