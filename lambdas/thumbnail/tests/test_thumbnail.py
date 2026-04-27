@@ -273,11 +273,7 @@ SIZE = (1024, 768)
         #   File "site-packages/PIL/Image.py", line 3312, in fromarray
         #     raise TypeError(msg) from e
         # TypeError: Cannot handle this data type: (1, 1, 3), <u2
-        pytest.param(
-            TIFF_PKG,
-            "s_1_t_1_c_1_z_1_RGB.tiff",
-            marks=pytest.mark.xfail(raises=TypeError),
-        ),
+        (TIFF_PKG, "s_1_t_1_c_1_z_1_RGB.tiff"),
         (TIFF_PKG, "s_1_t_1_c_2_z_1_RGB.tiff"),
         (TIFF_PKG, "s_3_t_1_c_3_z_5.ome.tiff"),
         (OME_TIFF_PKG, "3d-cell-viewer.ome.tiff"),
@@ -363,7 +359,7 @@ SIZE = (1024, 768)
         #     ...<2 lines>...
         #     )
         # ValueError: different number of dimensions on data and dims: 3 vs 4
-        pytest.param(CZI_PKG, "c1_bgr48.czi", marks=pytest.mark.xfail(raises=ValueError)),
+        (CZI_PKG, "c1_bgr48.czi"),
         # RuntimeError: Sorry, this pixeltype isn't implemented yet.
         pytest.param(CZI_PKG, "c1_bgr96float.czi", marks=pytest.mark.xfail(raises=(RuntimeError, ValueError))),
         (CZI_PKG, "c1_gray16.czi"),
@@ -400,7 +396,7 @@ SIZE = (1024, 768)
         #     ...<2 lines>...
         #     )
         # ValueError: different number of dimensions on data and dims: 4 vs 5
-        pytest.param(CZI_PKG, "rgb-image.czi", marks=pytest.mark.xfail(raises=ValueError)),
+        (CZI_PKG, "rgb-image.czi"),
     ],
 )
 def test_handle_image(pytestconfig, pkg_ref, lk):
@@ -424,23 +420,23 @@ def test_handle_image(pytestconfig, pkg_ref, lk):
     _info, data = t4_lambda_thumbnail.handle_image(path=src_entry.get_cached_path(), size=SIZE, thumbnail_format="PNG")
 
     thumb_lk = f"{pkg_name}/{lk}.png"
-    quilt3.Package.install(
-        THUMBS_PKG[0],
-        registry=TEST_DATA_REGISTRY,
-        top_hash=THUMBS_PKG[1],
-        path=thumb_lk,
-    )
-    thumbs_pkg = quilt3.Package.browse(
-        THUMBS_PKG[0],
-        registry=TEST_DATA_REGISTRY,
-        top_hash=THUMBS_PKG[1],
-    )
     with tempfile.NamedTemporaryFile(suffix=".png") as actual_f:
         actual_f.write(data)
         actual_f.flush()
         actual = BioImage(actual_f.name)
 
         try:
+            quilt3.Package.install(
+                THUMBS_PKG[0],
+                registry=TEST_DATA_REGISTRY,
+                top_hash=THUMBS_PKG[1],
+                path=thumb_lk,
+            )
+            thumbs_pkg = quilt3.Package.browse(
+                THUMBS_PKG[0],
+                registry=TEST_DATA_REGISTRY,
+                top_hash=THUMBS_PKG[1],
+            )
             expected_path = thumbs_pkg[thumb_lk].get_cached_path()
         except quilt3.util.QuiltException:
             assert actual.reader.data.size > 0

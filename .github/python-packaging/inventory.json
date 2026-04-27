@@ -43,16 +43,16 @@
       ],
       "recent_dependency_churn_examples": [
         {
+          "sha": "66c44af",
+          "subject": "fix: gendocs py version"
+        },
+        {
+          "sha": "33ef57a",
+          "subject": "fix: tests"
+        },
+        {
           "sha": "c554b7b",
           "subject": "fix: preview format"
-        },
-        {
-          "sha": "d3605d6",
-          "subject": "fix: include local system and fix admin wraping"
-        },
-        {
-          "sha": "74ab55c",
-          "subject": "Merge branch 'quilt3-local-filesystem' into progressive-uv-packaging"
         }
       ],
       "resolved_numpy_majors": [
@@ -115,12 +115,12 @@
           "subject": "fix: upgrade ariadne-codegen to 0.16 to fix non-deterministic codegen (#4810)"
         },
         {
-          "sha": "f52373e",
-          "subject": "perf: lock"
+          "sha": "66c44af",
+          "subject": "fix: gendocs py version"
         },
         {
-          "sha": "3b8e9c4",
-          "subject": "perf: more linting"
+          "sha": "33ef57a",
+          "subject": "fix: tests"
         }
       ],
       "resolved_numpy_majors": [
@@ -191,16 +191,16 @@
       "python_target": ">=3.9",
       "recent_dependency_churn_examples": [
         {
+          "sha": "66c44af",
+          "subject": "fix: gendocs py version"
+        },
+        {
+          "sha": "33ef57a",
+          "subject": "fix: tests"
+        },
+        {
           "sha": "c554b7b",
           "subject": "fix: preview format"
-        },
-        {
-          "sha": "d3605d6",
-          "subject": "fix: include local system and fix admin wraping"
-        },
-        {
-          "sha": "74ab55c",
-          "subject": "Merge branch 'quilt3-local-filesystem' into progressive-uv-packaging"
         }
       ],
       "resolved_numpy_major": 2,
@@ -255,19 +255,19 @@
       "lockfile_path": "gendocs/uv.lock",
       "package_family": "tooling",
       "package_path": "gendocs",
-      "python_target": ">3.9",
+      "python_target": ">=3.11",
       "recent_dependency_churn_examples": [
         {
-          "sha": "f52373e",
-          "subject": "perf: lock"
+          "sha": "66c44af",
+          "subject": "fix: gendocs py version"
         },
         {
-          "sha": "3b8e9c4",
-          "subject": "perf: more linting"
+          "sha": "33ef57a",
+          "subject": "fix: tests"
         },
         {
-          "sha": "93ec7b3",
-          "subject": "docs: gendocs modernization"
+          "sha": "a69bb55",
+          "subject": "perf: updates"
         }
       ],
       "resolved_numpy_major": null,
@@ -902,16 +902,16 @@
       "python_target": ">=3.11,<4",
       "recent_dependency_churn_examples": [
         {
+          "sha": "33ef57a",
+          "subject": "fix: tests"
+        },
+        {
+          "sha": "a69bb55",
+          "subject": "perf: updates"
+        },
+        {
           "sha": "f52373e",
           "subject": "perf: lock"
-        },
-        {
-          "sha": "74ab55c",
-          "subject": "Merge branch 'quilt3-local-filesystem' into progressive-uv-packaging"
-        },
-        {
-          "sha": "2bd0aa1",
-          "subject": "perf: updates across the board"
         }
       ],
       "resolved_numpy_major": 2,

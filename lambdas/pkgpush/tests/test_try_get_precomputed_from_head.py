@@ -4,7 +4,7 @@ import base64
 
 import pytest
 
-from quilt3.data_transfer import CHECKSUM_MULTIPART_THRESHOLD
+from quilt3.checksums import CHECKSUM_MULTIPART_THRESHOLD
 from quilt_shared.pkgpush import Checksum, ChecksumAlgorithm
 from t4_lambda_pkgpush import try_get_precomputed_from_head
 
