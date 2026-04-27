@@ -16,7 +16,7 @@ import botocore.exceptions
 import pydantic.v1
 import typing_extensions as TX
 
-from quilt3.data_transfer import get_checksum_chunksize, is_mpu
+from quilt3.checksums import get_checksum_chunksize, is_mpu
 from quilt_shared.aws import AWSCredentials
 from quilt_shared.lambdas_errors import LambdaError
 from quilt_shared.pkgpush import (

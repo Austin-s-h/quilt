@@ -31,8 +31,10 @@ ObjectsSearchResultSetType = ariadne.ObjectType("ObjectsSearchResultSet")
 PackageFileType.set_alias("physicalKey", "physical_key")
 
 LOCAL_SEARCH_TYPE_DEFS = ariadne.gql(
-        """
+    """
         extend type Query {
+            buckets: [BucketConfig!]!
+            bucket(name: String!): BucketConfig
             searchObjects(
                 buckets: [String!]
                 searchString: String
@@ -290,8 +292,18 @@ async def query_bucket_configs(*_):
     return await buckets.list_bucket_configs()
 
 
+@QueryType.field("buckets")
+async def query_buckets(*_):
+    return await buckets.list_bucket_configs()
+
+
 @QueryType.field("bucketConfig")
 async def query_bucket_config(*_, name: str):
+    return await buckets.get_bucket_config(name)
+
+
+@QueryType.field("bucket")
+async def query_bucket(*_, name: str):
     return await buckets.get_bucket_config(name)
 
 
@@ -357,15 +369,11 @@ async def package_revision_list_total(package: PackageContext, *_):
 async def package_revision_list_page(package: PackageContext, *_, number: int, per_page: int):
     pointers = await packages.get_package_pointers(package.bucket, package.name)
     offset = (number - 1) * per_page
-    pointers = pointers[offset:offset + per_page]
-    hashes = await asyncio.gather(*(
-        packages.resolve_pointer(package.bucket, package.name, pointer.pointer)
-        for pointer in pointers
-    ))
-    return [
-        PackageRevisionContext(package, hash_, pointer.modified)
-        for pointer, hash_ in zip(pointers, hashes)
-    ]
+    pointers = pointers[offset : offset + per_page]
+    hashes = await asyncio.gather(
+        *(packages.resolve_pointer(package.bucket, package.name, pointer.pointer) for pointer in pointers)
+    )
+    return [PackageRevisionContext(package, hash_, pointer.modified) for pointer, hash_ in zip(pointers, hashes)]
 
 
 @PackageType.field("modified")
@@ -411,7 +419,7 @@ async def package_list_page(package_list: PackageListContext, *_, number: int, p
     elif order != "NAME":
         raise ValueError(f"Unsupported 'order': '{order}'")
     offset = (number - 1) * per_page
-    return [PackageContext(package_list.bucket, name) for name in package_names[offset:offset + per_page]]
+    return [PackageContext(package_list.bucket, name) for name in package_names[offset : offset + per_page]]
 
 
 @QueryType.field("packages")
@@ -424,7 +432,9 @@ async def query_packages(*_, bucket: str, filter: T.Optional[str] = None):
 @QueryType.field("package")
 async def query_package(*_, bucket: str, name: str):
     resolved_name = packages.internal_name(name)
-    if not all(await asyncio.gather(buckets.bucket_is_readable(bucket), packages.package_exists(bucket, resolved_name))):
+    if not all(
+        await asyncio.gather(buckets.bucket_is_readable(bucket), packages.package_exists(bucket, resolved_name))
+    ):
         return None
     return PackageContext(bucket, resolved_name)
 

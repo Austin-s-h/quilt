@@ -1,6 +1,6 @@
 [project]
 name = "t4_lambda_s3hash"
-version = "0.1.0"
+version = "0.1.1"
 requires-python = "==3.13.*"
 dependencies = [
     "aiobotocore ~= 2.15",
@@ -28,5 +28,5 @@ test = [
 default-groups = ["test"]
 
 [tool.uv.sources]
-quilt-shared = { url = "https://github.com/quiltdata/quilt/archive/a4b310300bfe1cd5f2b319930b03f5264e82d5e5.zip", subdirectory = "py-shared" }
+quilt-shared = { path = "../../py-shared", editable = true }
 

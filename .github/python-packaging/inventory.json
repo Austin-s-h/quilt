@@ -1,0 +1,921 @@
+{
+  "family_summaries": {
+    "container-lambda": {
+      "internal_source_modes": [
+        "path (editable)"
+      ],
+      "package_paths": [
+        "lambdas/indexer",
+        "lambdas/tabular_preview",
+        "lambdas/thumbnail"
+      ],
+      "recent_dependency_churn_examples": [
+        {
+          "sha": "9884ec0",
+          "subject": "fix: lockfile resolution"
+        },
+        {
+          "sha": "af337a7",
+          "subject": "Merge branch 'preview-lambda-7.3.0' into progressive-uv-packaging"
+        },
+        {
+          "sha": "66181d8",
+          "subject": "fix: Refactor lambda packaging to support committed local path sources"
+        },
+        {
+          "sha": "2bd0aa1",
+          "subject": "perf: updates across the board"
+        },
+        {
+          "sha": "284e026",
+          "subject": "build(deps): bump pillow from 12.1.1 to 12.2.0 in /lambdas/tabular_preview (#4817)"
+        }
+      ],
+      "resolved_numpy_majors": [
+        1,
+        2
+      ]
+    },
+    "sdk": {
+      "internal_source_modes": [],
+      "package_paths": [
+        "api/python"
+      ],
+      "recent_dependency_churn_examples": [
+        {
+          "sha": "66c44af",
+          "subject": "fix: gendocs py version"
+        },
+        {
+          "sha": "33ef57a",
+          "subject": "fix: tests"
+        },
+        {
+          "sha": "c554b7b",
+          "subject": "fix: preview format"
+        }
+      ],
+      "resolved_numpy_majors": [
+        2
+      ]
+    },
+    "shared": {
+      "internal_source_modes": [],
+      "package_paths": [
+        "lambdas/shared",
+        "py-shared"
+      ],
+      "recent_dependency_churn_examples": [
+        {
+          "sha": "af337a7",
+          "subject": "Merge branch 'preview-lambda-7.3.0' into progressive-uv-packaging"
+        },
+        {
+          "sha": "dec67d2",
+          "subject": "fix: align shared preview dependencies"
+        },
+        {
+          "sha": "6d6fcf8",
+          "subject": "Merge branch 'preview-lambda-shared' into progressive-uv-packaging"
+        },
+        {
+          "sha": "2bd0aa1",
+          "subject": "perf: updates across the board"
+        },
+        {
+          "sha": "0b5f5d7",
+          "subject": "fix: restore es numpy cap"
+        }
+      ],
+      "resolved_numpy_majors": [
+        1,
+        2
+      ]
+    },
+    "tooling": {
+      "internal_source_modes": [
+        "path (editable)"
+      ],
+      "package_paths": [
+        "api/python/quilt3-graphql",
+        "gendocs",
+        "testdocs"
+      ],
+      "recent_dependency_churn_examples": [
+        {
+          "sha": "0c716ab",
+          "subject": "fix: graphql issues"
+        },
+        {
+          "sha": "2bd0aa1",
+          "subject": "perf: updates across the board"
+        },
+        {
+          "sha": "f84f99b",
+          "subject": "fix: upgrade ariadne-codegen to 0.16 to fix non-deterministic codegen (#4810)"
+        },
+        {
+          "sha": "66c44af",
+          "subject": "fix: gendocs py version"
+        },
+        {
+          "sha": "33ef57a",
+          "subject": "fix: tests"
+        }
+      ],
+      "resolved_numpy_majors": [
+        2
+      ]
+    },
+    "zip-lambda": {
+      "internal_source_modes": [
+        "path (editable)"
+      ],
+      "package_paths": [
+        "lambdas/access_counts",
+        "lambdas/es_ingest",
+        "lambdas/iceberg",
+        "lambdas/manifest_indexer",
+        "lambdas/pkgevents",
+        "lambdas/pkgpush",
+        "lambdas/preview",
+        "lambdas/s3hash",
+        "lambdas/status_reports",
+        "lambdas/transcode"
+      ],
+      "recent_dependency_churn_examples": [
+        {
+          "sha": "9884ec0",
+          "subject": "fix: lockfile resolution"
+        },
+        {
+          "sha": "2bd0aa1",
+          "subject": "perf: updates across the board"
+        },
+        {
+          "sha": "adae9cd",
+          "subject": "access_counts: configurable s3.copy() TransferConfig and awscrt (#4746)"
+        },
+        {
+          "sha": "a0c9d89",
+          "subject": "build(deps-dev): bump pytest from 8.4.1 to 9.0.3 in /lambdas/es_ingest (#4820)"
+        },
+        {
+          "sha": "2e275a0",
+          "subject": "build(deps-dev): bump pytest from 8.4.2 to 9.0.3 in /lambdas/iceberg (#4821)"
+        }
+      ],
+      "resolved_numpy_majors": [
+        1,
+        2
+      ]
+    }
+  },
+  "packages": [
+    {
+      "default_groups": [],
+      "dependency_groups": [
+        "dev"
+      ],
+      "deploy_release_boundary": "PyPI-released SDK and CLI package",
+      "direct_numpy_constraints": [
+        "optional:pyarrow: numpy>=1.14.0; python_version < '3.13'",
+        "optional:pyarrow: numpy>=2.1.0; python_version >= '3.13'"
+      ],
+      "distribution_name": "quilt3",
+      "internal_source_mode": "none",
+      "internal_sources": [],
+      "lockfile_path": "api/python/uv.lock",
+      "package_family": "sdk",
+      "package_path": "api/python",
+      "python_target": ">=3.9",
+      "recent_dependency_churn_examples": [
+        {
+          "sha": "66c44af",
+          "subject": "fix: gendocs py version"
+        },
+        {
+          "sha": "33ef57a",
+          "subject": "fix: tests"
+        },
+        {
+          "sha": "c554b7b",
+          "subject": "fix: preview format"
+        }
+      ],
+      "resolved_numpy_major": 2,
+      "resolved_numpy_version": "2.4.4"
+    },
+    {
+      "default_groups": [],
+      "dependency_groups": [
+        "dev"
+      ],
+      "deploy_release_boundary": "in-repo GraphQL code generation package consumed by api/python",
+      "direct_numpy_constraints": [],
+      "distribution_name": "quilt3-graphql-codegen",
+      "internal_source_mode": "none",
+      "internal_sources": [],
+      "lockfile_path": "api/python/quilt3-graphql/uv.lock",
+      "package_family": "tooling",
+      "package_path": "api/python/quilt3-graphql",
+      "python_target": ">=3.12",
+      "recent_dependency_churn_examples": [
+        {
+          "sha": "0c716ab",
+          "subject": "fix: graphql issues"
+        },
+        {
+          "sha": "2bd0aa1",
+          "subject": "perf: updates across the board"
+        },
+        {
+          "sha": "f84f99b",
+          "subject": "fix: upgrade ariadne-codegen to 0.16 to fix non-deterministic codegen (#4810)"
+        }
+      ],
+      "resolved_numpy_major": null,
+      "resolved_numpy_version": null
+    },
+    {
+      "default_groups": [],
+      "dependency_groups": [],
+      "deploy_release_boundary": "in-repo documentation generation tool",
+      "direct_numpy_constraints": [],
+      "distribution_name": "quilt3-gendocs",
+      "internal_source_mode": "path (editable)",
+      "internal_sources": [
+        {
+          "dependency": "quilt3",
+          "editable": true,
+          "mode": "path (editable)",
+          "path": "../api/python"
+        }
+      ],
+      "lockfile_path": "gendocs/uv.lock",
+      "package_family": "tooling",
+      "package_path": "gendocs",
+      "python_target": ">=3.11",
+      "recent_dependency_churn_examples": [
+        {
+          "sha": "66c44af",
+          "subject": "fix: gendocs py version"
+        },
+        {
+          "sha": "33ef57a",
+          "subject": "fix: tests"
+        },
+        {
+          "sha": "a69bb55",
+          "subject": "perf: updates"
+        }
+      ],
+      "resolved_numpy_major": null,
+      "resolved_numpy_version": null
+    },
+    {
+      "default_groups": [
+        "test"
+      ],
+      "dependency_groups": [
+        "test"
+      ],
+      "deploy_release_boundary": "zip lambda artifact built from lambdas/access_counts",
+      "direct_numpy_constraints": [],
+      "distribution_name": "t4_lambda_access_counts",
+      "internal_source_mode": "path (editable)",
+      "internal_sources": [
+        {
+          "dependency": "t4_lambda_shared",
+          "editable": true,
+          "mode": "path (editable)",
+          "path": "../shared"
+        }
+      ],
+      "lockfile_path": "lambdas/access_counts/uv.lock",
+      "package_family": "zip-lambda",
+      "package_path": "lambdas/access_counts",
+      "python_target": "==3.13.*",
+      "recent_dependency_churn_examples": [
+        {
+          "sha": "9884ec0",
+          "subject": "fix: lockfile resolution"
+        },
+        {
+          "sha": "2bd0aa1",
+          "subject": "perf: updates across the board"
+        },
+        {
+          "sha": "adae9cd",
+          "subject": "access_counts: configurable s3.copy() TransferConfig and awscrt (#4746)"
+        }
+      ],
+      "resolved_numpy_major": null,
+      "resolved_numpy_version": null
+    },
+    {
+      "default_groups": [
+        "test"
+      ],
+      "dependency_groups": [
+        "test"
+      ],
+      "deploy_release_boundary": "zip lambda artifact built from lambdas/es_ingest",
+      "direct_numpy_constraints": [],
+      "distribution_name": "t4_lambda_es_ingest",
+      "internal_source_mode": "path (editable)",
+      "internal_sources": [
+        {
+          "dependency": "quilt-shared",
+          "editable": true,
+          "mode": "path (editable)",
+          "path": "../../py-shared"
+        },
+        {
+          "dependency": "t4-lambda-shared",
+          "editable": true,
+          "mode": "path (editable)",
+          "path": "../shared"
+        }
+      ],
+      "lockfile_path": "lambdas/es_ingest/uv.lock",
+      "package_family": "zip-lambda",
+      "package_path": "lambdas/es_ingest",
+      "python_target": "==3.13.*",
+      "recent_dependency_churn_examples": [
+        {
+          "sha": "9884ec0",
+          "subject": "fix: lockfile resolution"
+        },
+        {
+          "sha": "2bd0aa1",
+          "subject": "perf: updates across the board"
+        },
+        {
+          "sha": "a0c9d89",
+          "subject": "build(deps-dev): bump pytest from 8.4.1 to 9.0.3 in /lambdas/es_ingest (#4820)"
+        }
+      ],
+      "resolved_numpy_major": 1,
+      "resolved_numpy_version": "1.26.4"
+    },
+    {
+      "default_groups": [
+        "test"
+      ],
+      "dependency_groups": [
+        "test"
+      ],
+      "deploy_release_boundary": "zip lambda artifact built from lambdas/iceberg",
+      "direct_numpy_constraints": [],
+      "distribution_name": "t4_lambda_iceberg",
+      "internal_source_mode": "path (editable)",
+      "internal_sources": [
+        {
+          "dependency": "quilt-shared",
+          "editable": true,
+          "mode": "path (editable)",
+          "path": "../../py-shared"
+        }
+      ],
+      "lockfile_path": "lambdas/iceberg/uv.lock",
+      "package_family": "zip-lambda",
+      "package_path": "lambdas/iceberg",
+      "python_target": "==3.13.*",
+      "recent_dependency_churn_examples": [
+        {
+          "sha": "9884ec0",
+          "subject": "fix: lockfile resolution"
+        },
+        {
+          "sha": "2bd0aa1",
+          "subject": "perf: updates across the board"
+        },
+        {
+          "sha": "2e275a0",
+          "subject": "build(deps-dev): bump pytest from 8.4.2 to 9.0.3 in /lambdas/iceberg (#4821)"
+        }
+      ],
+      "resolved_numpy_major": null,
+      "resolved_numpy_version": null
+    },
+    {
+      "default_groups": [
+        "test"
+      ],
+      "dependency_groups": [
+        "prod",
+        "test"
+      ],
+      "deploy_release_boundary": "container lambda image built from lambdas/indexer",
+      "direct_numpy_constraints": [],
+      "distribution_name": "t4_lambda_es_indexer",
+      "internal_source_mode": "path (editable)",
+      "internal_sources": [
+        {
+          "dependency": "quilt-shared",
+          "editable": true,
+          "mode": "path (editable)",
+          "path": "../../py-shared"
+        },
+        {
+          "dependency": "t4-lambda-shared",
+          "editable": true,
+          "mode": "path (editable)",
+          "path": "../shared"
+        }
+      ],
+      "lockfile_path": "lambdas/indexer/uv.lock",
+      "package_family": "container-lambda",
+      "package_path": "lambdas/indexer",
+      "python_target": "==3.13.*",
+      "recent_dependency_churn_examples": [
+        {
+          "sha": "9884ec0",
+          "subject": "fix: lockfile resolution"
+        },
+        {
+          "sha": "af337a7",
+          "subject": "Merge branch 'preview-lambda-7.3.0' into progressive-uv-packaging"
+        },
+        {
+          "sha": "66181d8",
+          "subject": "fix: Refactor lambda packaging to support committed local path sources"
+        }
+      ],
+      "resolved_numpy_major": 1,
+      "resolved_numpy_version": "1.26.4"
+    },
+    {
+      "default_groups": [
+        "test"
+      ],
+      "dependency_groups": [
+        "test"
+      ],
+      "deploy_release_boundary": "zip lambda artifact built from lambdas/manifest_indexer",
+      "direct_numpy_constraints": [],
+      "distribution_name": "t4_lambda_manifest_indexer",
+      "internal_source_mode": "path (editable)",
+      "internal_sources": [
+        {
+          "dependency": "quilt-shared",
+          "editable": true,
+          "mode": "path (editable)",
+          "path": "../../py-shared"
+        },
+        {
+          "dependency": "t4-lambda-shared",
+          "editable": true,
+          "mode": "path (editable)",
+          "path": "../shared"
+        }
+      ],
+      "lockfile_path": "lambdas/manifest_indexer/uv.lock",
+      "package_family": "zip-lambda",
+      "package_path": "lambdas/manifest_indexer",
+      "python_target": "==3.13.*",
+      "recent_dependency_churn_examples": [
+        {
+          "sha": "9884ec0",
+          "subject": "fix: lockfile resolution"
+        },
+        {
+          "sha": "2bd0aa1",
+          "subject": "perf: updates across the board"
+        },
+        {
+          "sha": "97eeb8d",
+          "subject": "build(deps-dev): bump pytest from 8.4.1 to 9.0.3 in /lambdas/manifest_indexer (#4819)"
+        }
+      ],
+      "resolved_numpy_major": 1,
+      "resolved_numpy_version": "1.26.4"
+    },
+    {
+      "default_groups": [
+        "test"
+      ],
+      "dependency_groups": [
+        "test"
+      ],
+      "deploy_release_boundary": "zip lambda artifact built from lambdas/pkgevents",
+      "direct_numpy_constraints": [],
+      "distribution_name": "t4_lambda_pkgevents",
+      "internal_source_mode": "path (editable)",
+      "internal_sources": [
+        {
+          "dependency": "t4-lambda-shared",
+          "editable": true,
+          "mode": "path (editable)",
+          "path": "../shared"
+        }
+      ],
+      "lockfile_path": "lambdas/pkgevents/uv.lock",
+      "package_family": "zip-lambda",
+      "package_path": "lambdas/pkgevents",
+      "python_target": "==3.13.*",
+      "recent_dependency_churn_examples": [
+        {
+          "sha": "9884ec0",
+          "subject": "fix: lockfile resolution"
+        },
+        {
+          "sha": "2bd0aa1",
+          "subject": "perf: updates across the board"
+        },
+        {
+          "sha": "e2a55a0",
+          "subject": "build(deps-dev): bump pytest from 8.4.2 to 9.0.3 in /lambdas/pkgevents (#4823)"
+        }
+      ],
+      "resolved_numpy_major": null,
+      "resolved_numpy_version": null
+    },
+    {
+      "default_groups": [
+        "test"
+      ],
+      "dependency_groups": [
+        "test"
+      ],
+      "deploy_release_boundary": "zip lambda artifact built from lambdas/pkgpush",
+      "direct_numpy_constraints": [],
+      "distribution_name": "t4_lambda_pkgpush",
+      "internal_source_mode": "path (editable)",
+      "internal_sources": [
+        {
+          "dependency": "quilt-shared",
+          "editable": true,
+          "mode": "path (editable)",
+          "path": "../../py-shared"
+        }
+      ],
+      "lockfile_path": "lambdas/pkgpush/uv.lock",
+      "package_family": "zip-lambda",
+      "package_path": "lambdas/pkgpush",
+      "python_target": "==3.13.*",
+      "recent_dependency_churn_examples": [
+        {
+          "sha": "9884ec0",
+          "subject": "fix: lockfile resolution"
+        },
+        {
+          "sha": "2bd0aa1",
+          "subject": "perf: updates across the board"
+        },
+        {
+          "sha": "ad91b95",
+          "subject": "build(deps-dev): bump pytest from 8.4.2 to 9.0.3 in /lambdas/pkgpush (#4832)"
+        }
+      ],
+      "resolved_numpy_major": null,
+      "resolved_numpy_version": null
+    },
+    {
+      "default_groups": [
+        "test"
+      ],
+      "dependency_groups": [
+        "test"
+      ],
+      "deploy_release_boundary": "zip lambda artifact built from lambdas/preview",
+      "direct_numpy_constraints": [],
+      "distribution_name": "t4_lambda_preview",
+      "internal_source_mode": "path (editable)",
+      "internal_sources": [
+        {
+          "dependency": "t4-lambda-shared",
+          "editable": true,
+          "mode": "path (editable)",
+          "path": "../shared"
+        }
+      ],
+      "lockfile_path": "lambdas/preview/uv.lock",
+      "package_family": "zip-lambda",
+      "package_path": "lambdas/preview",
+      "python_target": "==3.13.*",
+      "recent_dependency_churn_examples": [
+        {
+          "sha": "9884ec0",
+          "subject": "fix: lockfile resolution"
+        },
+        {
+          "sha": "af337a7",
+          "subject": "Merge branch 'preview-lambda-7.3.0' into progressive-uv-packaging"
+        },
+        {
+          "sha": "2bd0aa1",
+          "subject": "perf: updates across the board"
+        }
+      ],
+      "resolved_numpy_major": 2,
+      "resolved_numpy_version": "2.4.4"
+    },
+    {
+      "default_groups": [
+        "test"
+      ],
+      "dependency_groups": [
+        "test"
+      ],
+      "deploy_release_boundary": "zip lambda artifact built from lambdas/s3hash",
+      "direct_numpy_constraints": [],
+      "distribution_name": "t4_lambda_s3hash",
+      "internal_source_mode": "path (editable)",
+      "internal_sources": [
+        {
+          "dependency": "quilt-shared",
+          "editable": true,
+          "mode": "path (editable)",
+          "path": "../../py-shared"
+        }
+      ],
+      "lockfile_path": "lambdas/s3hash/uv.lock",
+      "package_family": "zip-lambda",
+      "package_path": "lambdas/s3hash",
+      "python_target": "==3.13.*",
+      "recent_dependency_churn_examples": [
+        {
+          "sha": "9884ec0",
+          "subject": "fix: lockfile resolution"
+        },
+        {
+          "sha": "2bd0aa1",
+          "subject": "perf: updates across the board"
+        },
+        {
+          "sha": "1bc1d52",
+          "subject": "build(deps-dev): bump pytest to 9.0.3 and pytest-asyncio to 1.3 in /lambdas/s3hash (#4826)"
+        }
+      ],
+      "resolved_numpy_major": null,
+      "resolved_numpy_version": null
+    },
+    {
+      "default_groups": [
+        "test"
+      ],
+      "dependency_groups": [
+        "test"
+      ],
+      "deploy_release_boundary": "shared internal lambda support library consumed by lambda packages",
+      "direct_numpy_constraints": [
+        "optional:preview: numpy>=1.26,<3"
+      ],
+      "distribution_name": "t4_lambda_shared",
+      "internal_source_mode": "none",
+      "internal_sources": [],
+      "lockfile_path": "lambdas/shared/uv.lock",
+      "package_family": "shared",
+      "package_path": "lambdas/shared",
+      "python_target": ">=3.12",
+      "recent_dependency_churn_examples": [
+        {
+          "sha": "af337a7",
+          "subject": "Merge branch 'preview-lambda-7.3.0' into progressive-uv-packaging"
+        },
+        {
+          "sha": "dec67d2",
+          "subject": "fix: align shared preview dependencies"
+        },
+        {
+          "sha": "6d6fcf8",
+          "subject": "Merge branch 'preview-lambda-shared' into progressive-uv-packaging"
+        }
+      ],
+      "resolved_numpy_major": 2,
+      "resolved_numpy_version": "2.4.4"
+    },
+    {
+      "default_groups": [
+        "test"
+      ],
+      "dependency_groups": [
+        "test"
+      ],
+      "deploy_release_boundary": "zip lambda artifact built from lambdas/status_reports",
+      "direct_numpy_constraints": [],
+      "distribution_name": "t4_lambda_status_reports",
+      "internal_source_mode": "none",
+      "internal_sources": [],
+      "lockfile_path": "lambdas/status_reports/uv.lock",
+      "package_family": "zip-lambda",
+      "package_path": "lambdas/status_reports",
+      "python_target": "==3.13.*",
+      "recent_dependency_churn_examples": [
+        {
+          "sha": "2bd0aa1",
+          "subject": "perf: updates across the board"
+        },
+        {
+          "sha": "418a625",
+          "subject": "build(deps-dev): bump pytest from 8.4.2 to 9.0.3 in /lambdas/status_reports (#4829)"
+        },
+        {
+          "sha": "09b2b3c",
+          "subject": "build(deps): bump aiohttp from 3.13.3 to 3.13.4 in /lambdas/status_reports (#4800)"
+        }
+      ],
+      "resolved_numpy_major": null,
+      "resolved_numpy_version": null
+    },
+    {
+      "default_groups": [
+        "test"
+      ],
+      "dependency_groups": [
+        "prod",
+        "test"
+      ],
+      "deploy_release_boundary": "container lambda image built from lambdas/tabular_preview",
+      "direct_numpy_constraints": [
+        "dependencies: numpy ~= 2.3"
+      ],
+      "distribution_name": "t4_lambda_tabular_preview",
+      "internal_source_mode": "path (editable)",
+      "internal_sources": [
+        {
+          "dependency": "t4-lambda-shared",
+          "editable": true,
+          "mode": "path (editable)",
+          "path": "../shared"
+        }
+      ],
+      "lockfile_path": "lambdas/tabular_preview/uv.lock",
+      "package_family": "container-lambda",
+      "package_path": "lambdas/tabular_preview",
+      "python_target": "==3.13.*",
+      "recent_dependency_churn_examples": [
+        {
+          "sha": "9884ec0",
+          "subject": "fix: lockfile resolution"
+        },
+        {
+          "sha": "2bd0aa1",
+          "subject": "perf: updates across the board"
+        },
+        {
+          "sha": "284e026",
+          "subject": "build(deps): bump pillow from 12.1.1 to 12.2.0 in /lambdas/tabular_preview (#4817)"
+        }
+      ],
+      "resolved_numpy_major": 2,
+      "resolved_numpy_version": "2.4.4"
+    },
+    {
+      "default_groups": [
+        "test"
+      ],
+      "dependency_groups": [
+        "prod",
+        "test"
+      ],
+      "deploy_release_boundary": "container lambda image built from lambdas/thumbnail",
+      "direct_numpy_constraints": [
+        "dependencies: numpy~=2.3"
+      ],
+      "distribution_name": "t4_lambda_thumbnail",
+      "internal_source_mode": "path (editable)",
+      "internal_sources": [
+        {
+          "dependency": "t4_lambda_shared",
+          "editable": true,
+          "mode": "path (editable)",
+          "path": "../shared"
+        }
+      ],
+      "lockfile_path": "lambdas/thumbnail/uv.lock",
+      "package_family": "container-lambda",
+      "package_path": "lambdas/thumbnail",
+      "python_target": "~=3.13.0",
+      "recent_dependency_churn_examples": [
+        {
+          "sha": "9884ec0",
+          "subject": "fix: lockfile resolution"
+        },
+        {
+          "sha": "af337a7",
+          "subject": "Merge branch 'preview-lambda-7.3.0' into progressive-uv-packaging"
+        },
+        {
+          "sha": "2bd0aa1",
+          "subject": "perf: updates across the board"
+        }
+      ],
+      "resolved_numpy_major": 2,
+      "resolved_numpy_version": "2.4.4"
+    },
+    {
+      "default_groups": [
+        "test"
+      ],
+      "dependency_groups": [
+        "test"
+      ],
+      "deploy_release_boundary": "zip lambda artifact built from lambdas/transcode",
+      "direct_numpy_constraints": [],
+      "distribution_name": "t4_lambda_transcode",
+      "internal_source_mode": "path (editable)",
+      "internal_sources": [
+        {
+          "dependency": "t4-lambda-shared",
+          "editable": true,
+          "mode": "path (editable)",
+          "path": "../shared"
+        }
+      ],
+      "lockfile_path": "lambdas/transcode/uv.lock",
+      "package_family": "zip-lambda",
+      "package_path": "lambdas/transcode",
+      "python_target": "==3.13.*",
+      "recent_dependency_churn_examples": [
+        {
+          "sha": "9884ec0",
+          "subject": "fix: lockfile resolution"
+        },
+        {
+          "sha": "2bd0aa1",
+          "subject": "perf: updates across the board"
+        },
+        {
+          "sha": "752dd4a",
+          "subject": "build(deps-dev): bump pytest from 8.4.2 to 9.0.3 in /lambdas/transcode (#4847)"
+        }
+      ],
+      "resolved_numpy_major": null,
+      "resolved_numpy_version": null
+    },
+    {
+      "default_groups": [
+        "test"
+      ],
+      "dependency_groups": [
+        "test"
+      ],
+      "deploy_release_boundary": "shared internal Python library consumed by lambdas/services",
+      "direct_numpy_constraints": [
+        "optional:es: numpy < 2"
+      ],
+      "distribution_name": "quilt-shared",
+      "internal_source_mode": "none",
+      "internal_sources": [],
+      "lockfile_path": "py-shared/uv.lock",
+      "package_family": "shared",
+      "package_path": "py-shared",
+      "python_target": ">= 3.9, < 4",
+      "recent_dependency_churn_examples": [
+        {
+          "sha": "2bd0aa1",
+          "subject": "perf: updates across the board"
+        },
+        {
+          "sha": "0b5f5d7",
+          "subject": "fix: restore es numpy cap"
+        },
+        {
+          "sha": "dec67d2",
+          "subject": "fix: align shared preview dependencies"
+        }
+      ],
+      "resolved_numpy_major": 1,
+      "resolved_numpy_version": "1.26.4"
+    },
+    {
+      "default_groups": [],
+      "dependency_groups": [],
+      "deploy_release_boundary": "in-repo documentation codeblock validation tool",
+      "direct_numpy_constraints": [],
+      "distribution_name": "testdocs",
+      "internal_source_mode": "path (editable)",
+      "internal_sources": [
+        {
+          "dependency": "quilt3",
+          "editable": true,
+          "mode": "path (editable)",
+          "path": "../api/python"
+        }
+      ],
+      "lockfile_path": "testdocs/uv.lock",
+      "package_family": "tooling",
+      "package_path": "testdocs",
+      "python_target": ">=3.11,<4",
+      "recent_dependency_churn_examples": [
+        {
+          "sha": "33ef57a",
+          "subject": "fix: tests"
+        },
+        {
+          "sha": "a69bb55",
+          "subject": "perf: updates"
+        },
+        {
+          "sha": "f52373e",
+          "subject": "perf: lock"
+        }
+      ],
+      "resolved_numpy_major": 2,
+      "resolved_numpy_version": "2.4.4"
+    }
+  ]
+}

@@ -31,7 +31,7 @@ def list(
         fingerprint=fingerprint,
         status=_graphql_client.APIKeyStatus(status) if status else None,
     )
-    return [APIKey(**k.model_dump()) for k in result]
+    return [APIKey(**k.model_dump()) for k in util.unwrap_result(result)]
 
 
 def get(id: str) -> T.Optional[APIKey]:
@@ -44,7 +44,7 @@ def get(id: str) -> T.Optional[APIKey]:
     Returns:
         The API key, or None if not found.
     """
-    result = util.get_client().admin_api_key_get(id=id)
+    result = util.unwrap_result(util.get_client().admin_api_key_get(id=id))
     if result is None:
         return None
     return APIKey(**result.model_dump())

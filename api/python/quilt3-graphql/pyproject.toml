@@ -7,7 +7,7 @@ requires-python = ">=3.12"
 
 [dependency-groups]
 dev = [
-    "ariadne-codegen ~= 0.16.0",
+    "ariadne-codegen ~= 0.18.0",
 ]
 
 [tool.ariadne-codegen]
@@ -24,9 +24,7 @@ base_client_name = "BaseClient"
 include_all_inputs = false
 include_all_enums = false
 plugins = [
-    "ariadne_codegen.contrib.shorter_results.ShorterResultsPlugin",
-    "ariadne_codegen.contrib.shorter_results.ShorterResultsPlugin",
-    "ariadne_codegen.contrib.shorter_results.ShorterResultsPlugin",
+    "ariadne_codegen.contrib.shorter_results.ShorterResultsPlugin"
 ]
 
 [tool.ariadne-codegen.scalars.Datetime]

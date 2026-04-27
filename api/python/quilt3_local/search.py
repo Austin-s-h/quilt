@@ -153,7 +153,7 @@ def decode_cursor(cursor: str) -> dict:
 
 
 def _page(hits: list[dict], *, offset: int, size: int, cursor_payload: dict | None, kind: str) -> dict:
-    page_hits = hits[offset:offset + size]
+    page_hits = hits[offset : offset + size]
     next_cursor = None
     if offset + size < len(hits) and cursor_payload is not None:
         next_cursor = _encode_cursor(kind, {**cursor_payload, "offset": offset + size})
@@ -326,10 +326,7 @@ def _package_stats(hits: list[dict]) -> dict:
         "modified": _datetime_extents([hit["modified"] for hit in hits]),
         "size": _number_extents([hit["size"] for hit in hits]),
         "entries": _number_extents([hit["totalEntriesCount"] for hit in hits]),
-        "workflow": _keyword_extents([
-            _workflow_id(hit["workflow"]) or ""
-            for hit in hits
-        ]),
+        "workflow": _keyword_extents([_workflow_id(hit["workflow"]) or "" for hit in hits]),
         "userMeta": [],
         "userMetaTruncated": False,
     }
@@ -424,7 +421,12 @@ async def search_more_packages(after: str, size: int | None = None) -> dict:
         user_meta_filters=payload.get("userMetaFilters"),
     )
     if result["__typename"] != "PackagesSearchResultSet":
-        return {"__typename": "OperationError", "name": "CursorError", "message": "Search cursor is invalid.", "context": None}
+        return {
+            "__typename": "OperationError",
+            "name": "CursorError",
+            "message": "Search cursor is invalid.",
+            "context": None,
+        }
     ordered = _sort_hits(result["hits"], payload.get("order"), key_field="name")
     return _page(
         ordered,
@@ -443,7 +445,12 @@ async def search_more_objects(after: str, size: int | None = None) -> dict:
         filter=payload.get("filter"),
     )
     if result["__typename"] != "ObjectsSearchResultSet":
-        return {"__typename": "OperationError", "name": "CursorError", "message": "Search cursor is invalid.", "context": None}
+        return {
+            "__typename": "OperationError",
+            "name": "CursorError",
+            "message": "Search cursor is invalid.",
+            "context": None,
+        }
     ordered = _sort_hits(result["hits"], payload.get("order"), key_field="key")
     return _page(
         ordered,
@@ -499,7 +506,9 @@ def _bucket_agg_hits(hits: list[dict]) -> list[dict]:
 
 async def search_sample(bucket: str) -> dict:
     hits = await object_hits(buckets_filter=[bucket])
-    preferred = [hit for hit in hits if hit["ext"] in {".parquet", ".csv", ".tsv", ".txt", ".md", ".pdf", ".json", ".ipynb"}]
+    preferred = [
+        hit for hit in hits if hit["ext"] in {".parquet", ".csv", ".tsv", ".txt", ".md", ".pdf", ".json", ".ipynb"}
+    ]
     ordered = _sort_hits(preferred or hits, "NEWEST", key_field="key")
     return {"aggregations": {"objects": {"buckets": _bucket_agg_hits(ordered[:MAX_SAMPLE_OBJECTS])}}}
 

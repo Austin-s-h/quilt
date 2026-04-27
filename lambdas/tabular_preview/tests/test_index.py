@@ -15,26 +15,30 @@ def patch_urlopen(data: bytes):
     return mock.patch("t4_lambda_tabular_preview.urlopen", return_value=io.BytesIO(data))
 
 
+def _make_event(query, headers=None):
+    return {
+        "httpMethod": "POST",
+        "path": "/foo",
+        "pathParameters": {},
+        "queryStringParameters": query or None,
+        "headers": headers or None,
+        "body": None,
+        "isBase64Encoded": False,
+    }
+
+
 @pytest.mark.parametrize(
     "data, handler_name",
     [
         (
-            (
-                b"a,b\n"
-                b"1,2\n"
-                b"x,y\n"
-            ),
+            (b"a,b\n1,2\nx,y\n"),
             "csv",
         ),
         (
-            (
-                b"a\tb\n"
-                b"1\t2\n"
-                b"x\ty\n"
-            ),
+            (b"a\tb\n1\t2\nx\ty\n"),
             "tsv",
         ),
-    ]
+    ],
 )
 def test_preview_csv(handler_name, data):
     with patch_urlopen(data) as urlopen_mock:
@@ -50,10 +54,12 @@ def test_preview_csv(handler_name, data):
         assert headers == {
             "Content-Type": "application/vnd.apache.arrow.file",
             "Content-Encoding": "gzip",
-            QUILT_INFO_HEADER: json.dumps({
-                "truncated": False,
-                "rows_skipped": 0,
-            }),
+            QUILT_INFO_HEADER: json.dumps(
+                {
+                    "truncated": False,
+                    "rows_skipped": 0,
+                }
+            ),
         }
         with pyarrow.ipc.open_file(io.BytesIO(gzip.decompress(body))) as reader:
             t = reader.read_all()
@@ -70,7 +76,7 @@ def test_preview_csv(handler_name, data):
         ("simple/test.xls", "excel"),
         ("simple/test.xlsx", "excel"),
         ("simple/test.jsonl", "jsonl"),
-    ]
+    ],
 )
 def test_preview_simple(filename, handler_name):
     data = (pathlib.Path(__file__).parent / "data" / filename).read_bytes()
@@ -87,15 +93,13 @@ def test_preview_simple(filename, handler_name):
         assert headers == {
             "Content-Type": "text/csv",
             "Content-Encoding": "gzip",
-            QUILT_INFO_HEADER: json.dumps({
-                "truncated": False,
-            }),
+            QUILT_INFO_HEADER: json.dumps(
+                {
+                    "truncated": False,
+                }
+            ),
         }
-        assert gzip.decompress(body) == (
-            b"a,b\n"
-            b"1,2\n"
-            b"x,y\n"
-        )
+        assert gzip.decompress(body) == (b"a,b\n1,2\nx,y\n")
 
 
 @pytest.mark.parametrize(
@@ -180,20 +184,32 @@ def test_preview_simple_parquet():
         assert headers == {
             "Content-Type": "text/csv",
             "Content-Encoding": "gzip",
-            QUILT_INFO_HEADER: json.dumps({
-                "truncated": False,
-                "meta": {
-                    "created_by": "parquet-cpp-arrow version 7.0.0",
-                    "format_version": "1.0",
-                    "num_row_groups": 1,
-                    "schema": {"names": ["a", "b"]},
-                    "serialized_size": 456,
-                    "shape": (2, 2),
-                },
-            }),
+            QUILT_INFO_HEADER: json.dumps(
+                {
+                    "truncated": False,
+                    "meta": {
+                        "created_by": "parquet-cpp-arrow version 7.0.0",
+                        "format_version": "1.0",
+                        "num_row_groups": 1,
+                        "schema": {"names": ["a", "b"]},
+                        "serialized_size": 456,
+                        "shape": (2, 2),
+                    },
+                }
+            ),
         }
-        assert gzip.decompress(body) == (
-            b"a,b\n"
-            b"1,2\n"
-            b"x,y\n"
-        )
+        assert gzip.decompress(body) == (b"a,b\n1,2\nx,y\n")
+
+
+def test_is_s3_url_rejects_local_proxy_url():
+    assert not t4_lambda_tabular_preview.is_s3_url("http://localhost:3000/__s3proxy/example-bucket/sample.csv")
+
+
+def test_lambda_handler_rejects_local_url():
+    response = t4_lambda_tabular_preview.lambda_handler(
+        _make_event({"url": "http://localhost:3000/not-a-proxy/sample.csv", "input": "csv"}),
+        None,
+    )
+
+    assert response["statusCode"] == 400
+    assert "S3 virtual-host URL" in json.loads(response["body"])["title"]

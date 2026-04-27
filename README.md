@@ -64,18 +64,18 @@ Use this to find where each major part of Quilt lives.
 1. Fork the repository, clone your fork, and create a branch from `upstream/master`:
 
    ```bash
-  git clone https://github.com/<your-github-user>/quilt
-  cd quilt
-  git remote add upstream https://github.com/quiltdata/quilt
-  git fetch upstream
-  git checkout -b my-change upstream/master
+   git clone https://github.com/your-github-user/quilt
+   cd quilt
+   git remote add upstream <https://github.com/quiltdata/quilt>
+   git fetch upstream
+   git checkout -b my-change upstream/master
    ```
 
-  Push your branch to your fork and open a pull request from there:
+   Push your branch to your fork and open a pull request from there:
 
-  ```bash
-  git push -u origin my-change
-  ```
+   ```bash
+   git push -u origin my-change
+   ```
 
 2. Install Python task runner:
 

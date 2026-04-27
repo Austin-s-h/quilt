@@ -1090,14 +1090,71 @@ class AnnDataFormatHandler(BaseFormatHandler):
         self.handled_types.add(ad.AnnData)
         return super().handles_type(typ)
 
+    @staticmethod
+    def _is_arrow_string_array(array) -> bool:
+        return type(array).__name__ == 'ArrowStringArray'
+
+    @classmethod
+    def _normalize_arrow_string_index(cls, index):
+        array = getattr(index, 'array', None)
+        if not cls._is_arrow_string_array(array):
+            return index
+
+        import pandas as pd
+
+        return pd.Index(index.to_numpy(dtype=object), name=index.name, dtype=object)
+
+    @classmethod
+    def _frame_needs_arrow_string_normalization(cls, frame) -> bool:
+        if cls._is_arrow_string_array(getattr(frame.index, 'array', None)):
+            return True
+        if cls._is_arrow_string_array(getattr(frame.columns, 'array', None)):
+            return True
+
+        for _, series in frame.items():
+            if cls._is_arrow_string_array(getattr(series, 'array', None)):
+                return True
+            if str(series.dtype) != 'category':
+                continue
+            if cls._is_arrow_string_array(getattr(series.cat.categories, 'array', None)):
+                return True
+
+        return False
+
+    @classmethod
+    def _normalize_arrow_string_frame(cls, frame) -> None:
+        frame.index = cls._normalize_arrow_string_index(frame.index)
+        frame.columns = cls._normalize_arrow_string_index(frame.columns)
+
+        for column_name, series in frame.items():
+            if cls._is_arrow_string_array(getattr(series, 'array', None)):
+                frame[column_name] = series.astype(object)
+                continue
+            if str(series.dtype) != 'category':
+                continue
+            categories = series.cat.categories
+            if cls._is_arrow_string_array(getattr(categories, 'array', None)):
+                frame[column_name] = series.cat.rename_categories(categories.astype(object))
+
     def serialize(self, obj, meta=None, ext=None, **format_opts):
         opts = self.get_opts(meta, format_opts)
         opts_with_defaults = copy.deepcopy(self.defaults)
         opts_with_defaults.update(opts)
 
+        ann_data = obj
+        normalized_frame_names = [
+            attr_name
+            for attr_name in ('obs', 'var')
+            if self._frame_needs_arrow_string_normalization(getattr(obj, attr_name))
+        ]
+        if normalized_frame_names:
+            ann_data = obj.copy()
+            for attr_name in normalized_frame_names:
+                self._normalize_arrow_string_frame(getattr(ann_data, attr_name))
+
         with tempfile.TemporaryDirectory() as td:
             path = Path(td) / 'data.h5ad'
-            obj.write(path, **opts_with_defaults)
+            ann_data.write(path, **opts_with_defaults)
             data = path.read_bytes()
 
         return data, self._update_meta(meta, additions=opts_with_defaults)

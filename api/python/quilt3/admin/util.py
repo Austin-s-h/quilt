@@ -4,7 +4,18 @@ from .. import _graphql_client
 from . import exceptions, types
 
 
+def unwrap_result(result: T.Any) -> T.Any:
+    current = result
+    while isinstance(current, _graphql_client.BaseModel):
+        fields = tuple(type(current).model_fields)
+        if len(fields) != 1:
+            return current
+        current = getattr(current, fields[0])
+    return current
+
+
 def handle_errors(result: _graphql_client.BaseModel) -> _graphql_client.BaseModel:
+    result = unwrap_result(result)
     if isinstance(result, (_graphql_client.InvalidInputSelection, _graphql_client.OperationErrorSelection)):
         raise exceptions.Quilt3AdminError(result)
     return result

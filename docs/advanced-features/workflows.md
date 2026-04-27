@@ -320,7 +320,7 @@ expression](https://datatracker.ietf.org/doc/html/draft-handrews-json-schema-val
 > By default, patterns are not anchored.
 > You can explicitly add start (`^`) and end (`$`) markers as needed.
 
-#### Example
+#### Example 1
 
 ```yaml
 workflows:
@@ -336,7 +336,7 @@ You can validate the names, sizes and metadata of files in the package with
 objects known as *package entries*. Each package entry defines a logical key
 (its relative path and name in the parent package), size (in bytes) and metadata.
 
-#### Example
+#### Example 2
 
 ```yaml
 workflows:

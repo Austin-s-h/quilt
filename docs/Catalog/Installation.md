@@ -190,8 +190,7 @@ which enables more granular infrastructure-as-code control.
 Terraform users **must** request a compatible CloudFormation template from Quilt:
 
 > Contact your account manager to obtain a template that works with Terraform and
-includes necessary variables.
-
+> includes necessary variables.
 > **Important:** Use Quilt-provided Terraform modules and CloudFormation templates
 > without modification. Customizing these resources may result in deployment issues
 > and can affect your service agreement coverage. If you require specific

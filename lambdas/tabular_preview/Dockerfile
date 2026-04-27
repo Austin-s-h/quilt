@@ -1,6 +1,6 @@
 ARG FUNCTION_DIR="/function"
 
-FROM public.ecr.aws/lambda/python:3.13.2025.12.18.13@sha256:787dc4ac965c72e74ecdc25ec16917b654239db1a655b8a5f1f24e495e2e4d18 AS base
+FROM public.ecr.aws/lambda/python:3.13.2026.04.22.12@sha256:696856dce3cf45961e3c911e30e86657eccaaca1625435d2d58fe1e61594f977 AS base
 
 FROM base AS build
 
@@ -20,6 +20,7 @@ RUN --mount=type=cache,target=/root/.cache \
     uv sync \
     --locked \
     --no-dev \
+    --no-default-groups \
     --group=prod \
     --no-install-project
 
@@ -29,6 +30,7 @@ RUN --mount=type=cache,target=/root/.cache \
     uv sync \
     --locked \
     --no-dev \
+    --no-default-groups \
     --group=prod \
     --no-editable
 

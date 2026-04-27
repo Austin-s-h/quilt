@@ -1,4 +1,4 @@
-#!/usr/bin/env zsh
+#!/usr/bin/env bash
 
 TEST_FILES=('data' 'notebooks' 'scripts' 'test_workflow' 'data.csv' 'example.jsonl' 'quilt_summarize.json' 'vega.json')
 echo "Removing files and directories created by tests..."

@@ -58,6 +58,12 @@ pages:
  - quilt3: api.md
  - quilt3.Bucket: Bucket.md
  - quilt3.Package: Package.md
+ - Authentication Guide: authentication.md
+ - CLI and environment: cli.md
+ - Custom SSL certificates: custom-ssl-certificates.md
+ - Limitations: limitations.md
+ - quilt3.Admin: Admin.md
+ - quilt3.Hooks: Hooks.md
 
 # These options all show off their default values. You don't have to add
 # them to your configuration if you're fine with the default.

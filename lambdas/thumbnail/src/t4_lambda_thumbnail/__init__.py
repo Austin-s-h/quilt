@@ -25,20 +25,21 @@ import bioio_ome_tiff
 import bioio_tifffile
 import dask.array as da
 import numpy as np
-import pdf2image
 import pptx
 import requests
 from bioio import BioImage
-from pdf2image.exceptions import (
-    PDFInfoNotInstalledError,
-    PDFPageCountError,
-    PDFSyntaxError,
-    PopplerNotInstalledError,
-)
 from PIL import Image
 
 from t4_lambda_shared.decorator import QUILT_INFO_HEADER, api, validate
 from t4_lambda_shared.utils import get_default_origins, make_json_response
+
+from .pdf_thumbnail import (
+    PDFThumbError,
+    count_pdf_pages,
+    get_pdf_render_dpi,
+    render_pdf_page,
+    resize_pdf_page,
+)
 
 # See https://pillow.readthedocs.io/en/stable/reference/Image.html#PIL.Image.open.
 # Use 0 to disable the limit.
@@ -65,7 +66,7 @@ SUPPORTED_SIZES = [
     (640, 480),
     (960, 640),
     (1024, 768),
-    (2048, 1536)
+    (2048, 1536),
 ]
 # Map URL parameters to actual sizes, e.g. 'w128h128' -> (128, 128)
 SIZE_PARAMETER_MAP = {f'w{w}h{h}': (w, h) for w, h in SUPPORTED_SIZES}
@@ -73,27 +74,19 @@ SIZE_PARAMETER_MAP = {f'w{w}h{h}': (w, h) for w, h in SUPPORTED_SIZES}
 SCHEMA = {
     'type': 'object',
     'properties': {
-        'url': {
-            'type': 'string'
-        },
-        'size': {
-            'enum': list(SIZE_PARAMETER_MAP)
-        },
-        'input': {
-            'enum': ['pdf', 'pptx']
-        },
+        'url': {'type': 'string'},
+        'size': {'enum': list(SIZE_PARAMETER_MAP)},
+        'input': {'enum': ['pdf', 'pptx']},
         'page': {
             'type': 'string',
             'pattern': r'^\d+$',
         },
         # not boolean because URL params like "true" always get converted to strings
         # clients should do this ONCE per document because it incurs latency and memory
-        'countPages': {
-            'enum': ['true', 'false']
-        }
+        'countPages': {'enum': ['true', 'false']},
     },
     'required': ['url', 'size'],
-    'additionalProperties': False
+    'additionalProperties': False,
 }
 
 
@@ -123,7 +116,7 @@ def generate_factor_pairs(x: int) -> List[Tuple[int, int]]:
 
     for i in range(1, int(sqrt(x) + 1), step):
         if x % i == 0:
-            pairs.append((i, x//i))
+            pairs.append((i, x // i))
 
     return pairs
 
@@ -184,8 +177,9 @@ def _format_n_dim_ndarray(img: BioImage) -> da.Array:
 
     # Even though the reader was n-dim,
     # check if the actual data is similar to YXC ("YX-RGBA" or "YX-RGB") and return
-    if (len(img.reader.dask_data.shape) == 3 and (
-            img.reader.dask_data.shape[2] == 3 or img.reader.dask_data.shape[2] == 4)):
+    if len(img.reader.dask_data.shape) == 3 and (
+        img.reader.dask_data.shape[2] == 3 or img.reader.dask_data.shape[2] == 4
+    ):
         return img.reader.dask_data
 
     # Check which dimensions are available
@@ -204,18 +198,12 @@ def _format_n_dim_ndarray(img: BioImage) -> da.Array:
             if "Z" in img.reader.dims.order:
                 # Add padding to the top and left of the projection
                 padded = da.pad(
-                    norm_img(img.dask_data[0, i, :, :, :].max(axis=0)),
-                    ((5, 0), (5, 0)) + s_pad,
-                    mode="constant"
+                    norm_img(img.dask_data[0, i, :, :, :].max(axis=0)), ((5, 0), (5, 0)) + s_pad, mode="constant"
                 )
                 projections.append(padded)
             else:
                 # Add padding to the top and the left of the projection
-                padded = da.pad(
-                    norm_img(img.dask_data[0, i, 0, :, :]),
-                    ((5, 0), (5, 0)) + s_pad,
-                    mode="constant"
-                )
+                padded = da.pad(norm_img(img.dask_data[0, i, 0, :, :]), ((5, 0), (5, 0)) + s_pad, mode="constant")
                 projections.append(padded)
 
         # Get min grid shape
@@ -272,24 +260,26 @@ def format_aicsimage_to_prepped(img: BioImage) -> da.Array:
 def pptx_to_pdf(*, path: str, page: int):
     with tempfile.TemporaryDirectory() as out_dir:
         with tempfile.TemporaryDirectory() as tmp_dir:
-            subprocess.run(
-                (
-                    "libreoffice",
-                    "--convert-to",
-                    'pdf:impress_pdf_Export:{"PageRange":{"type":"string","value":"%s-%s"}}' % (page, page),
-                    "--outdir",
-                    out_dir,
-                    path,
-                ),
-                check=True,
-                env={
-                    **os.environ,
-                    # This is needed because LibreOffice writes some stuff to $HOME/.config.
-                    "HOME": tmp_dir,
-                },
-            )
+            try:
+                subprocess.run(
+                    (
+                        "libreoffice",
+                        "--convert-to",
+                        'pdf:impress_pdf_Export:{"PageRange":{"type":"string","value":"%s-%s"}}' % (page, page),
+                        "--outdir",
+                        out_dir,
+                        path,
+                    ),
+                    check=True,
+                    env={
+                        **os.environ,
+                        # This is needed because LibreOffice writes some stuff to $HOME/.config.
+                        "HOME": tmp_dir,
+                    },
+                )
+            except FileNotFoundError as exc:
+                raise PDFThumbError("Missing required command: libreoffice") from exc
         yield os.path.join(out_dir, os.path.splitext(os.path.basename(path))[0] + ".pdf")
-
 
 
 def handle_exceptions(*exception_types):
@@ -302,43 +292,27 @@ def handle_exceptions(*exception_types):
                 return make_json_response(500, {'error': str(e)})
 
         return wrapper
+
     return decorator
 
 
-class PDFThumbError(Exception):
-    pass
-
-
 def pdf_thumb(*, path: str, page: int, size: int):
-    try:
-        pages = pdf2image.convert_from_path(
-            path,
-            # respect width but not necessarily height to preserve aspect ratio
-            size=(size, None),
-            fmt="JPEG",
-            first_page=page,
-            last_page=page,
-        )
-        return pages[0]
-    except (
-        IndexError,
-        PDFInfoNotInstalledError,
-        PDFPageCountError,
-        PDFSyntaxError,
-        PopplerNotInstalledError
-    ) as e:
-        raise PDFThumbError(str(e))
+    render_dpi = get_pdf_render_dpi()
+    page_image = render_pdf_page(path=path, page=page, dpi=render_dpi)
+    return resize_pdf_page(page_image, size=size), render_dpi
 
 
 def handle_pdf(*, path: str, page: int, size: int, count_pages: bool):
     fmt = "JPEG"
-    thumb = pdf_thumb(path=path, page=page, size=size)
+    thumb, render_dpi = pdf_thumb(path=path, page=page, size=size)
     info = {
         "thumbnail_format": fmt,
         "thumbnail_size": thumb.size,
+        "pdf_render_dpi": render_dpi,
+        "pdf_resize_filter": "LANCZOS",
     }
     if count_pages:
-        info["page_count"] = pdf2image.pdfinfo_from_path(path)["Pages"]
+        info["page_count"] = count_pdf_pages(path)
 
     thumbnail_bytes = BytesIO()
     thumb.save(thumbnail_bytes, fmt)
@@ -387,9 +361,21 @@ def _convert_I16_to_L(arr):
     return Image.fromarray((arr // 256).astype('uint8'))
 
 
+def _convert_high_bit_depth_color(arr):
+    # Pillow cannot build images directly from uint16 RGB(A) ndarrays.
+    if arr.dtype == np.uint16 and arr.ndim == 3 and arr.shape[2] in (3, 4):
+        return Image.fromarray((arr // 256).astype('uint8'))
+
+    return None
+
+
 def generate_thumbnail(arr, size):
+    converted = _convert_high_bit_depth_color(arr)
+    if converted is not None:
+        img = converted
+    else:
     # Send to Image object for thumbnail generation and saving to bytes
-    img = Image.fromarray(arr)
+        img = Image.fromarray(arr)
 
     # The mode I;16 has limited resamplers for scaling, and throws an error.
     # Rather than use a non-default poor-quality resampler, convert to a better-handled mode.
@@ -488,8 +474,5 @@ def lambda_handler(request):
                 thumbnail_format=thumbnail_format,
             )
 
-    headers = {
-        'Content-Type': Image.MIME[thumbnail_format],
-        QUILT_INFO_HEADER: json.dumps(info)
-    }
+    headers = {'Content-Type': Image.MIME[thumbnail_format], QUILT_INFO_HEADER: json.dumps(info)}
     return 200, data, headers

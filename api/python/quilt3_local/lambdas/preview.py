@@ -86,7 +86,9 @@ def lambda_handler(request):
         return make_json_response(400, {"title": "Unexpected max_bytes= value", "detail": str(error)})
 
     if not _is_valid_source_url(url):
-        return make_json_response(400, {"title": "Invalid url=. Expected S3 virtual-host URL or local object proxy URL."})
+        return make_json_response(
+            400, {"title": "Invalid url=. Expected S3 virtual-host URL or local object proxy URL."}
+        )
 
     try:
         line_count = _str_to_line_count(request.args.get("line_count", str(CATALOG_LIMIT_LINES)))
@@ -160,23 +162,26 @@ def extract_vcf(head):
     data = []
     variants = []
     limit = MIN_VCF_COLS + 1
-
     for line in head:
         if line.startswith("##"):
             meta.append(line)
         elif line.startswith("#"):
-            header = line
-        else:
-            variants.append(line.split("\t", limit))
-            data.append(line)
+            columns = line.split("\t")
+            header = columns[:limit]
+            variants = columns[limit:]
+        elif line:
+            data.append(line.split("\t")[:limit])
 
-    if header is None:
-        return "", {"warnings": "Invalid VCF header"}
+    html = ""
+    if header:
+        df = pandas.DataFrame(data, columns=header)
+        html = remove_pandas_footer(df._repr_html_())
 
-    columns = header.lstrip("#").split("\t", limit)
-    df = pandas.DataFrame(variants, columns=columns)
-    html = remove_pandas_footer(df._repr_html_())
-    return html, {"note": TRUNCATED, "meta": meta, "lines": data}
+    return html, {
+        "data": {"meta": meta, "header": header, "data": data},
+        "metadata": {"variants": variants, "variant_count": len(variants)},
+        "note": TRUNCATED,
+    }
 
 
 def extract_txt(head):

@@ -1,278 +1,454 @@
+<a id="quilt3.packages"></a>
 
-# Package()  {#Package}
+# packages
+
+<a id="quilt3.packages.PackageEntry"></a>
+
+# PackageEntry
+
+Represents an entry at a logical key inside a package.
+
+<a id="quilt3.packages.PackageEntry.__init__"></a>
+
+## PackageEntry.\_\_init\_\_(physical\_key, size, hash\_obj, meta)
+
+Creates an entry.
+
+**Arguments**:
+
+- `physical_key` - a URI (either `s3://` or `file://`)
+- `size(number)` - size of object in bytes
+- `hash({'type'` - string, 'value': string}): hash object
+  for example: {'type': 'SHA256', 'value': 'bb08a...'}
+- `meta(dict)` - metadata dictionary
+  
+
+**Returns**:
+
+  a PackageEntry
+
+<a id="quilt3.packages.PackageEntry.as_dict"></a>
+
+## PackageEntry.as\_dict()
+
+Returns dict representation of entry.
+
+<a id="quilt3.packages.PackageEntry.set_meta"></a>
+
+## PackageEntry.set\_meta(meta)
+
+Sets the user_meta for this PackageEntry.
+
+<a id="quilt3.packages.PackageEntry.set"></a>
+
+## PackageEntry.set(path=None, meta=None)
+
+Returns self with the physical key set to path.
+
+**Arguments**:
+
+- `path(string)` - new path to place at logical_key in the package
+  Currently only supports a path on local disk
+- `meta(dict)` - metadata dict to attach to entry. If meta is provided, set just
+  updates the meta attached to logical_key without changing anything
+  else in the entry
+  
+
+**Returns**:
+
+  self
+
+<a id="quilt3.packages.PackageEntry.get"></a>
+
+## PackageEntry.get()
+
+Returns the physical key of this PackageEntry.
+
+<a id="quilt3.packages.PackageEntry.get_cached_path"></a>
+
+## PackageEntry.get\_cached\_path()
+
+Returns a locally cached physical key, if available.
+
+<a id="quilt3.packages.PackageEntry.get_bytes"></a>
+
+## PackageEntry.get\_bytes(use\_cache\_if\_available=True)
+
+Returns the bytes of the object this entry corresponds to. If 'use_cache_if_available'=True, will first try to
+retrieve the bytes from cache.
+
+<a id="quilt3.packages.PackageEntry.get_as_json"></a>
+
+## PackageEntry.get\_as\_json(use\_cache\_if\_available=True)
+
+Returns a JSON file as a `dict`. Assumes that the file is encoded using utf-8.
+
+If 'use_cache_if_available'=True, will first try to retrieve the object from cache.
+
+<a id="quilt3.packages.PackageEntry.get_as_string"></a>
+
+## PackageEntry.get\_as\_string(use\_cache\_if\_available=True)
+
+Return the object as a string. Assumes that the file is encoded using utf-8.
+
+If 'use_cache_if_available'=True, will first try to retrieve the object from cache.
+
+<a id="quilt3.packages.PackageEntry.deserialize"></a>
+
+## PackageEntry.deserialize(func=None, \*\*format\_opts)
+
+Returns the object this entry corresponds to.
+
+**Arguments**:
+
+- `func` - Skip normal deserialization process, and call func(bytes),
+  returning the result directly.
+- `**format_opts` - Some data formats may take options.  Though
+  normally handled by metadata, these can be overridden here.
+  
+
+**Returns**:
+
+  The deserialized object from the logical_key
+  
+
+**Raises**:
+
+  physical key failure
+  hash verification fail
+  when deserialization metadata is not present
+
+<a id="quilt3.packages.PackageEntry.fetch"></a>
+
+## PackageEntry.fetch(dest=None)
+
+Gets objects from entry and saves them to dest.
+
+**Arguments**:
+
+- `dest` - where to put the files
+  Defaults to the entry name
+  
+
+**Returns**:
+
+  None
+
+<a id="quilt3.packages.PackageEntry.__call__"></a>
+
+## PackageEntry.\_\_call\_\_(func=None, \*\*kwargs)
+
+Shorthand for self.deserialize()
+
+<a id="quilt3.packages.Package"></a>
+
+# Package
+
 In-memory representation of a package
 
-## manifest
+<a id="quilt3.packages.Package.__repr__"></a>
 
-Provides a generator of the dicts that make up the serialized package.
-
-
-## top_hash
-
-Returns the top hash of the package.
-
-Note that physical keys are not hashed because the package has
-    the same semantics regardless of where the bytes come from.
-
-__Returns__
-
-A string that represents the top hash of the package
-
-
-## Package.\_\_repr\_\_(self, max\_lines=20)  {#Package.\_\_repr\_\_}
+## Package.\_\_repr\_\_(max\_lines=20)
 
 String representation of the Package.
 
+<a id="quilt3.packages.Package.install"></a>
 
-## Package.install(name, registry=None, top\_hash=None, dest=None, dest\_registry=None, \*, path=None)  {#Package.install}
+## Package.install(cls, name, registry=None, top\_hash=None, dest=None, dest\_registry=None, \*, path=None)
 
 Installs a named package to the local registry and downloads its files.
 
-__Arguments__
+**Arguments**:
 
-* __name(str)__:  Name of package to install.
-* __registry(str)__:  Registry where package is located.
-    Defaults to the default remote registry.
-* __top_hash(str)__:  Hash of package to install. Defaults to latest.
-* __dest(str)__:  Local path to download files to.
-* __dest_registry(str)__:  Registry to install package to. Defaults to local registry.
-* __path(str)__:  If specified, downloads only `path` or its children.
+- `name(str)` - Name of package to install.
+- `registry(str)` - Registry where package is located.
+  Defaults to the default remote registry.
+- `top_hash(str)` - Hash of package to install. Defaults to latest.
+- `dest(str)` - Local path to download files to.
+- `dest_registry(str)` - Registry to install package to. Defaults to local registry.
+- `path(str)` - If specified, downloads only `path` or its children.
 
+<a id="quilt3.packages.Package.resolve_hash"></a>
 
-## Package.resolve\_hash(name, registry, hash\_prefix)  {#Package.resolve\_hash}
+## Package.resolve\_hash(cls, name, registry, hash\_prefix)
 
 Find a hash that starts with a given prefix.
 
-__Arguments__
+**Arguments**:
 
-* __name (str)__:  name of package
-* __registry (str)__:  location of registry
-* __hash_prefix (str)__:  hash prefix with length between 6 and 64 characters
+- `name` _str_ - name of package
+- `registry` _str_ - location of registry
+- `hash_prefix` _str_ - hash prefix with length between 6 and 64 characters
 
+<a id="quilt3.packages.Package.browse"></a>
 
-## Package.browse(name, registry=None, top\_hash=None)  {#Package.browse}
+## Package.browse(cls, name, registry=None, top\_hash=None)
 
 Load a package into memory from a registry without making a local copy of
 the manifest.
 
-__Arguments__
+**Arguments**:
 
-* __name(string)__:  name of package to load
-* __registry(string)__:  location of registry to load package from
-* __top_hash(string)__:  top hash of package version to load
+- `name(string)` - name of package to load
+- `registry(string)` - location of registry to load package from
+- `top_hash(string)` - top hash of package version to load
 
+<a id="quilt3.packages.Package.__contains__"></a>
 
-## Package.\_\_contains\_\_(self, logical\_key)  {#Package.\_\_contains\_\_}
+## Package.\_\_contains\_\_(logical\_key)
 
 Checks whether the package contains a specified logical_key.
 
-__Returns__
+**Returns**:
 
-True or False
+  True or False
 
+<a id="quilt3.packages.Package.__getitem__"></a>
 
-## Package.\_\_getitem\_\_(self, logical\_key)  {#Package.\_\_getitem\_\_}
+## Package.\_\_getitem\_\_(logical\_key)
 
 Filters the package based on prefix, and returns either a new Package
-    or a PackageEntry.
+or a PackageEntry.
 
-__Arguments__
+**Arguments**:
 
-* __prefix(str)__:  prefix to filter on
+- `prefix(str)` - prefix to filter on
+  
 
-__Returns__
+**Returns**:
 
-PackageEntry if prefix matches a logical_key exactly
-otherwise Package
+  PackageEntry if prefix matches a logical_key exactly
+  otherwise Package
 
+<a id="quilt3.packages.Package.fetch"></a>
 
-## Package.fetch(self, dest='./')  {#Package.fetch}
+## Package.fetch(dest='./')
 
 Copy all descendants to `dest`. Descendants are written under their logical
 names _relative_ to self.
 
-__Arguments__
+**Arguments**:
 
-* __dest__:  where to put the files (locally)
+- `dest` - where to put the files (locally)
+  
 
-__Returns__
+**Returns**:
 
-A new Package object with entries from self, but with physical keys
-    pointing to files in `dest`.
+  A new Package object with entries from self, but with physical keys
+  pointing to files in `dest`.
 
+<a id="quilt3.packages.Package.keys"></a>
 
-## Package.keys(self)  {#Package.keys}
+## Package.keys()
 
 Returns logical keys in the package.
 
+<a id="quilt3.packages.Package.walk"></a>
 
-## Package.walk(self)  {#Package.walk}
+## Package.walk()
 
 Generator that traverses all entries in the package tree and returns tuples of (key, entry),
 with keys in alphabetical order.
 
+<a id="quilt3.packages.Package.load"></a>
 
-## Package.load(readable\_file)  {#Package.load}
+## Package.load(cls, readable\_file)
 
 Loads a package from a readable file-like object.
 
-__Arguments__
+**Arguments**:
 
-* __readable_file__:  readable file-like object to deserialize package from
+- `readable_file` - readable file-like object to deserialize package from
+  
 
-__Returns__
+**Returns**:
 
-A new Package object
+  A new Package object
+  
 
-__Raises__
+**Raises**:
 
-file not found
-json decode error
-invalid package exception
+  file not found
+  json decode error
+  invalid package exception
 
+<a id="quilt3.packages.Package.set_dir"></a>
 
-## Package.set\_dir(self, lkey, path=None, meta=None, update\_policy='incoming', unversioned: bool = False)  {#Package.set\_dir}
+## Package.set\_dir(lkey, path=None, meta=None, update\_policy="incoming", unversioned: bool = False)
 
 Adds all files from `path` to the package.
 
 Recursively enumerates every file in `path`, and adds them to
-    the package according to their relative location to `path`.
+the package according to their relative location to `path`.
 
-__Arguments__
+**Arguments**:
 
-* __lkey(string)__:  prefix to add to every logical key,
-    use '/' for the root of the package.
-* __path(string)__:  path to scan for files to add to package.
-    If None, lkey will be substituted in as the path.
-* __meta(dict)__:  user level metadata dict to attach to lkey directory entry.
-* __update_policy(str)__:  can be either 'incoming' (default) or 'existing'.
-    If 'incoming', whenever logical keys match, always take the new entry from set_dir.
-    If 'existing', whenever logical keys match, retain existing entries
-    and ignore new entries from set_dir.
-* __unversioned(bool)__:  when True, do not retrieve VersionId for S3 physical keys.
+- `lkey(string)` - prefix to add to every logical key,
+  use '/' for the root of the package.
+- `path(string)` - path to scan for files to add to package.
+  If None, lkey will be substituted in as the path.
+- `meta(dict)` - user level metadata dict to attach to lkey directory entry.
+- `update_policy(str)` - can be either 'incoming' (default) or 'existing'.
+  If 'incoming', whenever logical keys match, always take the new entry from set_dir.
+  If 'existing', whenever logical keys match, retain existing entries
+  and ignore new entries from set_dir.
+- `unversioned(bool)` - when True, do not retrieve VersionId for S3 physical keys.
+  
 
-__Returns__
+**Returns**:
 
-self
+  self
+  
 
-__Raises__
+**Raises**:
 
-* `PackageException`:  When `path` doesn't exist.
-* `ValueError`:  When `update_policy` is invalid.
+- `PackageException` - When `path` doesn't exist.
+- `ValueError` - When `update_policy` is invalid.
 
+<a id="quilt3.packages.Package.get"></a>
 
-## Package.get(self, logical\_key)  {#Package.get}
+## Package.get(logical\_key)
 
 Gets object from logical_key and returns its physical path.
 Equivalent to self[logical_key].get().
 
-__Arguments__
+**Arguments**:
 
-* __logical_key(string)__:  logical key of the object to get
+- `logical_key(string)` - logical key of the object to get
+  
 
-__Returns__
+**Returns**:
 
-Physical path as a string.
+  Physical path as a string.
+  
 
-__Raises__
+**Raises**:
 
-* `KeyError`:  when logical_key is not present in the package
-* `ValueError`:  if the logical_key points to a Package rather than PackageEntry.
+- `KeyError` - when logical_key is not present in the package
+- `ValueError` - if the logical_key points to a Package rather than PackageEntry.
 
+<a id="quilt3.packages.Package.readme"></a>
 
-## Package.readme(self)  {#Package.readme}
+## Package.readme()
 
 Returns the README PackageEntry
 
 The README is the entry with the logical key 'README.md' (case-sensitive). Will raise a QuiltException if
 no such entry exists.
 
+<a id="quilt3.packages.Package.set_meta"></a>
 
-## Package.set\_meta(self, meta)  {#Package.set\_meta}
+## Package.set\_meta(meta)
 
 Sets user metadata on this Package.
 
+<a id="quilt3.packages.Package.build"></a>
 
-## Package.build(self, name, registry=None, message=None, \*, workflow=Ellipsis)  {#Package.build}
+## Package.build(name, registry=None, message=None, \*, workflow=...)
 
 Serializes this package to a registry.
 
-__Arguments__
+**Arguments**:
 
-* __name__:  optional name for package
-* __registry__:  registry to build to
-    defaults to local registry
-* __message__:  the commit message of the package
-* __workflow__:  workflow ID or `None` to skip workflow validation.
-    If not specified, the default workflow will be used.
-* __For details see__:  https://docs.quilt.bio/advanced-usage/workflows
+- `name` - optional name for package
+- `registry` - registry to build to
+  defaults to local registry
+- `message` - the commit message of the package
+  %(workflow)s
+  
 
+**Returns**:
 
-__Returns__
+  The top hash as a string.
 
-The top hash as a string.
+<a id="quilt3.packages.Package.dump"></a>
 
-
-## Package.dump(self, writable\_file)  {#Package.dump}
+## Package.dump(writable\_file)
 
 Serializes this package to a writable file-like object.
 
-__Arguments__
+**Arguments**:
 
-* __writable_file__:  file-like object to write serialized package.
+- `writable_file` - file-like object to write serialized package.
+  
 
-__Returns__
+**Returns**:
 
-None
+  None
+  
 
-__Raises__
+**Raises**:
 
-fail to create file
-fail to finish write
+  fail to create file
+  fail to finish write
 
+<a id="quilt3.packages.Package.manifest"></a>
 
-## Package.set(self, logical\_key, entry=None, meta=None, serialization\_location=None, serialization\_format\_opts=None, unversioned: bool = False)  {#Package.set}
+## Package.manifest()
+
+Provides a generator of the dicts that make up the serialized package.
+
+<a id="quilt3.packages.Package.set"></a>
+
+## Package.set(logical\_key, entry=None, meta=None, serialization\_location=None, serialization\_format\_opts=None, unversioned: bool = False)
 
 Returns self with the object at logical_key set to entry.
 
-__Arguments__
+**Arguments**:
 
-* __logical_key(string)__:  logical key to update
-* __entry(PackageEntry OR string OR object)__:  new entry to place at logical_key in the package.
-    If entry is a string, it is treated as a URL, and an entry is created based on it.
-    If entry is None, the logical key string will be substituted as the entry value.
-    If entry is an object and quilt knows how to serialize it, it will immediately be serialized and
-    written to disk, either to serialization_location or to a location managed by quilt. List of types that
-    Quilt can serialize is available by calling `quilt3.formats.FormatRegistry.all_supported_formats()`
-* __meta(dict)__:  user level metadata dict to attach to entry
-* __serialization_format_opts(dict)__:  Optional. If passed in, only used if entry is an object. Options to help
-    Quilt understand how the object should be serialized. Useful for underspecified file formats like csv
-    when content contains confusing characters. Will be passed as kwargs to the FormatHandler.serialize()
-    function. See docstrings for individual FormatHandlers for full list of options -
-* __https__: //github.com/quiltdata/quilt/blob/master/api/python/quilt3/formats.py
-* __serialization_location(string)__:  Optional. If passed in, only used if entry is an object. Where the
-    serialized object should be written, e.g. "./mydataframe.parquet"
-* __unversioned(bool)__:  when True, do not retrieve VersionId for S3 physical keys.
+- `logical_key(string)` - logical key to update
+  entry(PackageEntry OR string OR object): new entry to place at logical_key in the package.
+  If entry is a string, it is treated as a URL, and an entry is created based on it.
+  If entry is None, the logical key string will be substituted as the entry value.
+  If entry is an object and quilt knows how to serialize it, it will immediately be serialized and
+  written to disk, either to serialization_location or to a location managed by quilt. List of types that
+  Quilt can serialize is available by calling `quilt3.formats.FormatRegistry.all_supported_formats()`
+- `meta(dict)` - user level metadata dict to attach to entry
+- `serialization_format_opts(dict)` - Optional. If passed in, only used if entry is an object. Options to help
+  Quilt understand how the object should be serialized. Useful for underspecified file formats like csv
+  when content contains confusing characters. Will be passed as kwargs to the FormatHandler.serialize()
+  function. See docstrings for individual FormatHandlers for full list of options -
+  https://github.com/quiltdata/quilt/blob/master/api/python/quilt3/formats.py
+- `serialization_location(string)` - Optional. If passed in, only used if entry is an object. Where the
+  serialized object should be written, e.g. "./mydataframe.parquet"
+- `unversioned(bool)` - when True, do not retrieve VersionId for S3 physical keys.
+  
 
-__Returns__
+**Returns**:
 
-self
+  self
 
+<a id="quilt3.packages.Package.delete"></a>
 
-## Package.delete(self, logical\_key)  {#Package.delete}
+## Package.delete(logical\_key)
 
 Returns self with logical_key removed.
 
-__Returns__
+**Returns**:
 
-self
+  self
+  
 
-__Raises__
+**Raises**:
 
-* `KeyError`:  when logical_key is not present to be deleted
+- `KeyError` - when logical_key is not present to be deleted
 
+<a id="quilt3.packages.Package.top_hash"></a>
 
-## Package.push(self, name, registry=None, dest=None, message=None, selector\_fn=None, \*, workflow=Ellipsis, force: bool = False, dedupe: bool = False)  {#Package.push}
+## Package.top\_hash()
+
+Returns the top hash of the package.
+
+Note that physical keys are not hashed because the package has
+the same semantics regardless of where the bytes come from.
+
+**Returns**:
+
+  A string that represents the top hash of the package
+
+<a id="quilt3.packages.Package.push"></a>
+
+## Package.push(name, registry=None, dest=None, message=None, selector\_fn=None, \*, workflow=..., force: bool = False, dedupe: bool = False)
 
 Creates a new package, or a new revision of an existing package in a
 package registry in Amazon S3.
@@ -295,9 +471,9 @@ The Package class includes two additional built-in selector functions:
 * `Package.selector_fn_copy_all` copies all files to the destination path
 regardless of their current location.
 * `Package.selector_fn_copy_local` copies only local files to the
-  destination path. Any PackageEntry's with physical keys pointing to
-  objects in other buckets will retain their existing physical keys in
-  the resulting package.
+destination path. Any PackageEntry's with physical keys pointing to
+objects in other buckets will retain their existing physical keys in
+the resulting package.
 
 If we have a package with entries:
 
@@ -334,44 +510,44 @@ no matter what `selector_fn('entry_1', pkg["entry_1"])` returns.
 By default, push will not overwrite an existing package if its top hash does not match
 the parent hash of the package being pushed. Use `force=True` to skip the check.
 
-__Arguments__
+**Arguments**:
 
-* __name__:  name for package in registry
-* __dest__:  where to copy the objects in the package. Must be either an S3 URI prefix (e.g., s3://$bucket/$key)
-    in the registry bucket, or a callable that takes logical_key and package_entry, and returns an S3 URI.
-    (Changed in 6.0.0a1) previously top_hash was passed to the callable dest as a third argument.
-* __registry__:  registry where to create the new package
-* __message__:  the commit message for the new package
-* __selector_fn__:  An optional function that determines which package entries should be copied to S3.
-    The function takes in two arguments, logical_key and package_entry, and should return False if that
-    PackageEntry should not be copied to the destination registry during push.
-    If for example you have a package where the files are spread over multiple buckets
-    and you add a single local file, you can use selector_fn to only
-    push the local file to S3 (instead of pushing all data to the destination bucket).
-* __workflow__:  workflow ID or `None` to skip workflow validation.
-    If not specified, the default workflow will be used.
-* __For details see__:  https://docs.quilt.bio/advanced-usage/workflows
+- `name` - name for package in registry
+- `dest` - where to copy the objects in the package. Must be either an S3 URI prefix (e.g., s3://$bucket/$key)
+  in the registry bucket, or a callable that takes logical_key and package_entry, and returns an S3 URI.
+  (Changed in 6.0.0a1) previously top_hash was passed to the callable dest as a third argument.
+- `registry` - registry where to create the new package
+- `message` - the commit message for the new package
+- `selector_fn` - An optional function that determines which package entries should be copied to S3.
+  The function takes in two arguments, logical_key and package_entry, and should return False if that
+  PackageEntry should not be copied to the destination registry during push.
+  If for example you have a package where the files are spread over multiple buckets
+  and you add a single local file, you can use selector_fn to only
+  push the local file to S3 (instead of pushing all data to the destination bucket).
+  %(workflow)s
+- `force` - skip the top hash check and overwrite any existing package
+- `dedupe` - don't push if the top hash matches the existing package top hash; return the current package
+  
 
-* __force__:  skip the top hash check and overwrite any existing package
-* __dedupe__:  don't push if the top hash matches the existing package top hash; return the current package
+**Returns**:
 
-__Returns__
+  A new package that points to the copied objects.
 
-A new package that points to the copied objects.
+<a id="quilt3.packages.Package.rollback"></a>
 
-
-## Package.rollback(name, registry, top\_hash)  {#Package.rollback}
+## Package.rollback(cls, name, registry, top\_hash)
 
 Set the "latest" version to the given hash.
 
-__Arguments__
+**Arguments**:
 
-* __name(str)__:  Name of package to rollback.
-* __registry(str)__:  Registry where package is located.
-* __top_hash(str)__:  Hash to rollback to.
+- `name(str)` - Name of package to rollback.
+- `registry(str)` - Registry where package is located.
+- `top_hash(str)` - Hash to rollback to.
 
+<a id="quilt3.packages.Package.diff"></a>
 
-## Package.diff(self, other\_pkg)  {#Package.diff}
+## Package.diff(other\_pkg)
 
 Returns three lists -- added, modified, deleted.
 
@@ -379,185 +555,66 @@ Added: present in other_pkg but not in self.
 Modified: present in both, but different.
 Deleted: present in self, but not other_pkg.
 
-__Arguments__
+**Arguments**:
 
-* __other_pkg__:  Package to diff
+- `other_pkg` - Package to diff
+  
 
-__Returns__
+**Returns**:
 
-added, modified, deleted (all lists of logical keys)
+  added, modified, deleted (all lists of logical keys)
 
+<a id="quilt3.packages.Package.map"></a>
 
-## Package.map(self, f, include\_directories=False)  {#Package.map}
+## Package.map(f, include\_directories=False)
 
 Performs a user-specified operation on each entry in the package.
 
-__Arguments__
+**Arguments**:
 
-* __f(x, y)__:  function
-    The function to be applied to each package entry.
-    It should take two inputs, a logical key and a PackageEntry.
-* __include_directories__:  bool
-    Whether or not to include directory entries in the map.
+  f(x, y): function
+  The function to be applied to each package entry.
+  It should take two inputs, a logical key and a PackageEntry.
+- `include_directories` - bool
+  Whether or not to include directory entries in the map.
+  
+- `Returns` - list
+  The list of results generated by the map.
 
-Returns: list
-    The list of results generated by the map.
+<a id="quilt3.packages.Package.filter"></a>
 
-
-## Package.filter(self, f, include\_directories=False)  {#Package.filter}
+## Package.filter(f, include\_directories=False)
 
 Applies a user-specified operation to each entry in the package,
 removing results that evaluate to False from the output.
 
-__Arguments__
+**Arguments**:
 
-* __f(x, y)__:  function
-    The function to be applied to each package entry.
-    It should take two inputs, a logical key and a PackageEntry.
-    This function should return a boolean.
-* __include_directories__:  bool
-    Whether or not to include directory entries in the map.
+  f(x, y): function
+  The function to be applied to each package entry.
+  It should take two inputs, a logical key and a PackageEntry.
+  This function should return a boolean.
+- `include_directories` - bool
+  Whether or not to include directory entries in the map.
+  
 
-__Returns__
+**Returns**:
 
-A new package with entries that evaluated to False removed
+  A new package with entries that evaluated to False removed
 
+<a id="quilt3.packages.Package.verify"></a>
 
-## Package.verify(self, src, extra\_files\_ok=False)  {#Package.verify}
+## Package.verify(src, extra\_files\_ok=False)
 
 Check if the contents of the given directory matches the package manifest.
 
-__Arguments__
+**Arguments**:
 
-* __src(str)__:  URL of the directory
-* __extra_files_ok(bool)__:  Whether extra files in the directory should cause a failure.
+- `src(str)` - URL of the directory
+- `extra_files_ok(bool)` - Whether extra files in the directory should cause a failure.
+  
 
-__Returns__
+**Returns**:
 
-True if the package matches the directory; False otherwise.
-
-
-# PackageEntry(physical\_key, size, hash\_obj, meta)  {#PackageEntry}
-Represents an entry at a logical key inside a package.
-
-**\_\_init\_\_**
-
-Creates an entry.
-
-__Arguments__
-
-* __physical_key__:  a URI (either `s3://` or `file://`)
-* __size(number)__:  size of object in bytes
-* __hash({'type'__:  string, 'value': string}): hash object
-* __for example__:  {'type': 'SHA256', 'value': 'bb08a...'}
-* __meta(dict)__:  metadata dictionary
-
-__Returns__
-
-a PackageEntry
-
-## __slots__
-Built-in immutable sequence.
-
-If no argument is given, the constructor returns an empty tuple.
-If iterable is specified the tuple is initialized from iterable's items.
-
-If the argument is a tuple, the return value is the same object.
-
-## PackageEntry.as\_dict(self)  {#PackageEntry.as\_dict}
-
-Returns dict representation of entry.
-
-
-## PackageEntry.set\_meta(self, meta)  {#PackageEntry.set\_meta}
-
-Sets the user_meta for this PackageEntry.
-
-
-## PackageEntry.set(self, path=None, meta=None)  {#PackageEntry.set}
-
-Returns self with the physical key set to path.
-
-__Arguments__
-
-* __path(string)__:  new path to place at logical_key in the package
-    Currently only supports a path on local disk
-* __meta(dict)__:  metadata dict to attach to entry. If meta is provided, set just
-    updates the meta attached to logical_key without changing anything
-    else in the entry
-
-__Returns__
-
-self
-
-
-## PackageEntry.get(self)  {#PackageEntry.get}
-
-Returns the physical key of this PackageEntry.
-
-
-## PackageEntry.get\_cached\_path(self)  {#PackageEntry.get\_cached\_path}
-
-Returns a locally cached physical key, if available.
-
-
-## PackageEntry.get\_bytes(self, use\_cache\_if\_available=True)  {#PackageEntry.get\_bytes}
-
-Returns the bytes of the object this entry corresponds to. If 'use_cache_if_available'=True, will first try to
-retrieve the bytes from cache.
-
-
-## PackageEntry.get\_as\_json(self, use\_cache\_if\_available=True)  {#PackageEntry.get\_as\_json}
-
-Returns a JSON file as a `dict`. Assumes that the file is encoded using utf-8.
-
-If 'use_cache_if_available'=True, will first try to retrieve the object from cache.
-
-
-## PackageEntry.get\_as\_string(self, use\_cache\_if\_available=True)  {#PackageEntry.get\_as\_string}
-
-Return the object as a string. Assumes that the file is encoded using utf-8.
-
-If 'use_cache_if_available'=True, will first try to retrieve the object from cache.
-
-
-## PackageEntry.deserialize(self, func=None, \*\*format\_opts)  {#PackageEntry.deserialize}
-
-Returns the object this entry corresponds to.
-
-__Arguments__
-
-* __func__:  Skip normal deserialization process, and call func(bytes),
-    returning the result directly.
-* __**format_opts__:  Some data formats may take options.  Though
-    normally handled by metadata, these can be overridden here.
-
-__Returns__
-
-The deserialized object from the logical_key
-
-__Raises__
-
-physical key failure
-hash verification fail
-when deserialization metadata is not present
-
-
-## PackageEntry.fetch(self, dest=None)  {#PackageEntry.fetch}
-
-Gets objects from entry and saves them to dest.
-
-__Arguments__
-
-* __dest__:  where to put the files
-    Defaults to the entry name
-
-__Returns__
-
-None
-
-
-## PackageEntry.\_\_call\_\_(self, func=None, \*\*kwargs)  {#PackageEntry.\_\_call\_\_}
-
-Shorthand for self.deserialize()
+  True if the package matches the directory; False otherwise.
 

@@ -38,9 +38,10 @@ your fork branch into `quiltdata/quilt`.
 git push -u origin new-branch-name
 ```
 
-If `git push origin ...` returns `403` against `https://github.com/quiltdata/quilt/`,
-your local `origin` is probably pointing at the upstream repository instead of your fork.
-Repoint `origin` to your fork, or push to a separate fork remote.
+If `git push origin ...` returns `403` against the main repository,
+your local `origin` is probably pointing at the upstream repository instead
+of your fork. Repoint `origin` to your fork, or push to a separate fork
+remote.
 
 If you already cloned `quiltdata/quilt` directly, one straightforward fix is:
 
@@ -77,6 +78,32 @@ pip install uv
 so you don't have to do anything else.
 
 Run `uv run poe` to see all configured tasks (or refer to `pyproject.toml`).
+
+### Python packaging pilot workflow
+
+The repository's progressive `uv` packaging rollout now supports committed local
+path sources for the fixed pilot lambda consumers, while keeping exported
+requirements free of local `../shared`-style entries.
+
+For the fixed pilot packages, a normal locked sync is enough:
+
+```bash
+cd lambdas/preview
+uv sync --locked
+
+cd ../indexer
+uv sync --locked
+```
+
+Regenerate the committed inventory after packaging-boundary changes:
+
+```bash
+repo_root="$(git rev-parse --show-toplevel)"
+python "$repo_root/.github/scripts/python_packaging.py" inventory generate \
+  --json "$repo_root/.github/python-packaging/inventory.json" \
+  --csv "$repo_root/.github/python-packaging/inventory.csv"
+python "$repo_root/.github/scripts/python_packaging.py" guardrails
+```
 
 ### Python Testing
 
@@ -116,7 +143,8 @@ cd catalog
 npm install
 ```
 
-For the repo's filesystem-backed LOCAL catalog workflow, use the documented one-shot setup in [`docs/Catalog/LocalMode.md`](Catalog/LocalMode.md):
+For the repo's filesystem-backed LOCAL catalog workflow, use the one-shot
+setup in [`docs/Catalog/LocalMode.md`](Catalog/LocalMode.md):
 
 ```bash
 cd api/python

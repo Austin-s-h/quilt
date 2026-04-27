@@ -354,7 +354,8 @@ for key in sorted_keys[:10]:
 
 ### Athena Query for Audit Trail
 
-For detailed audit trail queries, see the [GxP documentation](../advanced-features/good-practice.md#querying-with-athena).
+For detailed audit trail queries, see the
+[GxP documentation](https://github.com/quiltdata/quilt/blob/master/docs/advanced-features/good-practice.md#querying-with-athena).
 
 Example query to find all API key usage in the last 30 days:
 
@@ -544,13 +545,13 @@ pkg = quilt3.Package.browse("data/latest", "s3://mybucket")
 
 For detailed API documentation, see:
 
-- [quilt3.api_keys](api.md#api-keys) - User API
-- [quilt3.admin.api_keys](Admin.md#api-keys) - Admin API
-- [Audit Trail Events](../advanced-features/good-practice.md#apikeys-namespace) - Security & Compliance
+- [quilt3.api_keys](api.md) - User API
+- [quilt3.admin.api_keys](Admin.md) - Admin API
+- [Audit Trail Events](https://github.com/quiltdata/quilt/blob/master/docs/advanced-features/good-practice.md#apikeys-namespace) - Security & Compliance
 
 ## Additional Resources
 
-- [Installation Guide](../Installation.md)
-- [Quick Start](../Quickstart.md)
-- [GxP & Security Best Practices](../advanced-features/good-practice.md)
-- [Troubleshooting](../Troubleshooting.md)
+- [Installation Guide](https://docs.quilt.bio/quilt-python-sdk/installation)
+- [Quick Start](https://docs.quilt.bio/quilt-python-sdk/quickstart)
+- [GxP & Security Best Practices](https://github.com/quiltdata/quilt/blob/master/docs/advanced-features/good-practice.md)
+- [Troubleshooting](https://github.com/quiltdata/quilt/blob/master/docs/Troubleshooting.md)

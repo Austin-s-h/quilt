@@ -1,14 +1,21 @@
+<a id="quilt3.hooks"></a>
 
-# get\_build\_s3\_client\_hook() -> Optional[quilt3.hooks.BuildClientHook]  {#get\_build\_s3\_client\_hook}
+# hooks
+
+<a id="quilt3.hooks.get_build_s3_client_hook"></a>
+
+## get\_build\_s3\_client\_hook()
 
 Return build S3 client hook.
 
+<a id="quilt3.hooks.set_build_s3_client_hook"></a>
 
-# set\_build\_s3\_client\_hook(hook: Optional[quilt3.hooks.BuildClientHook]) -> Optional[quilt3.hooks.BuildClientHook]  {#set\_build\_s3\_client\_hook}
+## set\_build\_s3\_client\_hook(hook: T.Optional[BuildClientHook])
 
 Set build S3 client hook.
 
 Example for overriding `ServerSideEncryption` parameter for certain S3 operations:
+
 
 ```python
 from quilt3.hooks import set_build_s3_client_hook
@@ -34,11 +41,12 @@ def hook(build_client_base, session, client_kwargs, **kwargs):
 old_hook = set_build_s3_client_hook(hook)
 ```
 
-__Arguments__
+**Arguments**:
 
-* __hook__:  Build client hook.
+- `hook` - Build client hook.
+  
 
-__Returns__
+**Returns**:
 
-Old build client hook.
+  Old build client hook.
 

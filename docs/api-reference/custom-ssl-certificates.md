@@ -42,7 +42,7 @@ different locations depending upon your operating system.
 your Windows Certificate Manager.
 1. Find the certificate that you noted above.
 
-   ![MITM certificate](../imgs/certmgr-windows.png)
+   ![MITM certificate][certmgr-windows-image]
 
 1. Export the certificate in Base-64 encoded X.509 (.CER) to your
 file system (`\Path\To\mycert.cer`).
@@ -69,4 +69,6 @@ startup file for repeatability.
 ## References
 
 - [SSL certificate verification with Python `Requests`
-library](https://requests.readthedocs.io/en/latest/user/advanced/#ssl-cert-verification)
+  library](https://requests.readthedocs.io/en/latest/user/advanced/#ssl-cert-verification)
+
+[certmgr-windows-image]: https://raw.githubusercontent.com/quiltdata/quilt/master/docs/imgs/certmgr-windows.png

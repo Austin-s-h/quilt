@@ -59,6 +59,9 @@ ignore = [
 
 [lint.per-file-ignores]
 "docs/**" = ["I001"]
+# Generated code: UP007 (Union -> X|Y) would break Python 3.9 annotation eval
+# even with from __future__ import annotations in pydantic discriminated unions.
+"api/python/quilt3/_graphql_client/**" = ["UP007"]
 
 [lint.isort]
 known-first-party = ["quilt3", "quilt_shared", "t4_lambda_*"]

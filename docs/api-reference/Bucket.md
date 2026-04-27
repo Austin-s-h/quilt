@@ -1,128 +1,161 @@
+<a id="quilt3.bucket"></a>
 
-# Bucket(bucket\_uri)  {#Bucket}
+# bucket
+
+bucket.py
+
+Contains the Bucket class, which provides several useful functions
+    over an s3 bucket.
+
+<a id="quilt3.bucket.Bucket"></a>
+
+# Bucket
+
 Bucket interface for Quilt.
 
-**\_\_init\_\_**
+<a id="quilt3.bucket.Bucket.__init__"></a>
+
+## Bucket.\_\_init\_\_(bucket\_uri)
 
 Creates a Bucket object.
 
-__Arguments__
+**Arguments**:
 
-* __bucket_uri(str)__:  URI of bucket to target. Must start with 's3://'
+- `bucket_uri(str)` - URI of bucket to target. Must start with 's3://'
+  
 
-__Returns__
+**Returns**:
 
-A new Bucket
+  A new Bucket
 
-## Bucket.search(self, query: Union[str, dict], limit: int = 10) -> List[dict]  {#Bucket.search}
+<a id="quilt3.bucket.Bucket.search"></a>
+
+## Bucket.search(query: T.Union[str, dict], limit: int = 10)
 
 Execute a search against the configured search endpoint.
 
-__Arguments__
+**Arguments**:
 
-* __query__:  query string to query if passed as `str`, DSL query body if passed as `dict`
-* __limit__:  maximum number of results to return. Defaults to 10
+- `query` - query string to query if passed as `str`, DSL query body if passed as `dict`
+- `limit` - maximum number of results to return. Defaults to 10
+  
+  Query Syntax:
+  [Query String Query](
+  https://www.elastic.co/guide/en/elasticsearch/reference/7.10/query-dsl-query-string-query.html)
+  [Query DSL](https://www.elastic.co/guide/en/elasticsearch/reference/7.10/query-dsl.html)
+  
+  Index schemas and search examples can be found in the
+  [Quilt Search documentation](https://docs.quilt.bio/quilt-platform-catalog-user/search).
+  
 
-Query Syntax:
-    [Query String Query](
-        https://www.elastic.co/guide/en/elasticsearch/reference/6.8/query-dsl-query-string-query.html)
-    [Query DSL](https://www.elastic.co/guide/en/elasticsearch/reference/6.8/query-dsl.html)
+**Returns**:
 
-Index schemas and search examples can be found in the
-[Quilt Search documentation](https://docs.quilt.bio/quilt-platform-catalog-user/search).
+  search results
 
-__Returns__
+<a id="quilt3.bucket.Bucket.put_file"></a>
 
-search results
-
-
-## Bucket.put\_file(self, key, path)  {#Bucket.put\_file}
+## Bucket.put\_file(key, path)
 
 Stores file at path to key in bucket.
 
-__Arguments__
+**Arguments**:
 
-* __key(str)__:  key in bucket to store file at
-* __path(str)__:  string representing local path to file
+- `key(str)` - key in bucket to store file at
+- `path(str)` - string representing local path to file
+  
 
-__Returns__
+**Returns**:
 
-None
+  None
+  
 
-__Raises__
+**Raises**:
 
-* if no file exists at path
-* if copy fails
+  * if no file exists at path
+  * if copy fails
 
+<a id="quilt3.bucket.Bucket.put_dir"></a>
 
-## Bucket.put\_dir(self, key, directory)  {#Bucket.put\_dir}
+## Bucket.put\_dir(key, directory)
 
 Stores all files in the `directory` under the prefix `key`.
 
-__Arguments__
+**Arguments**:
 
-* __key(str)__:  prefix to store files under in bucket
-* __directory(str)__:  path to directory to grab files from
+- `key(str)` - prefix to store files under in bucket
+- `directory(str)` - path to directory to grab files from
+  
 
-__Returns__
+**Returns**:
 
-None
+  None
+  
 
-__Raises__
+**Raises**:
 
-* if writing to bucket fails
+  * if writing to bucket fails
 
+<a id="quilt3.bucket.Bucket.keys"></a>
 
-## Bucket.keys(self)  {#Bucket.keys}
+## Bucket.keys()
 
 Lists all keys in the bucket.
 
-__Returns__
+**Returns**:
 
-List of strings
+  List of strings
 
+<a id="quilt3.bucket.Bucket.delete"></a>
 
-## Bucket.delete(self, key)  {#Bucket.delete}
+## Bucket.delete(key)
 
 Deletes a key from the bucket.
 
-__Arguments__
+**Arguments**:
 
-* __key(str)__:  key to delete
+- `key(str)` - key to delete
+  
 
-__Returns__
+**Returns**:
 
-None
+  None
+  
 
-__Raises__
+**Raises**:
 
-* if delete fails
+  * if delete fails
 
+<a id="quilt3.bucket.Bucket.delete_dir"></a>
 
-## Bucket.delete\_dir(self, path)  {#Bucket.delete\_dir}
+## Bucket.delete\_dir(path)
+
 Delete a directory and all of its contents from the bucket.
 
-__Arguments__
+**Arguments**:
 
-* __path (str)__:  path to the directory to delete
+- `path` _str_ - path to the directory to delete
 
+<a id="quilt3.bucket.Bucket.ls"></a>
 
-## Bucket.ls(self, path=None, recursive=False)  {#Bucket.ls}
+## Bucket.ls(path=None, recursive=False)
+
 List data from the specified path.
 
-__Arguments__
+**Arguments**:
 
-* __path (str)__:  bucket path to list
-* __recursive (bool)__:  show subdirectories and their contents as well
+- `path` _str_ - bucket path to list
+- `recursive` _bool_ - show subdirectories and their contents as well
+  
 
-__Returns__
+**Returns**:
 
-``list``: Return value structure has not yet been permanently decided
-Currently, it's a `tuple` of `list` objects, containing the
-`following`: (directory info, file/object info, delete markers).
+- ``list`` - Return value structure has not yet been permanently decided
+  Currently, it's a `tuple` of `list` objects, containing the
+- `following` - (directory info, file/object info, delete markers).
 
+<a id="quilt3.bucket.Bucket.fetch"></a>
 
-## Bucket.fetch(self, key, path)  {#Bucket.fetch}
+## Bucket.fetch(key, path)
 
 Fetches file (or files) at `key` to `path`.
 
@@ -131,33 +164,37 @@ will be stored in a directory at `path`.
 
 Otherwise, only one file will be fetched and it will be stored at `path`.
 
-__Arguments__
+**Arguments**:
 
-* __key(str)__:  key in bucket to fetch
-* __path(str)__:  path in local filesystem to store file or files fetched
+- `key(str)` - key in bucket to fetch
+- `path(str)` - path in local filesystem to store file or files fetched
+  
 
-__Returns__
+**Returns**:
 
-None
+  None
+  
 
-__Raises__
+**Raises**:
 
-* if path doesn't exist
-* if download fails
+  * if path doesn't exist
+  * if download fails
 
+<a id="quilt3.bucket.Bucket.select"></a>
 
-## Bucket.select(self, key, query, raw=False)  {#Bucket.select}
+## Bucket.select(key, query, raw=False)
 
 Selects data from an S3 object.
 
-__Arguments__
+**Arguments**:
 
-* __key(str)__:  key to query in bucket
-* __query(str)__:  query to execute (SQL by default)
-* __query_type(str)__:  other query type accepted by S3 service
-* __raw(bool)__:  return the raw (but parsed) response
+- `key(str)` - key to query in bucket
+- `query(str)` - query to execute (SQL by default)
+- `query_type(str)` - other query type accepted by S3 service
+- `raw(bool)` - return the raw (but parsed) response
+  
 
-__Returns__
+**Returns**:
 
-`pandas.DataFrame`: results of query
+- `pandas.DataFrame` - results of query
 

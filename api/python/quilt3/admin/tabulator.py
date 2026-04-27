@@ -33,7 +33,7 @@ def get_open_query() -> bool:
     """
     Get the **open query** status.
     """
-    return util.get_client().tabulator_get_open_query()
+    return util.unwrap_result(util.get_client().tabulator_get_open_query())
 
 
 def set_open_query(enabled: bool) -> None:

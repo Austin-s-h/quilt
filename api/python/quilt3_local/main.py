@@ -79,6 +79,7 @@ app.mount(LAMBDA_PREFIX, lambdas, "Lambda")
 app.mount(S3_PROXY_PREFIX, s3proxy, "S3 Proxy")
 
 if CATALOG_URL:
+
     @app.get("/__webpack_hmr")
     def webpack_hmr():
         return starlette.responses.Response(status_code=404)
