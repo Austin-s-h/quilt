@@ -131,11 +131,31 @@ _gql-gen.cwd = "quilt3-graphql"
 
 _gql-fmt.cmd = "ruff format quilt3/_graphql_client"
 _gql-lint-fix.cmd = "ruff check --fix quilt3/_graphql_client"
+# ariadne-codegen emits forward-ref ordering in fragments.py which pydantic
+# cannot resolve at class-definition time on Python <3.10.  Adding
+# `from __future__ import annotations` defers all annotation evaluation so
+# the existing model_rebuild() calls at module level can resolve everything.
+_gql-future-annotations.shell = """
+python3 - <<'EOF'
+import pathlib
+p = pathlib.Path('quilt3/_graphql_client/fragments.py')
+txt = p.read_text()
+if 'from __future__ import annotations' not in txt:
+    lines = txt.split('\\n')
+    i = 0
+    while i < len(lines) and (lines[i].startswith('#') or lines[i] == ''):
+        i += 1
+    lines.insert(i, '')
+    lines.insert(i, 'from __future__ import annotations')
+    p.write_text('\\n'.join(lines))
+EOF
+"""
 
 gql-gen.help = "Generate GraphQL client code for quilt3"
 gql-gen.sequence = [
   "_gql-clean",
   "_gql-gen",
+  "_gql-future-annotations",
   "_gql-lint-fix",
   "_gql-fmt",
 ]
