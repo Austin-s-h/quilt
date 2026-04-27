@@ -226,13 +226,11 @@ def generate_api_reference_docs(legacy_config: dict[str, Any]) -> None:
 
 
 def generate_cli_api_reference_docs() -> None:
-    # This script relies on relative paths so it should only run if the cwd is gendocs/
-    subprocess.check_call(["./gen_cli_api_reference.sh"])
+    subprocess.check_call([str(ROOT / "gen_cli_api_reference.sh")], cwd=ROOT)
 
 
 def gen_walkthrough_doc() -> None:
-    # This script relies on relative paths so it should only run if the cwd is gendocs/
-    subprocess.check_call(["./gen_walkthrough.sh"])
+    subprocess.check_call([str(ROOT / "gen_walkthrough.sh")], cwd=ROOT)
 
 
 if __name__ == "__main__":

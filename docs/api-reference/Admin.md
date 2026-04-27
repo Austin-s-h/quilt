@@ -52,16 +52,6 @@ Revoke an API key.
 
 - `Quilt3AdminError` - If the operation fails.
 
-<a id="quilt3.admin.types"></a>
-
-# types
-
-<a id="quilt3.admin.types.PolicySummary"></a>
-
-# PolicySummary
-
-Policy without back-references to roles (avoids circular nesting).
-
 <a id="quilt3.admin.tabulator"></a>
 
 # tabulator
@@ -212,6 +202,16 @@ Set the default role in the registry.
 
 - `id_or_name` - Role ID or name.
 
+<a id="quilt3.admin.types"></a>
+
+# types
+
+<a id="quilt3.admin.types.PolicySummary"></a>
+
+# PolicySummary
+
+Policy without back-references to roles (avoids circular nesting).
+
 <a id="quilt3.admin.sso_config"></a>
 
 # sso\_config
@@ -227,6 +227,87 @@ Get the current SSO configuration.
 ## set(config: T.Optional[str])
 
 Set the SSO configuration. Pass `None` to remove SSO configuration.
+
+<a id="quilt3.admin.buckets"></a>
+
+# buckets
+
+<a id="quilt3.admin.buckets.get"></a>
+
+## get(name: str)
+
+Get a specific bucket configuration from the registry.
+Returns `None` if the bucket does not exist.
+
+**Arguments**:
+
+- `name` - Name of the bucket to get.
+
+<a id="quilt3.admin.buckets.list"></a>
+
+## list()
+
+List all bucket configurations in the registry.
+
+<a id="quilt3.admin.buckets.add"></a>
+
+## add(name: str, title: str, \*, description: T.Optional[str] = None, icon\_url: T.Optional[str] = None, overview\_url: T.Optional[str] = None, tags: T.Optional[T.List[str]] = None, relevance\_score: T.Optional[int] = None, sns\_notification\_arn: T.Optional[str] = None, scanner\_parallel\_shards\_depth: T.Optional[int] = None, skip\_meta\_data\_indexing: T.Optional[bool] = None, file\_extensions\_to\_index: T.Optional[T.List[str]] = None, index\_content\_bytes: T.Optional[int] = None, delay\_scan: T.Optional[bool] = None, browsable: T.Optional[bool] = None, prefixes: T.Optional[T.List[str]] = None)
+
+Add a new bucket to the registry.
+
+**Arguments**:
+
+- `name` - S3 bucket name.
+- `title` - Display title for the bucket.
+- `description` - Optional description.
+- `icon_url` - Optional URL for bucket icon.
+- `overview_url` - Optional URL for bucket overview page.
+- `tags` - Optional list of tags.
+- `relevance_score` - Optional relevance score for bucket ordering.
+- `sns_notification_arn` - Optional SNS topic ARN for notifications.
+- `scanner_parallel_shards_depth` - Optional depth for parallel scanning.
+- `skip_meta_data_indexing` - If True, skip metadata indexing.
+- `file_extensions_to_index` - Optional list of file extensions to index content.
+- `index_content_bytes` - Optional max bytes of content to index.
+- `delay_scan` - If True, delay initial bucket scan.
+- `browsable` - If True, bucket is browsable.
+- `prefixes` - Optional list of S3 prefixes to scope bucket access to.
+  If provided, only these prefixes will be indexed and verified for access.
+
+<a id="quilt3.admin.buckets.update"></a>
+
+## update(name: str, title: str, \*, description: T.Optional[str] = None, icon\_url: T.Optional[str] = None, overview\_url: T.Optional[str] = None, tags: T.Optional[T.List[str]] = None, relevance\_score: T.Optional[int] = None, sns\_notification\_arn: T.Optional[str] = None, scanner\_parallel\_shards\_depth: T.Optional[int] = None, skip\_meta\_data\_indexing: T.Optional[bool] = None, file\_extensions\_to\_index: T.Optional[T.List[str]] = None, index\_content\_bytes: T.Optional[int] = None, browsable: T.Optional[bool] = None, prefixes: T.Optional[T.List[str]] = None)
+
+Update an existing bucket configuration.
+
+**Arguments**:
+
+- `name` - S3 bucket name.
+- `title` - Display title for the bucket.
+- `description` - Optional description.
+- `icon_url` - Optional URL for bucket icon.
+- `overview_url` - Optional URL for bucket overview page.
+- `tags` - Optional list of tags.
+- `relevance_score` - Optional relevance score for bucket ordering.
+- `sns_notification_arn` - Optional SNS topic ARN for notifications.
+- `scanner_parallel_shards_depth` - Optional depth for parallel scanning.
+- `skip_meta_data_indexing` - If True, skip metadata indexing.
+- `file_extensions_to_index` - Optional list of file extensions to index content.
+- `index_content_bytes` - Optional max bytes of content to index.
+- `browsable` - If True, bucket is browsable.
+- `prefixes` - Optional list of S3 prefixes to scope bucket access to.
+  If provided, only these prefixes will be indexed and verified for access.
+  Changing prefixes will trigger permission re-verification.
+
+<a id="quilt3.admin.buckets.remove"></a>
+
+## remove(name: str)
+
+Remove a bucket from the registry.
+
+**Arguments**:
+
+- `name` - Name of the bucket to remove.
 
 <a id="quilt3.admin.users"></a>
 
@@ -349,85 +430,4 @@ Remove roles from a user.
 - `name` - Username of user to update.
 - `roles` - Roles to remove from the user.
 - `fallback` - If set, the role to assign to the user if the active role is removed.
-
-<a id="quilt3.admin.buckets"></a>
-
-# buckets
-
-<a id="quilt3.admin.buckets.get"></a>
-
-## get(name: str)
-
-Get a specific bucket configuration from the registry.
-Returns `None` if the bucket does not exist.
-
-**Arguments**:
-
-- `name` - Name of the bucket to get.
-
-<a id="quilt3.admin.buckets.list"></a>
-
-## list()
-
-List all bucket configurations in the registry.
-
-<a id="quilt3.admin.buckets.add"></a>
-
-## add(name: str, title: str, \*, description: T.Optional[str] = None, icon\_url: T.Optional[str] = None, overview\_url: T.Optional[str] = None, tags: T.Optional[T.List[str]] = None, relevance\_score: T.Optional[int] = None, sns\_notification\_arn: T.Optional[str] = None, scanner\_parallel\_shards\_depth: T.Optional[int] = None, skip\_meta\_data\_indexing: T.Optional[bool] = None, file\_extensions\_to\_index: T.Optional[T.List[str]] = None, index\_content\_bytes: T.Optional[int] = None, delay\_scan: T.Optional[bool] = None, browsable: T.Optional[bool] = None, prefixes: T.Optional[T.List[str]] = None)
-
-Add a new bucket to the registry.
-
-**Arguments**:
-
-- `name` - S3 bucket name.
-- `title` - Display title for the bucket.
-- `description` - Optional description.
-- `icon_url` - Optional URL for bucket icon.
-- `overview_url` - Optional URL for bucket overview page.
-- `tags` - Optional list of tags.
-- `relevance_score` - Optional relevance score for bucket ordering.
-- `sns_notification_arn` - Optional SNS topic ARN for notifications.
-- `scanner_parallel_shards_depth` - Optional depth for parallel scanning.
-- `skip_meta_data_indexing` - If True, skip metadata indexing.
-- `file_extensions_to_index` - Optional list of file extensions to index content.
-- `index_content_bytes` - Optional max bytes of content to index.
-- `delay_scan` - If True, delay initial bucket scan.
-- `browsable` - If True, bucket is browsable.
-- `prefixes` - Optional list of S3 prefixes to scope bucket access to.
-  If provided, only these prefixes will be indexed and verified for access.
-
-<a id="quilt3.admin.buckets.update"></a>
-
-## update(name: str, title: str, \*, description: T.Optional[str] = None, icon\_url: T.Optional[str] = None, overview\_url: T.Optional[str] = None, tags: T.Optional[T.List[str]] = None, relevance\_score: T.Optional[int] = None, sns\_notification\_arn: T.Optional[str] = None, scanner\_parallel\_shards\_depth: T.Optional[int] = None, skip\_meta\_data\_indexing: T.Optional[bool] = None, file\_extensions\_to\_index: T.Optional[T.List[str]] = None, index\_content\_bytes: T.Optional[int] = None, browsable: T.Optional[bool] = None, prefixes: T.Optional[T.List[str]] = None)
-
-Update an existing bucket configuration.
-
-**Arguments**:
-
-- `name` - S3 bucket name.
-- `title` - Display title for the bucket.
-- `description` - Optional description.
-- `icon_url` - Optional URL for bucket icon.
-- `overview_url` - Optional URL for bucket overview page.
-- `tags` - Optional list of tags.
-- `relevance_score` - Optional relevance score for bucket ordering.
-- `sns_notification_arn` - Optional SNS topic ARN for notifications.
-- `scanner_parallel_shards_depth` - Optional depth for parallel scanning.
-- `skip_meta_data_indexing` - If True, skip metadata indexing.
-- `file_extensions_to_index` - Optional list of file extensions to index content.
-- `index_content_bytes` - Optional max bytes of content to index.
-- `browsable` - If True, bucket is browsable.
-- `prefixes` - Optional list of S3 prefixes to scope bucket access to.
-  If provided, only these prefixes will be indexed and verified for access.
-  Changing prefixes will trigger permission re-verification.
-
-<a id="quilt3.admin.buckets.remove"></a>
-
-## remove(name: str)
-
-Remove a bucket from the registry.
-
-**Arguments**:
-
-- `name` - Name of the bucket to remove.
 

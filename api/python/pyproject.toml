@@ -1,102 +1,102 @@
 [build-system]
-requires = ["uv_build>=0.8.15,<0.9.0"]
 build-backend = "uv_build"
+requires = ["uv_build>=0.8.15,<0.9.0"]
 
 [project]
-name = "quilt3"
-version = "7.3.1"
-description = "Quilt: where data comes together"
-readme = "README.rst"
-requires-python = ">=3.9"
-license = "Apache-2.0"
-license-files = ["LICENSE"]
 authors = [
-    { name = "quiltdata", email = "support@quilt.bio" },
+  {name = "quiltdata", email = "support@quilt.bio"},
 ]
 classifiers = [
-    "Development Status :: 5 - Production/Stable",
-    "Intended Audience :: Developers",
-    "Operating System :: OS Independent",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
-    "Programming Language :: Python :: 3.13",
-    "Programming Language :: Python :: 3.14",
+  "Development Status :: 5 - Production/Stable",
+  "Intended Audience :: Developers",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
 ]
 dependencies = [
-    "platformdirs>=2",
-    "boto3>=1.21.7",
-    "jsonlines==1.2.0",
-    "PyYAML>=5.1",
-    "requests>=2.12.4",
-    "tenacity>=5.1.1,!=8.4.0",
-    "tqdm>=4.32",
-    "requests_futures==1.0.0",
-    "jsonschema>=3,<5",
-    "pydantic>=2.0.0,<3.0.0",
-    "awscrt>=0.31.0",
+  "platformdirs>=2",
+  "boto3>=1.21.7",
+  "jsonlines==1.2.0",
+  "PyYAML>=5.1",
+  "requests>=2.12.4",
+  "tenacity>=5.1.1,!=8.4.0",
+  "tqdm>=4.32",
+  "requests_futures==1.0.0",
+  "jsonschema>=3,<5",
+  "pydantic>=2.0.0,<3.0.0",
+  "awscrt>=0.31.0",
 ]
+description = "Quilt: where data comes together"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+name = "quilt3"
+readme = "README.rst"
+requires-python = ">=3.9"
+version = "7.3.1"
 
 [project.optional-dependencies]
-pyarrow = [
-    "numpy>=1.14.0; python_version < '3.13'",
-    "numpy>=2.1.0; python_version >= '3.13'",
-    "pandas>=0.19.2; python_version < '3.13'",
-    "pandas>=2.2.3; python_version >= '3.13'",
-    "pyarrow>=0.14.1; python_version < '3.13'",
-    "pyarrow>=18.0.0; python_version >= '3.13'",
-]
 anndata = [
-    "anndata>=0.8.0",
+  "anndata>=0.8.0",
 ]
 catalog = [
-    "quilt3_local>=2,<3",
-    "asgiproxy>=0.2,<0.3",
-    "uvicorn>=0.15,<0.18",
-    "aiobotocore[boto3]>=2",
-    "lxml-html-clean>=0.4",
+  "quilt3_local>=2,<3",
+  "asgiproxy>=0.2,<0.3",
+  "uvicorn>=0.15,<0.18",
+  "aiobotocore[boto3]>=2",
+  "lxml-html-clean>=0.4",
+]
+pyarrow = [
+  "numpy>=1.14.0; python_version < '3.13'",
+  "numpy>=2.1.0; python_version >= '3.13'",
+  "pandas>=0.19.2; python_version < '3.13'",
+  "pandas>=2.2.3; python_version >= '3.13'",
+  "pyarrow>=0.14.1; python_version < '3.13'",
+  "pyarrow>=18.0.0; python_version >= '3.13'",
 ]
 
 [project.urls]
-Homepage = "https://quilt.bio/"
-Documentation = "https://docs.quilt.bio/#quilt-python-sdk"
-Repository = "https://github.com/quiltdata/quilt"
-Issues = "https://github.com/quiltdata/quilt/issues"
 Changelog = "https://docs.quilt.bio/quilt-python-sdk/more/changelog"
+Documentation = "https://docs.quilt.bio/#quilt-python-sdk"
+Homepage = "https://quilt.bio/"
+Issues = "https://github.com/quiltdata/quilt/issues"
+Repository = "https://github.com/quiltdata/quilt"
 
 [project.scripts]
 quilt3 = "quilt3.main:main"
 
 [tool.uv.build-backend]
-module-root = ""
 module-name = "quilt3"
+module-root = ""
 
 [dependency-groups]
 dev = [
-    "poethepoet>=0.37.0",
-    "pytest-cov",
-    "pytest-env",
-    "pytest-subtests",
-    "pytest~=8.4",
-    "quilt3-local>=2,<3",
-    "responses",
-    "ruff>=0.12.11",
-    "lxml-html-clean>=0.4",
+  "poethepoet>=0.37.0",
+  "pytest-cov",
+  "pytest-env",
+  "pytest-subtests",
+  "pytest~=8.4",
+  "quilt3-local>=2,<3",
+  "responses",
+  "ruff>=0.12.11",
+  "lxml-html-clean>=0.4",
 ]
 
 [tool.uv]
 conflicts = [
-    [
-        { group = "dev" },
-        { extra = "catalog" },
-    ],
+  [
+    {group = "dev"},
+    {extra = "catalog"},
+  ],
 ]
 override-dependencies = [
-    "numpy>=2.1.0; python_version >= '3.13'",
-    "pandas>=2.2.3; python_version >= '3.13'",
-    "pillow>=10.4.0; python_version >= '3.13'",
-    "pyarrow>=18.0.0; python_version >= '3.13'",
+  "numpy>=2.1.0; python_version >= '3.13'",
+  "pandas>=2.2.3; python_version >= '3.13'",
+  "pillow>=10.4.0; python_version >= '3.13'",
+  "pyarrow>=18.0.0; python_version >= '3.13'",
 ]
 
 [tool.ruff]
@@ -106,20 +106,20 @@ extend = "../../ruff.toml"
 [tool.poe.tasks]
 _ensure-clean.cmd = "git diff --exit-code"
 
-test.help = "Run test suite"
 test.cmd = "uv run --group dev --with 'numpy>=1.14.0; python_version < \"3.13\"' --with 'numpy>=2.1.0; python_version >= \"3.13\"' --with 'pandas>=0.19.2; python_version < \"3.13\"' --with 'pandas>=2.2.3; python_version >= \"3.13\"' --with 'pyarrow>=0.14.1; python_version < \"3.13\"' --with 'pyarrow>=18.0.0; python_version >= \"3.13\"' --with 'anndata>=0.8.0' --with 'pillow>=10.4.0' pytest --disable-warnings"
+test.help = "Run test suite"
 
-test-verbose.help = "Run tests with verbose output"
 test-verbose.cmd = "uv run --group dev --with 'numpy>=1.14.0; python_version < \"3.13\"' --with 'numpy>=2.1.0; python_version >= \"3.13\"' --with 'pandas>=0.19.2; python_version < \"3.13\"' --with 'pandas>=2.2.3; python_version >= \"3.13\"' --with 'pyarrow>=0.14.1; python_version < \"3.13\"' --with 'pyarrow>=18.0.0; python_version >= \"3.13\"' --with 'anndata>=0.8.0' --with 'pillow>=10.4.0' pytest -v"
+test-verbose.help = "Run tests with verbose output"
 
-test-cov.help = "Run tests with coverage report"
 test-cov.cmd = "uv run --group dev --with 'numpy>=1.14.0; python_version < \"3.13\"' --with 'numpy>=2.1.0; python_version >= \"3.13\"' --with 'pandas>=0.19.2; python_version < \"3.13\"' --with 'pandas>=2.2.3; python_version >= \"3.13\"' --with 'pyarrow>=0.14.1; python_version < \"3.13\"' --with 'pyarrow>=18.0.0; python_version >= \"3.13\"' --with 'anndata>=0.8.0' --with 'pillow>=10.4.0' pytest --cov=. --cov-report=term-missing"
+test-cov.help = "Run tests with coverage report"
 
-lint.help = "Run Ruff linter"
 lint.cmd = "ruff check ."
+lint.help = "Run Ruff linter"
 
-fmt.help = "Format code with Ruff (append --check to check formatting)"
 fmt.cmd = "ruff format"
+fmt.help = "Format code with Ruff (append --check to check formatting)"
 
 clean.help = "Remove build artifacts and cache files"
 clean.shell = "rm -rf build dist *.egg-info .pytest_cache .coverage* coverage.* && find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true"
@@ -134,20 +134,20 @@ _gql-lint-fix.cmd = "ruff check --fix quilt3/_graphql_client"
 
 gql-gen.help = "Generate GraphQL client code for quilt3"
 gql-gen.sequence = [
-    "_gql-clean",
-    "_gql-gen",
-    "_gql-lint-fix",
-    "_gql-fmt",
+  "_gql-clean",
+  "_gql-gen",
+  "_gql-lint-fix",
+  "_gql-fmt",
 ]
 
 gql-check.help = "Check if GraphQL client code is up-to-date"
 gql-check.sequence = [
-    "gql-gen",
-    "_ensure-clean",
+  "gql-gen",
+  "_ensure-clean",
 ]
 
+verify-release-tag.args = [{name = "tag", positional = true, required = true}]
 verify-release-tag.help = "Verify git tag matches package version (for releases)"
-verify-release-tag.args = [{ name = "tag", positional = true, required = true }]
 verify-release-tag.shell = """
 version=$(uv version --short)
 if [ "$tag" != "$version" ]; then
@@ -157,19 +157,18 @@ fi
 """
 verify-release-tag.verbosity = -1
 
+gendocs.cmd = "uv run --project ../../gendocs --locked ../../gendocs/build.py"
 gendocs.help = "Generate API documentation"
-gendocs.cmd = "uv run --locked build.py"
-gendocs.cwd = "../../gendocs"
 
 gendocs-check.help = "Check if generated docs are up-to-date"
 gendocs-check.sequence = [
-    "gendocs",
-    "_ensure-clean",
+  "gendocs",
+  "_ensure-clean",
 ]
 
-testdocs.help = "Test documentation code blocks"
 testdocs.cmd = "uv run --locked pytest --codeblocks ../docs"
 testdocs.cwd = "../../testdocs"
+testdocs.help = "Test documentation code blocks"
 
 _catalog-test-config.help = "Write LOCAL frontend config for filesystem catalog testing"
 _catalog-test-config.shell = """
@@ -193,12 +192,12 @@ window.QUILT_CATALOG_CONFIG = {
 EOF
 """
 
-_catalog-test-python.help = "Sync api/python with catalog dependencies"
 _catalog-test-python.cmd = "uv sync --python 3.11 --no-dev --extra catalog"
+_catalog-test-python.help = "Sync api/python with catalog dependencies"
 
-_catalog-test-frontend.help = "Install catalog frontend dependencies"
 _catalog-test-frontend.cmd = "npm install"
 _catalog-test-frontend.cwd = "../../catalog"
+_catalog-test-frontend.help = "Install catalog frontend dependencies"
 
 _catalog-test-stage.help = "Reset LOCAL fixture bucket and stage preview fixtures"
 _catalog-test-stage.shell = """
@@ -218,9 +217,9 @@ printf '%s\n' \
 
 catalog-test.help = "Prepare the LOCAL catalog filesystem test state"
 catalog-test.sequence = [
-    "_catalog-test-config",
-    "_catalog-test-python",
-    "_catalog-test-frontend",
-    "_catalog-test-stage",
-    "_catalog-test-print",
+  "_catalog-test-config",
+  "_catalog-test-python",
+  "_catalog-test-frontend",
+  "_catalog-test-stage",
+  "_catalog-test-print",
 ]
