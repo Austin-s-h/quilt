@@ -7,7 +7,6 @@ import zlib
 from io import BytesIO
 from typing import Tuple
 
-from xlrd.biffh import XLRDError
 from .utils import get_available_memory, get_quilt_logger
 
 # CATALOG_LIMIT_BYTES is bytes scanned, so acts as an upper bound on bytes returned
