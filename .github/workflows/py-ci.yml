@@ -49,7 +49,7 @@ jobs:
       - name: Validate Python packaging policy and inventory
         run: |
           python .github/scripts/python_packaging.py guardrails
-          python .github/scripts/python_packaging.py inventory check --json docs/python_packaging_inventory.json --csv docs/python_packaging_inventory.csv
+          python .github/scripts/python_packaging.py inventory check --json .github/python-packaging/inventory.json --csv .github/python-packaging/inventory.csv
 
   # Enable once the rest of the codebase is formatted
   # format-rest:
