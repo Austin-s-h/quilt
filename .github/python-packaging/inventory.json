@@ -12,16 +12,16 @@
       ],
       "recent_dependency_churn_examples": [
         {
-          "sha": "dfa2fbb",
-          "subject": "fix: update dependency URLs to latest versions"
+          "sha": "9abcd3f",
+          "subject": "fix: Refactor lambda packaging to support committed local path sources"
         },
         {
-          "sha": "372a41a",
-          "subject": "chore: wire preview lambda improvements"
+          "sha": "b166e0a",
+          "subject": "build(deps): bump lxml from 6.0.2 to 6.1.0 in /lambdas/indexer (#4845)"
         },
         {
-          "sha": "e946315",
-          "subject": "preview: split consumer updates"
+          "sha": "72b5a53",
+          "subject": "build(deps): bump pillow from 12.1.1 to 12.2.0 in /lambdas/indexer (#4818)"
         },
         {
           "sha": "284e026",
@@ -68,24 +68,24 @@
       ],
       "recent_dependency_churn_examples": [
         {
-          "sha": "dec67d2",
+          "sha": "1dbd469",
           "subject": "fix: align shared preview dependencies"
         },
         {
-          "sha": "6d6fcf8",
-          "subject": "Merge branch 'preview-lambda-shared' into progressive-uv-packaging"
-        },
-        {
-          "sha": "a7bfdc7",
+          "sha": "92f8499",
           "subject": "docs: define progressive uv packaging rollout"
         },
         {
-          "sha": "0b5f5d7",
+          "sha": "d6f6420",
+          "subject": "shared: split preview lambda base"
+        },
+        {
+          "sha": "8c5ba88",
           "subject": "fix: restore es numpy cap"
         },
         {
-          "sha": "20d03ba",
-          "subject": "fix: Refactor FCS scatter plot handling and improve test coverage"
+          "sha": "349f68b",
+          "subject": "shared: address Copilot review findings on FCS parsing"
         }
       ],
       "resolved_numpy_majors": [
@@ -427,16 +427,16 @@
       "python_target": "==3.12.*",
       "recent_dependency_churn_examples": [
         {
-          "sha": "dfa2fbb",
-          "subject": "fix: update dependency URLs to latest versions"
+          "sha": "9abcd3f",
+          "subject": "fix: Refactor lambda packaging to support committed local path sources"
         },
         {
-          "sha": "372a41a",
-          "subject": "chore: wire preview lambda improvements"
+          "sha": "b166e0a",
+          "subject": "build(deps): bump lxml from 6.0.2 to 6.1.0 in /lambdas/indexer (#4845)"
         },
         {
-          "sha": "e946315",
-          "subject": "preview: split consumer updates"
+          "sha": "72b5a53",
+          "subject": "build(deps): bump pillow from 12.1.1 to 12.2.0 in /lambdas/indexer (#4818)"
         }
       ],
       "resolved_numpy_major": 1,
@@ -593,16 +593,16 @@
       "python_target": "==3.13.*",
       "recent_dependency_churn_examples": [
         {
-          "sha": "dfa2fbb",
-          "subject": "fix: update dependency URLs to latest versions"
+          "sha": "9abcd3f",
+          "subject": "fix: Refactor lambda packaging to support committed local path sources"
         },
         {
-          "sha": "372a41a",
-          "subject": "chore: wire preview lambda improvements"
+          "sha": "928e58e",
+          "subject": "build(deps): bump nbconvert from 7.17.0 to 7.17.1 in /lambdas/preview (#4842)"
         },
         {
-          "sha": "e946315",
-          "subject": "preview: split consumer updates"
+          "sha": "7c101a6",
+          "subject": "build(deps-dev): bump pytest from 8.4.2 to 9.0.3 in /lambdas/preview (#4822)"
         }
       ],
       "resolved_numpy_major": 2,
@@ -668,16 +668,16 @@
       "python_target": ">=3.12",
       "recent_dependency_churn_examples": [
         {
-          "sha": "dec67d2",
+          "sha": "1dbd469",
           "subject": "fix: align shared preview dependencies"
         },
         {
-          "sha": "6d6fcf8",
-          "subject": "Merge branch 'preview-lambda-shared' into progressive-uv-packaging"
+          "sha": "92f8499",
+          "subject": "docs: define progressive uv packaging rollout"
         },
         {
-          "sha": "a7bfdc7",
-          "subject": "docs: define progressive uv packaging rollout"
+          "sha": "d6f6420",
+          "subject": "shared: split preview lambda base"
         }
       ],
       "resolved_numpy_major": 2,
@@ -786,16 +786,16 @@
       "python_target": "~=3.13.0",
       "recent_dependency_churn_examples": [
         {
-          "sha": "e946315",
-          "subject": "preview: split consumer updates"
-        },
-        {
           "sha": "55f410d",
           "subject": "build(deps): bump lxml from 6.0.2 to 6.1.0 in /lambdas/thumbnail (#4844)"
         },
         {
           "sha": "5515b57",
           "subject": "build(deps): bump pillow from 12.1.1 to 12.2.0 in /lambdas/thumbnail (#4830)"
+        },
+        {
+          "sha": "db11217",
+          "subject": "build(deps-dev): bump pytest from 8.4.2 to 9.0.3 in /lambdas/thumbnail (#4824)"
         }
       ],
       "resolved_numpy_major": 2,
@@ -857,16 +857,16 @@
       "python_target": ">= 3.9, < 4",
       "recent_dependency_churn_examples": [
         {
-          "sha": "0b5f5d7",
+          "sha": "8c5ba88",
           "subject": "fix: restore es numpy cap"
         },
         {
-          "sha": "dec67d2",
-          "subject": "fix: align shared preview dependencies"
+          "sha": "349f68b",
+          "subject": "shared: address Copilot review findings on FCS parsing"
         },
         {
-          "sha": "20d03ba",
-          "subject": "fix: Refactor FCS scatter plot handling and improve test coverage"
+          "sha": "967feec",
+          "subject": "py-shared: regenerate uv.lock for numpy entry"
         }
       ],
       "resolved_numpy_major": 1,
@@ -890,8 +890,12 @@
       "lockfile_path": "testdocs/uv.lock",
       "package_family": "tooling",
       "package_path": "testdocs",
-      "python_target": "==3.9.*",
+      "python_target": ">=3.11,<4",
       "recent_dependency_churn_examples": [
+        {
+          "sha": "7d2f667",
+          "subject": "fix: update requirement export paths and improve build scripts"
+        },
         {
           "sha": "095c14b",
           "subject": "Quilt3 v7.3.0 (#4808)"
@@ -899,10 +903,6 @@
         {
           "sha": "0b2ee43",
           "subject": "Quilt3 v7.2.0 (#4716)"
-        },
-        {
-          "sha": "cb0dd64",
-          "subject": "quilt3 crc64nvme verification (#4696)"
         }
       ],
       "resolved_numpy_major": 2,
