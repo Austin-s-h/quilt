@@ -55,8 +55,8 @@ class PackageRecord:
     internal_source_mode: str
     internal_sources: list[dict[str, Any]]
     direct_numpy_constraints: list[str]
-    resolved_numpy_version: str | None
-    resolved_numpy_major: int | None
+    resolved_numpy_versions: list[str]
+    resolved_numpy_majors: list[int]
     recent_dependency_churn_examples: list[dict[str, str]]
 
     def to_json(self) -> dict[str, Any]:
@@ -72,8 +72,8 @@ class PackageRecord:
             "internal_source_mode": self.internal_source_mode,
             "internal_sources": self.internal_sources,
             "direct_numpy_constraints": self.direct_numpy_constraints,
-            "resolved_numpy_version": self.resolved_numpy_version,
-            "resolved_numpy_major": self.resolved_numpy_major,
+            "resolved_numpy_versions": self.resolved_numpy_versions,
+            "resolved_numpy_majors": self.resolved_numpy_majors,
             "recent_dependency_churn_examples": self.recent_dependency_churn_examples,
         }
 
@@ -89,8 +89,8 @@ class PackageRecord:
             "deploy_release_boundary": self.deploy_release_boundary,
             "internal_source_mode": self.internal_source_mode,
             "direct_numpy_constraint": "; ".join(self.direct_numpy_constraints) or "none",
-            "resolved_numpy_version": self.resolved_numpy_version or "none",
-            "resolved_numpy_major": str(self.resolved_numpy_major) if self.resolved_numpy_major is not None else "none",
+            "resolved_numpy_versions": "; ".join(self.resolved_numpy_versions) or "none",
+            "resolved_numpy_majors": "; ".join(str(major) for major in self.resolved_numpy_majors) or "none",
             "recent_dependency_churn_examples": " | ".join(
                 f"{entry['sha']} {entry['subject']}" for entry in self.recent_dependency_churn_examples
             )
@@ -257,21 +257,26 @@ def numpy_constraints_for(pyproject: dict[str, Any]) -> list[str]:
     return constraints
 
 
-def resolved_numpy_from_lock(lockfile: Path | None) -> tuple[str | None, int | None]:
+def resolved_numpy_from_lock(lockfile: Path | None) -> tuple[list[str], list[int]]:
     if lockfile is None or not lockfile.exists():
-        return None, None
+        return [], []
     data = load_toml(lockfile)
+    versions: list[str] = []
+    majors: list[int] = []
     for package in data.get("package", []):
         if package.get("name") == "numpy":
             version = package.get("version")
             if not isinstance(version, str):
-                return None, None
+                continue
+            if version not in versions:
+                versions.append(version)
             try:
                 major = int(version.split(".", 1)[0])
             except ValueError:
-                major = None
-            return version, major
-    return None, None
+                continue
+            if major not in majors:
+                majors.append(major)
+    return versions, majors
 
 
 def recent_dependency_churn(package_path: str) -> list[dict[str, str]]:
@@ -306,7 +311,7 @@ def recent_dependency_churn(package_path: str) -> list[dict[str, str]]:
     return rows
 
 
-def render_artifacts() -> tuple[str, str]:
+def render_artifacts(*, include_dependency_churn: bool = False) -> tuple[str, str]:
     packages: list[PackageRecord] = []
     family_summary: dict[str, dict[str, Any]] = {}
 
@@ -319,7 +324,7 @@ def render_artifacts() -> tuple[str, str]:
         lockfile = package_dir / "uv.lock"
         internal_sources = internal_sources_for(pyproject)
         internal_modes = sorted({row["mode"] for row in internal_sources})
-        numpy_version, numpy_major = resolved_numpy_from_lock(lockfile if lockfile.exists() else None)
+        numpy_versions, numpy_majors = resolved_numpy_from_lock(lockfile if lockfile.exists() else None)
         package = PackageRecord(
             package_path=package_path,
             distribution_name=project.get("name", package_dir.name),
@@ -332,9 +337,9 @@ def render_artifacts() -> tuple[str, str]:
             internal_source_mode=("; ".join(internal_modes) if internal_modes else "none"),
             internal_sources=internal_sources,
             direct_numpy_constraints=numpy_constraints_for(pyproject),
-            resolved_numpy_version=numpy_version,
-            resolved_numpy_major=numpy_major,
-            recent_dependency_churn_examples=recent_dependency_churn(package_path),
+            resolved_numpy_versions=numpy_versions,
+            resolved_numpy_majors=numpy_majors,
+            recent_dependency_churn_examples=(recent_dependency_churn(package_path) if include_dependency_churn else []),
         )
         packages.append(package)
 
@@ -351,8 +356,7 @@ def render_artifacts() -> tuple[str, str]:
         summary["package_paths"].append(package.package_path)
         if package.internal_source_mode != "none":
             summary["internal_source_modes"].update(package.internal_source_mode.split("; "))
-        if package.resolved_numpy_major is not None:
-            summary["resolved_numpy_majors"].add(package.resolved_numpy_major)
+        summary["resolved_numpy_majors"].update(package.resolved_numpy_majors)
         for entry in package.recent_dependency_churn_examples:
             if entry not in summary["recent_dependency_churn_examples"]:
                 summary["recent_dependency_churn_examples"].append(entry)
@@ -383,8 +387,8 @@ def render_artifacts() -> tuple[str, str]:
         "deploy_release_boundary",
         "internal_source_mode",
         "direct_numpy_constraint",
-        "resolved_numpy_version",
-        "resolved_numpy_major",
+        "resolved_numpy_versions",
+        "resolved_numpy_majors",
         "recent_dependency_churn_examples",
     ]
     csv_buffer = StringIO()
@@ -428,7 +432,7 @@ def normalize_inventory_csv(text: str) -> str:
 
 
 def check_inventory(json_path: Path, csv_path: Path) -> int:
-    expected_json, expected_csv = render_artifacts()
+    expected_json, expected_csv = render_artifacts(include_dependency_churn=False)
     failures: list[str] = []
     if not json_path.exists() or normalize_inventory_json(json_path.read_text()) != normalize_inventory_json(expected_json):
         failures.append(str(json_path.relative_to(REPO_ROOT)))
@@ -446,6 +450,7 @@ def guardrails() -> int:
     failures: list[str] = []
 
     expected_py_ci = [
+        "fetch-depth: 0",
         'req_dir="$RUNNER_TEMP/lambda-requirements/${{ matrix.path }}"',
         'uv export --locked --no-emit-project --no-emit-local --no-hashes --directory lambdas/${{ matrix.path }} -o "$req_dir/requirements.txt" --no-default-groups',
         'uv export --locked --no-emit-project --no-emit-local --no-hashes --directory lambdas/${{ matrix.path }} -o "$req_dir/test-requirements.txt" --only-group test',

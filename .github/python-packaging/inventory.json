@@ -10,28 +10,7 @@
         "lambdas/tabular_preview",
         "lambdas/thumbnail"
       ],
-      "recent_dependency_churn_examples": [
-        {
-          "sha": "9abcd3f",
-          "subject": "fix: Refactor lambda packaging to support committed local path sources"
-        },
-        {
-          "sha": "b166e0a",
-          "subject": "build(deps): bump lxml from 6.0.2 to 6.1.0 in /lambdas/indexer (#4845)"
-        },
-        {
-          "sha": "72b5a53",
-          "subject": "build(deps): bump pillow from 12.1.1 to 12.2.0 in /lambdas/indexer (#4818)"
-        },
-        {
-          "sha": "3917727",
-          "subject": "build(deps): bump urllib3 from 2.6.3 to 2.7.0 in /lambdas/tabular_preview (#4898)"
-        },
-        {
-          "sha": "284e026",
-          "subject": "build(deps): bump pillow from 12.1.1 to 12.2.0 in /lambdas/tabular_preview (#4817)"
-        }
-      ],
+      "recent_dependency_churn_examples": [],
       "resolved_numpy_majors": [
         1,
         2
@@ -42,22 +21,10 @@
       "package_paths": [
         "api/python"
       ],
-      "recent_dependency_churn_examples": [
-        {
-          "sha": "2d55a03",
-          "subject": "build(deps): bump lxml from 6.0.2 to 6.1.0 in /api/python (#4877)"
-        },
-        {
-          "sha": "f84f99b",
-          "subject": "fix: upgrade ariadne-codegen to 0.16 to fix non-deterministic codegen (#4810)"
-        },
-        {
-          "sha": "095c14b",
-          "subject": "Quilt3 v7.3.0 (#4808)"
-        }
-      ],
+      "recent_dependency_churn_examples": [],
       "resolved_numpy_majors": [
-        1
+        1,
+        2
       ]
     },
     "shared": {
@@ -66,28 +33,7 @@
         "lambdas/shared",
         "py-shared"
       ],
-      "recent_dependency_churn_examples": [
-        {
-          "sha": "1dbd469",
-          "subject": "fix: align shared preview dependencies"
-        },
-        {
-          "sha": "92f8499",
-          "subject": "docs: define progressive uv packaging rollout"
-        },
-        {
-          "sha": "d6f6420",
-          "subject": "shared: split preview lambda base"
-        },
-        {
-          "sha": "8c5ba88",
-          "subject": "fix: restore es numpy cap"
-        },
-        {
-          "sha": "349f68b",
-          "subject": "shared: address Copilot review findings on FCS parsing"
-        }
-      ],
+      "recent_dependency_churn_examples": [],
       "resolved_numpy_majors": [
         1,
         2
@@ -102,28 +48,7 @@
         "gendocs",
         "testdocs"
       ],
-      "recent_dependency_churn_examples": [
-        {
-          "sha": "f84f99b",
-          "subject": "fix: upgrade ariadne-codegen to 0.16 to fix non-deterministic codegen (#4810)"
-        },
-        {
-          "sha": "1e335d6",
-          "subject": "quilt3: API Keys (#4690)"
-        },
-        {
-          "sha": "da2c47f",
-          "subject": "build(deps): bump mistune from 3.1.4 to 3.2.1 in /gendocs (#4882)"
-        },
-        {
-          "sha": "ccbd3ee",
-          "subject": "build(deps): bump nbconvert from 7.17.0 to 7.17.1 in /gendocs (#4841)"
-        },
-        {
-          "sha": "095c14b",
-          "subject": "Quilt3 v7.3.0 (#4808)"
-        }
-      ],
+      "recent_dependency_churn_examples": [],
       "resolved_numpy_majors": [
         2
       ]
@@ -145,28 +70,7 @@
         "lambdas/status_reports",
         "lambdas/transcode"
       ],
-      "recent_dependency_churn_examples": [
-        {
-          "sha": "adae9cd",
-          "subject": "access_counts: configurable s3.copy() TransferConfig and awscrt (#4746)"
-        },
-        {
-          "sha": "2950b35",
-          "subject": "Bump urllib3 from 2.5.0 to 2.6.3 in /lambdas/access_counts (#4720)"
-        },
-        {
-          "sha": "64ad2eb",
-          "subject": "access_counts: migrate to uv and Python 3.13 (#4618)"
-        },
-        {
-          "sha": "9cacee0",
-          "subject": "build(deps): bump urllib3 from 2.6.3 to 2.7.0 in /lambdas/es_ingest (#4899)"
-        },
-        {
-          "sha": "a0c9d89",
-          "subject": "build(deps-dev): bump pytest from 8.4.1 to 9.0.3 in /lambdas/es_ingest (#4820)"
-        }
-      ],
+      "recent_dependency_churn_examples": [],
       "resolved_numpy_majors": [
         2
       ]
@@ -189,22 +93,17 @@
       "package_family": "sdk",
       "package_path": "api/python",
       "python_target": ">=3.9",
-      "recent_dependency_churn_examples": [
-        {
-          "sha": "2d55a03",
-          "subject": "build(deps): bump lxml from 6.0.2 to 6.1.0 in /api/python (#4877)"
-        },
-        {
-          "sha": "f84f99b",
-          "subject": "fix: upgrade ariadne-codegen to 0.16 to fix non-deterministic codegen (#4810)"
-        },
-        {
-          "sha": "095c14b",
-          "subject": "Quilt3 v7.3.0 (#4808)"
-        }
+      "recent_dependency_churn_examples": [],
+      "resolved_numpy_majors": [
+        1,
+        2
       ],
-      "resolved_numpy_major": 1,
-      "resolved_numpy_version": "1.26.4"
+      "resolved_numpy_versions": [
+        "1.26.4",
+        "2.0.2",
+        "2.2.6",
+        "2.3.4"
+      ]
     },
     {
       "default_groups": [],
@@ -220,18 +119,9 @@
       "package_family": "tooling",
       "package_path": "api/python/quilt3-graphql",
       "python_target": ">=3.12",
-      "recent_dependency_churn_examples": [
-        {
-          "sha": "f84f99b",
-          "subject": "fix: upgrade ariadne-codegen to 0.16 to fix non-deterministic codegen (#4810)"
-        },
-        {
-          "sha": "1e335d6",
-          "subject": "quilt3: API Keys (#4690)"
-        }
-      ],
-      "resolved_numpy_major": null,
-      "resolved_numpy_version": null
+      "recent_dependency_churn_examples": [],
+      "resolved_numpy_majors": [],
+      "resolved_numpy_versions": []
     },
     {
       "default_groups": [],
@@ -252,22 +142,9 @@
       "package_family": "tooling",
       "package_path": "gendocs",
       "python_target": "==3.9.*",
-      "recent_dependency_churn_examples": [
-        {
-          "sha": "da2c47f",
-          "subject": "build(deps): bump mistune from 3.1.4 to 3.2.1 in /gendocs (#4882)"
-        },
-        {
-          "sha": "ccbd3ee",
-          "subject": "build(deps): bump nbconvert from 7.17.0 to 7.17.1 in /gendocs (#4841)"
-        },
-        {
-          "sha": "095c14b",
-          "subject": "Quilt3 v7.3.0 (#4808)"
-        }
-      ],
-      "resolved_numpy_major": null,
-      "resolved_numpy_version": null
+      "recent_dependency_churn_examples": [],
+      "resolved_numpy_majors": [],
+      "resolved_numpy_versions": []
     },
     {
       "default_groups": [
@@ -292,22 +169,9 @@
       "package_family": "zip-lambda",
       "package_path": "lambdas/access_counts",
       "python_target": "==3.13.*",
-      "recent_dependency_churn_examples": [
-        {
-          "sha": "adae9cd",
-          "subject": "access_counts: configurable s3.copy() TransferConfig and awscrt (#4746)"
-        },
-        {
-          "sha": "2950b35",
-          "subject": "Bump urllib3 from 2.5.0 to 2.6.3 in /lambdas/access_counts (#4720)"
-        },
-        {
-          "sha": "64ad2eb",
-          "subject": "access_counts: migrate to uv and Python 3.13 (#4618)"
-        }
-      ],
-      "resolved_numpy_major": null,
-      "resolved_numpy_version": null
+      "recent_dependency_churn_examples": [],
+      "resolved_numpy_majors": [],
+      "resolved_numpy_versions": []
     },
     {
       "default_groups": [
@@ -338,22 +202,9 @@
       "package_family": "zip-lambda",
       "package_path": "lambdas/es_ingest",
       "python_target": "==3.13.*",
-      "recent_dependency_churn_examples": [
-        {
-          "sha": "9cacee0",
-          "subject": "build(deps): bump urllib3 from 2.6.3 to 2.7.0 in /lambdas/es_ingest (#4899)"
-        },
-        {
-          "sha": "a0c9d89",
-          "subject": "build(deps-dev): bump pytest from 8.4.1 to 9.0.3 in /lambdas/es_ingest (#4820)"
-        },
-        {
-          "sha": "74c790e",
-          "subject": "build(deps): bump requests from 2.32.4 to 2.33.0 in /lambdas/es_ingest (#4786)"
-        }
-      ],
-      "resolved_numpy_major": null,
-      "resolved_numpy_version": null
+      "recent_dependency_churn_examples": [],
+      "resolved_numpy_majors": [],
+      "resolved_numpy_versions": []
     },
     {
       "default_groups": [
@@ -378,22 +229,9 @@
       "package_family": "zip-lambda",
       "package_path": "lambdas/iceberg",
       "python_target": "==3.13.*",
-      "recent_dependency_churn_examples": [
-        {
-          "sha": "aadae4b",
-          "subject": "build(deps): bump urllib3 from 2.6.3 to 2.7.0 in /lambdas/iceberg (#4889)"
-        },
-        {
-          "sha": "2e275a0",
-          "subject": "build(deps-dev): bump pytest from 8.4.2 to 9.0.3 in /lambdas/iceberg (#4821)"
-        },
-        {
-          "sha": "59d9b06",
-          "subject": "Bump urllib3 from 2.5.0 to 2.6.3 in /lambdas/iceberg (#4718)"
-        }
-      ],
-      "resolved_numpy_major": null,
-      "resolved_numpy_version": null
+      "recent_dependency_churn_examples": [],
+      "resolved_numpy_majors": [],
+      "resolved_numpy_versions": []
     },
     {
       "default_groups": [
@@ -425,22 +263,13 @@
       "package_family": "container-lambda",
       "package_path": "lambdas/indexer",
       "python_target": "==3.12.*",
-      "recent_dependency_churn_examples": [
-        {
-          "sha": "9abcd3f",
-          "subject": "fix: Refactor lambda packaging to support committed local path sources"
-        },
-        {
-          "sha": "b166e0a",
-          "subject": "build(deps): bump lxml from 6.0.2 to 6.1.0 in /lambdas/indexer (#4845)"
-        },
-        {
-          "sha": "72b5a53",
-          "subject": "build(deps): bump pillow from 12.1.1 to 12.2.0 in /lambdas/indexer (#4818)"
-        }
+      "recent_dependency_churn_examples": [],
+      "resolved_numpy_majors": [
+        1
       ],
-      "resolved_numpy_major": 1,
-      "resolved_numpy_version": "1.26.4"
+      "resolved_numpy_versions": [
+        "1.26.4"
+      ]
     },
     {
       "default_groups": [
@@ -471,22 +300,9 @@
       "package_family": "zip-lambda",
       "package_path": "lambdas/manifest_indexer",
       "python_target": "==3.13.*",
-      "recent_dependency_churn_examples": [
-        {
-          "sha": "d6266df",
-          "subject": "build(deps): bump urllib3 from 2.6.3 to 2.7.0 in /lambdas/manifest_indexer (#4894)"
-        },
-        {
-          "sha": "97eeb8d",
-          "subject": "build(deps-dev): bump pytest from 8.4.1 to 9.0.3 in /lambdas/manifest_indexer (#4819)"
-        },
-        {
-          "sha": "567854c",
-          "subject": "build(deps): bump requests from 2.32.4 to 2.33.0 in /lambdas/manifest_indexer (#4784)"
-        }
-      ],
-      "resolved_numpy_major": null,
-      "resolved_numpy_version": null
+      "recent_dependency_churn_examples": [],
+      "resolved_numpy_majors": [],
+      "resolved_numpy_versions": []
     },
     {
       "default_groups": [
@@ -511,22 +327,9 @@
       "package_family": "zip-lambda",
       "package_path": "lambdas/pkgevents",
       "python_target": "==3.13.*",
-      "recent_dependency_churn_examples": [
-        {
-          "sha": "dc2fa1c",
-          "subject": "build(deps): bump urllib3 from 2.6.3 to 2.7.0 in /lambdas/pkgevents (#4895)"
-        },
-        {
-          "sha": "e2a55a0",
-          "subject": "build(deps-dev): bump pytest from 8.4.2 to 9.0.3 in /lambdas/pkgevents (#4823)"
-        },
-        {
-          "sha": "2f6f550",
-          "subject": "Bump urllib3 from 2.5.0 to 2.6.3 in /lambdas/pkgevents (#4714)"
-        }
-      ],
-      "resolved_numpy_major": null,
-      "resolved_numpy_version": null
+      "recent_dependency_churn_examples": [],
+      "resolved_numpy_majors": [],
+      "resolved_numpy_versions": []
     },
     {
       "default_groups": [
@@ -551,22 +354,9 @@
       "package_family": "zip-lambda",
       "package_path": "lambdas/pkgpush",
       "python_target": "==3.13.*",
-      "recent_dependency_churn_examples": [
-        {
-          "sha": "4c205cb",
-          "subject": "build(deps): bump urllib3 from 2.6.3 to 2.7.0 in /lambdas/pkgpush (#4897)"
-        },
-        {
-          "sha": "ad91b95",
-          "subject": "build(deps-dev): bump pytest from 8.4.2 to 9.0.3 in /lambdas/pkgpush (#4832)"
-        },
-        {
-          "sha": "30484bd",
-          "subject": "build(deps): bump requests from 2.32.5 to 2.33.0 in /lambdas/pkgpush (#4788)"
-        }
-      ],
-      "resolved_numpy_major": null,
-      "resolved_numpy_version": null
+      "recent_dependency_churn_examples": [],
+      "resolved_numpy_majors": [],
+      "resolved_numpy_versions": []
     },
     {
       "default_groups": [
@@ -591,22 +381,13 @@
       "package_family": "zip-lambda",
       "package_path": "lambdas/preview",
       "python_target": "==3.13.*",
-      "recent_dependency_churn_examples": [
-        {
-          "sha": "9abcd3f",
-          "subject": "fix: Refactor lambda packaging to support committed local path sources"
-        },
-        {
-          "sha": "928e58e",
-          "subject": "build(deps): bump nbconvert from 7.17.0 to 7.17.1 in /lambdas/preview (#4842)"
-        },
-        {
-          "sha": "7c101a6",
-          "subject": "build(deps-dev): bump pytest from 8.4.2 to 9.0.3 in /lambdas/preview (#4822)"
-        }
+      "recent_dependency_churn_examples": [],
+      "resolved_numpy_majors": [
+        2
       ],
-      "resolved_numpy_major": 2,
-      "resolved_numpy_version": "2.4.4"
+      "resolved_numpy_versions": [
+        "2.4.4"
+      ]
     },
     {
       "default_groups": [
@@ -631,22 +412,9 @@
       "package_family": "zip-lambda",
       "package_path": "lambdas/s3hash",
       "python_target": "==3.13.*",
-      "recent_dependency_churn_examples": [
-        {
-          "sha": "d3b4879",
-          "subject": "build(deps): bump urllib3 from 2.6.3 to 2.7.0 in /lambdas/s3hash (#4896)"
-        },
-        {
-          "sha": "1bc1d52",
-          "subject": "build(deps-dev): bump pytest to 9.0.3 and pytest-asyncio to 1.3 in /lambdas/s3hash (#4826)"
-        },
-        {
-          "sha": "0143008",
-          "subject": "build(deps): bump aiohttp from 3.13.3 to 3.13.4 in /lambdas/s3hash (#4798)"
-        }
-      ],
-      "resolved_numpy_major": null,
-      "resolved_numpy_version": null
+      "recent_dependency_churn_examples": [],
+      "resolved_numpy_majors": [],
+      "resolved_numpy_versions": []
     },
     {
       "default_groups": [
@@ -666,22 +434,13 @@
       "package_family": "shared",
       "package_path": "lambdas/shared",
       "python_target": ">=3.12",
-      "recent_dependency_churn_examples": [
-        {
-          "sha": "1dbd469",
-          "subject": "fix: align shared preview dependencies"
-        },
-        {
-          "sha": "92f8499",
-          "subject": "docs: define progressive uv packaging rollout"
-        },
-        {
-          "sha": "d6f6420",
-          "subject": "shared: split preview lambda base"
-        }
+      "recent_dependency_churn_examples": [],
+      "resolved_numpy_majors": [
+        2
       ],
-      "resolved_numpy_major": 2,
-      "resolved_numpy_version": "2.4.4"
+      "resolved_numpy_versions": [
+        "2.4.4"
+      ]
     },
     {
       "default_groups": [
@@ -699,22 +458,9 @@
       "package_family": "zip-lambda",
       "package_path": "lambdas/status_reports",
       "python_target": "==3.13.*",
-      "recent_dependency_churn_examples": [
-        {
-          "sha": "a28a79f",
-          "subject": "build(deps): bump urllib3 from 2.6.3 to 2.7.0 in /lambdas/status_reports (#4892)"
-        },
-        {
-          "sha": "418a625",
-          "subject": "build(deps-dev): bump pytest from 8.4.2 to 9.0.3 in /lambdas/status_reports (#4829)"
-        },
-        {
-          "sha": "09b2b3c",
-          "subject": "build(deps): bump aiohttp from 3.13.3 to 3.13.4 in /lambdas/status_reports (#4800)"
-        }
-      ],
-      "resolved_numpy_major": null,
-      "resolved_numpy_version": null
+      "recent_dependency_churn_examples": [],
+      "resolved_numpy_majors": [],
+      "resolved_numpy_versions": []
     },
     {
       "default_groups": [
@@ -742,22 +488,13 @@
       "package_family": "container-lambda",
       "package_path": "lambdas/tabular_preview",
       "python_target": "==3.13.*",
-      "recent_dependency_churn_examples": [
-        {
-          "sha": "3917727",
-          "subject": "build(deps): bump urllib3 from 2.6.3 to 2.7.0 in /lambdas/tabular_preview (#4898)"
-        },
-        {
-          "sha": "284e026",
-          "subject": "build(deps): bump pillow from 12.1.1 to 12.2.0 in /lambdas/tabular_preview (#4817)"
-        },
-        {
-          "sha": "70eac5a",
-          "subject": "build(deps-dev): bump pytest from 8.4.2 to 9.0.3 in /lambdas/tabular_preview (#4825)"
-        }
+      "recent_dependency_churn_examples": [],
+      "resolved_numpy_majors": [
+        2
       ],
-      "resolved_numpy_major": 2,
-      "resolved_numpy_version": "2.3.5"
+      "resolved_numpy_versions": [
+        "2.3.5"
+      ]
     },
     {
       "default_groups": [
@@ -784,22 +521,13 @@
       "package_family": "container-lambda",
       "package_path": "lambdas/thumbnail",
       "python_target": "~=3.13.0",
-      "recent_dependency_churn_examples": [
-        {
-          "sha": "74bcfe1",
-          "subject": "Merge remote-tracking branch 'austin/preview-lambda-shared' into 260427-catalog-fcs-vega"
-        },
-        {
-          "sha": "a1fda19",
-          "subject": "build(deps): bump ujson from 5.12.0 to 5.12.1 in /lambdas/thumbnail (#4900)"
-        },
-        {
-          "sha": "1ccf9c7",
-          "subject": "build(deps): bump urllib3 from 2.6.3 to 2.7.0 in /lambdas/thumbnail (#4890)"
-        }
+      "recent_dependency_churn_examples": [],
+      "resolved_numpy_majors": [
+        2
       ],
-      "resolved_numpy_major": 2,
-      "resolved_numpy_version": "2.3.4"
+      "resolved_numpy_versions": [
+        "2.3.4"
+      ]
     },
     {
       "default_groups": [
@@ -824,18 +552,9 @@
       "package_family": "zip-lambda",
       "package_path": "lambdas/transcode",
       "python_target": "==3.13.*",
-      "recent_dependency_churn_examples": [
-        {
-          "sha": "752dd4a",
-          "subject": "build(deps-dev): bump pytest from 8.4.2 to 9.0.3 in /lambdas/transcode (#4847)"
-        },
-        {
-          "sha": "4174800",
-          "subject": "transcode: migrate to uv and Python 3.13 (#4655)"
-        }
-      ],
-      "resolved_numpy_major": null,
-      "resolved_numpy_version": null
+      "recent_dependency_churn_examples": [],
+      "resolved_numpy_majors": [],
+      "resolved_numpy_versions": []
     },
     {
       "default_groups": [
@@ -855,22 +574,13 @@
       "package_family": "shared",
       "package_path": "py-shared",
       "python_target": ">= 3.9, < 4",
-      "recent_dependency_churn_examples": [
-        {
-          "sha": "8c5ba88",
-          "subject": "fix: restore es numpy cap"
-        },
-        {
-          "sha": "349f68b",
-          "subject": "shared: address Copilot review findings on FCS parsing"
-        },
-        {
-          "sha": "967feec",
-          "subject": "py-shared: regenerate uv.lock for numpy entry"
-        }
+      "recent_dependency_churn_examples": [],
+      "resolved_numpy_majors": [
+        1
       ],
-      "resolved_numpy_major": 1,
-      "resolved_numpy_version": "1.26.4"
+      "resolved_numpy_versions": [
+        "1.26.4"
+      ]
     },
     {
       "default_groups": [],
@@ -891,22 +601,13 @@
       "package_family": "tooling",
       "package_path": "testdocs",
       "python_target": ">=3.11,<4",
-      "recent_dependency_churn_examples": [
-        {
-          "sha": "6fd8b0d",
-          "subject": "fix: refresh packaging inventory and testdocs lock"
-        },
-        {
-          "sha": "7d2f667",
-          "subject": "fix: update requirement export paths and improve build scripts"
-        },
-        {
-          "sha": "095c14b",
-          "subject": "Quilt3 v7.3.0 (#4808)"
-        }
+      "recent_dependency_churn_examples": [],
+      "resolved_numpy_majors": [
+        2
       ],
-      "resolved_numpy_major": 2,
-      "resolved_numpy_version": "2.0.2"
+      "resolved_numpy_versions": [
+        "2.0.2"
+      ]
     }
   ]
 }

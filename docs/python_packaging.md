@@ -48,16 +48,9 @@ The committed inventory captures **19** repository-owned Python packages:
   - most other lambdas are `3.13`
 - The NumPy split is structural, not accidental:
   - `lambdas/indexer` resolves NumPy **1.26.4**
-  - `api/python`, `lambdas/shared`, `preview`, `tabular_preview`, `thumbnail`, and `testdocs` resolve NumPy **2.x**
-  - `api/python` still publishes a broad `optional:pyarrow: numpy>=1.14.0` constraint even though its current lock resolves NumPy 2
-
-### Churn hotspots by family
-
-- **zip lambdas:** repeated `pytest` 9 bumps plus runtime churn like `requests`, `urllib3`, `aiohttp`, and `orjson`
-- **container lambdas:** repeated `pillow`, `cryptography`, and `pytest` updates, with the explicit NumPy 1 vs 2 split still present
-- **shared packages:** recent `uv` migration, Python target changes, and shared preview/FCS-related changes
-- **tooling:** `ariadne-codegen`, `nbconvert`, and `tornado` churn tied to generated docs and codegen flows
-- **SDK:** `aiohttp` and preview/catalog-related dependency churn layered onto the long-lived multi-version client surface
+  - `api/python` resolves NumPy **1.26.4**, **2.0.2**, **2.2.6**, and **2.3.4** across its supported Python targets
+  - `lambdas/shared`, `preview`, `tabular_preview`, `thumbnail`, and `testdocs` resolve NumPy **2.x**
+  - `api/python` still publishes a broad `optional:pyarrow: numpy>=1.14.0` constraint even though its current lock spans both NumPy 1 and 2
 
 Use `.github/python-packaging/inventory.json` as the execution input and `.github/python-packaging/inventory.csv` as the review table.
 
@@ -67,7 +60,7 @@ Use `.github/python-packaging/inventory.json` as the execution input and `.githu
 
 | Package family | Boundary | Dependency groups | Internal source policy | NumPy policy |
 | --- | --- | --- | --- | --- |
-| `sdk` | publishable SDK/CLI surface (`api/python`) | `dev`; extras remain extras when they are published user-facing options | no local-source defaults required | keep broad published compatibility; document that the current dev lock resolves NumPy 2 |
+| `sdk` | publishable SDK/CLI surface (`api/python`) | `dev`; extras remain extras when they are published user-facing options | no local-source defaults required | keep broad published compatibility; document that the current locks span NumPy 1 and 2 across supported Python targets |
 | `tooling` | in-repo docs/codegen tools | no default group unless required; use `dev` only when the tool has an active contributor task surface | local editable path sources are acceptable because tooling is not exported into lambda artifacts | follow the tool’s own runtime; no repo-wide policy forced |
 | `shared` | reusable internal libraries (`py-shared`, `lambdas/shared`) | `test` by default | remain independently locked; consumers may override to local editable installs during development | `py-shared` stays NumPy 1 on the Elasticsearch path while `lambdas/shared` owns the NumPy 2 preview/helper surface |
 | `zip-lambda` | per-directory zip artifact | `test` by default; `prod` only where export/build commands need a runtime-only split | keep archive/default sources by default, but allow the pilot lambdas to commit local path sources when export/install scripts strip local paths from exported requirements and reinstall the local packages explicitly | no forced NumPy policy; only opt into NumPy where the lambda actually needs it |
