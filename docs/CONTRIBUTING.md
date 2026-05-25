@@ -59,7 +59,10 @@ Run `uv run poe` to see all configured tasks (or refer to `pyproject.toml`).
 ### Python packaging pilot workflow
 
 `lambdas/preview` and `lambdas/indexer` now use committed local `uv` path
-sources for in-repo shared packages while keeping exported requirements free of local path entries. Run the packaging guardrails after changing lambda packaging or source wiring:
+sources for in-repo shared packages while keeping exported requirements free of
+local path entries.
+
+Run the packaging guardrails after changing lambda packaging or source wiring:
 
 ```bash
 repo_root="$(git rev-parse --show-toplevel)"
