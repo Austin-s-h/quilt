@@ -25,3 +25,6 @@ test = [
 
 [tool.uv]
 default-groups = []
+
+[tool.uv.sources]
+quilt3 = { path = "../../api/python", editable = true }

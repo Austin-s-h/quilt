@@ -17,13 +17,15 @@ Both modes keep the Catalog UI and backend local to your machine.
 For more details about configuring and using AWS credentials in `boto3`,
 see the [AWS documentation](https://boto3.amazonaws.com/v1/documentation/api/latest/guide/configuration.html).
 
-## Installation
+## Prerequisites
 
 ```bash
-cd api/python
-uv sync --python 3.11 --no-dev --extra catalog
-source .venv/bin/activate
+cd catalog
+npm install
 ```
+
+The recommended LOCAL helpers use isolated `uv run` invocations, so they do not
+mutate `api/python/.venv`.
 
 ## One-shot LOCAL test setup
 
@@ -31,17 +33,24 @@ To prepare the full LOCAL catalog filesystem test state in one command:
 
 ```bash
 cd quilt/api/python
-uvx --from poethepoet poe catalog-test
+uv run poe catalog-test
 ```
 
 That task:
 
 ```text
-- refreshes api/python catalog dependencies
+- resolves api/python catalog dependencies in isolated envs
 - runs catalog npm install
 - rewrites catalog/static-dev/config.js for LOCAL mode
 - resets /tmp/quilt-local-data/demo-bucket
 - stages the curated preview fixtures, including dog_watermark.pdf
+```
+
+To run just the LOCAL backend test suite in the same isolated style:
+
+```bash
+cd quilt/api/python
+uv run poe catalog-test-ci
 ```
 
 ## Frontend Proxy Mode
@@ -93,7 +102,7 @@ PYTHONPATH=$PWD \
 QUILT_LOCAL_OBJECT_BACKEND=filesystem \
 QUILT_LOCAL_DATA_DIR=/tmp/quilt-local-data \
 QUILT_CATALOG_URL=http://localhost:3001 \
-	uv run --no-dev --extra catalog quilt3 catalog --host localhost --port 3000 --no-browser
+	uv run --isolated --python 3.11 --no-dev --extra catalog quilt3 catalog --host localhost --port 3000 --no-browser
 ```
 
 Open `http://localhost:3000` in your browser. The Python app serves the LOCAL backend routes, and proxies static assets to webpack on port 3001.
@@ -118,11 +127,11 @@ cd quilt
 ss -ltnp | grep -E ':(3000|3001)\b' || true
 ```
 
-Stop the usual LOCAL development processes by command pattern:
+Stop the processes by PID from the `ss` output:
 
 ```bash
-pkill -f 'webpack serve --config internals/webpack/webpack.dev.js' || true
-pkill -f 'quilt3 catalog --host localhost --port 3000' || true
+kill <PID_FROM_PORT_3001>
+kill <PID_FROM_PORT_3000>
 ```
 
 Verify the ports are clear, then restart Node and Python:
@@ -139,7 +148,7 @@ PYTHONPATH=$PWD \
 QUILT_LOCAL_OBJECT_BACKEND=filesystem \
 QUILT_LOCAL_DATA_DIR=/tmp/quilt-local-data \
 QUILT_CATALOG_URL=http://localhost:3001 \
-	uv run --python 3.11 --no-dev --extra catalog quilt3 catalog --host localhost --port 3000 --no-browser
+	uv run --isolated --python 3.11 --no-dev --extra catalog quilt3 catalog --host localhost --port 3000 --no-browser
 ```
 
 ## Filesystem Object Backend
@@ -179,7 +188,7 @@ $ PYTHONPATH=$PWD \
 		QUILT_LOCAL_OBJECT_BACKEND=filesystem \
 		QUILT_LOCAL_DATA_DIR=/tmp/quilt-local-data \
 		QUILT_CATALOG_URL=http://localhost:3001 \
-		uv run --python 3.11 --no-dev --extra catalog quilt3 catalog --host localhost --port 3000 --no-browser
+		uv run --isolated --python 3.11 --no-dev --extra catalog quilt3 catalog --host localhost --port 3000 --no-browser
 ```
 
 ## Canonical Preview Fixtures

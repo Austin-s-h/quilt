@@ -87,6 +87,22 @@ jobs:
       - name: Test codeblocks
         run: uv run poe testdocs
 
+  test-local-catalog:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: api/python
+    env:
+      QUILT_DISABLE_USAGE_METRICS: true
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - uses: astral-sh/setup-uv@v7
+      - name: Run LOCAL catalog backend tests
+        run: uv run poe catalog-test-ci
+
   test-client:
     strategy:
       matrix:
@@ -183,8 +199,8 @@ jobs:
           req_dir="$RUNNER_TEMP/lambda-requirements/${{ matrix.path }}"
           mkdir -p "$req_dir"
           if python .github/scripts/python_packaging.py uses-workspace "lambdas/${{ matrix.path }}"; then
-            uv export --locked --project . --package "$package_name" --no-emit-project --no-emit-workspace --no-hashes -o "$req_dir/requirements.txt" --no-default-groups
-            uv export --locked --project . --package "$package_name" --no-emit-project --no-emit-workspace --no-hashes -o "$req_dir/test-requirements.txt" --only-group test
+            uv export --locked --project . --package "$package_name" --no-emit-project --no-emit-workspace --no-emit-local --no-hashes -o "$req_dir/requirements.txt" --no-default-groups
+            uv export --locked --project . --package "$package_name" --no-emit-project --no-emit-workspace --no-emit-local --no-hashes -o "$req_dir/test-requirements.txt" --only-group test
           else
             uv export --locked --no-emit-project --no-emit-local --no-hashes --directory "lambdas/${{ matrix.path }}" -o "$req_dir/requirements.txt" --no-default-groups
             uv export --locked --no-emit-project --no-emit-local --no-hashes --directory "lambdas/${{ matrix.path }}" -o "$req_dir/test-requirements.txt" --only-group test

@@ -41,7 +41,7 @@ if [[ -n "$REPO_ROOT" && -n "$PACKAGE_PATH" && -f "$REPO_ROOT/.github/scripts/py
 fi
 
 if [[ -n "$package_name" ]] && python "$REPO_ROOT/.github/scripts/python_packaging.py" uses-workspace "$PACKAGE_PATH"; then
-    uv export --locked --project "$REPO_ROOT" --package "$package_name" --no-emit-project --no-emit-workspace --no-hashes -o "$requirements_file" --no-default-groups
+    uv export --locked --project "$REPO_ROOT" --package "$package_name" --no-emit-project --no-emit-workspace --no-emit-local --no-hashes -o "$requirements_file" --no-default-groups
 else
     uv export --locked --no-emit-project --no-emit-local --no-hashes --directory "$FUNCTION_DIR" -o "$requirements_file" --no-default-groups
 fi

@@ -56,11 +56,12 @@ so you don't have to do anything else.
 
 Run `uv run poe` to see all configured tasks (or refer to `pyproject.toml`).
 
-### Python packaging pilot workflow
+### Python packaging workflow
 
-`lambdas/preview` and `lambdas/indexer` now use committed local `uv` path
-sources for in-repo shared packages while keeping exported requirements free of
-local path entries.
+`quilt-shared` is now internalized through the repository root `uv` workspace,
+while `pkgpush` and `s3hash` keep committed local `quilt3` sources so they can
+test against unreleased SDK changes without publishing an intermediate package.
+The packaging guardrails keep exported requirements free of local path entries.
 
 Run the packaging guardrails after changing lambda packaging or source wiring:
 
@@ -93,10 +94,11 @@ uv run poe test tests/test_util.py
 
 ## Local catalog development
 
-Note that, at the current time, it is only possible to run a local
-catalog if you already have a catalog deployed to AWS, because the
-catalog relies on certain services (namely, AWS Lambda and the AWS
-Elasticsearch Service) which cannot be run locally.
+You can run the Catalog locally in two modes:
+
+- AWS-backed LOCAL mode, which still talks to your deployed Quilt stack
+- Filesystem-backed LOCAL mode, which serves package metadata and previews
+  from a local directory tree without AWS
 
 ### Catalog Environment
 
@@ -131,13 +133,15 @@ npm start
 This uses `webpack` under the hood to compile code changes on the
 fly and provide live reloading, useful when developing.
 
-To run the catalog UI against the repo-local LOCAL backend and curated
-filesystem fixtures:
+To prepare the repo-local LOCAL backend and curated filesystem fixtures:
 
 ```bash
 cd api/python
 uv run poe catalog-test
 ```
+
+That helper uses isolated `uv run` invocations, so it does not churn the
+shared `api/python/.venv`.
 
 Then run the frontend and backend in separate terminals:
 
@@ -152,8 +156,16 @@ PYTHONPATH=$PWD \
 QUILT_LOCAL_OBJECT_BACKEND=filesystem \
 QUILT_LOCAL_DATA_DIR=/tmp/quilt-local-data \
 QUILT_CATALOG_URL=http://localhost:3001 \
-uv run --python 3.11 --no-dev --extra catalog \
+uv run --isolated --python 3.11 --no-dev --extra catalog \
   quilt3 catalog --host localhost --port 3000 --no-browser
+```
+
+The backend test coverage for this flow lives in
+`api/python/tests/test_local_mode.py` and is run in CI with:
+
+```bash
+cd api/python
+uv run poe catalog-test-ci
 ```
 
 Make sure that any images you check into the repository are

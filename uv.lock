@@ -1328,8 +1328,8 @@ test = [
 
 [[package]]
 name = "quilt3"
-version = "7.3.0"
-source = { registry = "https://pypi.org/simple" }
+version = "7.4.0"
+source = { editable = "api/python" }
 dependencies = [
     { name = "awscrt" },
     { name = "boto3" },
@@ -1343,9 +1343,43 @@ dependencies = [
     { name = "tenacity" },
     { name = "tqdm" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/19/59/1f1706ef37aece70fa174ebf0d2119d741cebf49bf104a1a733e22a63277/quilt3-7.3.0.tar.gz", hash = "sha256:34553cfefa4cf1ac5cdb10af9144248a8018db720541b7f3e819402ed0e15fca", size = 101821, upload-time = "2026-04-07T21:15:30.363Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/a7/25/4511e114e3f8420a0edd9febd12de1a4a56b3259a779d7ce5d92c5dfd6ac/quilt3-7.3.0-py3-none-any.whl", hash = "sha256:585245b73ad40586af6fc5be689e1113d3e44bcb75e198b3ee9a03a036b79d07", size = 136740, upload-time = "2026-04-07T21:15:31.782Z" },
+
+[package.metadata]
+requires-dist = [
+    { name = "aiobotocore", extras = ["boto3"], marker = "extra == 'catalog'", specifier = ">=2" },
+    { name = "anndata", marker = "extra == 'anndata'", specifier = ">=0.8.0" },
+    { name = "asgiproxy", marker = "extra == 'catalog'", specifier = ">=0.2,<0.3" },
+    { name = "awscrt", specifier = ">=0.31.0" },
+    { name = "boto3", specifier = ">=1.21.7" },
+    { name = "jsonlines", specifier = "==1.2.0" },
+    { name = "jsonschema", specifier = ">=3,<5" },
+    { name = "lxml-html-clean", marker = "extra == 'catalog'", specifier = ">=0.4" },
+    { name = "numpy", marker = "extra == 'pyarrow'", specifier = ">=1.14.0" },
+    { name = "pandas", marker = "extra == 'pyarrow'", specifier = ">=0.19.2" },
+    { name = "platformdirs", specifier = ">=2" },
+    { name = "pyarrow", marker = "extra == 'pyarrow'", specifier = ">=0.14.1" },
+    { name = "pydantic", specifier = ">=2.0.0,<3.0.0" },
+    { name = "pyyaml", specifier = ">=5.1" },
+    { name = "quilt3-local", marker = "extra == 'catalog'", specifier = ">=2,<3" },
+    { name = "requests", specifier = ">=2.12.4" },
+    { name = "requests-futures", specifier = "==1.0.0" },
+    { name = "tenacity", specifier = ">=5.1.1,!=8.4.0" },
+    { name = "tqdm", specifier = ">=4.32" },
+    { name = "uvicorn", marker = "extra == 'catalog'", specifier = ">=0.15,<0.18" },
+]
+provides-extras = ["pyarrow", "anndata", "catalog"]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "lxml-html-clean", specifier = ">=0.4" },
+    { name = "poethepoet", specifier = ">=0.37.0" },
+    { name = "pytest", specifier = "~=8.4" },
+    { name = "pytest-cov" },
+    { name = "pytest-env" },
+    { name = "pytest-subtests" },
+    { name = "quilt3", extras = ["pyarrow", "anndata"] },
+    { name = "responses" },
+    { name = "ruff", specifier = ">=0.12.11" },
 ]
 
 [[package]]
@@ -1647,7 +1681,7 @@ requires-dist = [
     { name = "boto3-stubs", extras = ["full"], specifier = "~=1.35" },
     { name = "pydantic", specifier = "~=2.10" },
     { name = "quilt-shared", extras = ["boto", "pydantic", "quilt"], editable = "py-shared" },
-    { name = "quilt3", specifier = ">=7,<8" },
+    { name = "quilt3", editable = "api/python" },
     { name = "rfc3986", specifier = "~=2.0" },
 ]
 
@@ -1687,7 +1721,7 @@ requires-dist = [
     { name = "botocore", specifier = ">=1.35.50" },
     { name = "pydantic", specifier = "~=2.10" },
     { name = "quilt-shared", extras = ["boto", "pydantic", "quilt"], editable = "py-shared" },
-    { name = "quilt3", specifier = ">=7,<8" },
+    { name = "quilt3", editable = "api/python" },
     { name = "types-aiobotocore", extras = ["s3"], specifier = "~=2.15" },
 ]
 

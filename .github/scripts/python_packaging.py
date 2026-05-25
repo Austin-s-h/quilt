@@ -5,13 +5,15 @@ from __future__ import annotations
 import argparse
 import re
 import sys
+import tomllib
 from pathlib import Path
 from typing import Any
 
-import tomllib
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
-ALLOWED_LOCAL_SOURCE_LAMBDAS: set[str] = set()
+ALLOWED_LOCAL_SOURCE_LAMBDAS = {
+    "lambdas/pkgpush",
+    "lambdas/s3hash",
+}
 INTERNAL_DEPENDENCY_NAMES = {
     "quilt3",
     "quilt-shared",
@@ -142,8 +144,8 @@ def guardrails() -> int:
         'package_name=$(python .github/scripts/python_packaging.py package-name "lambdas/${{ matrix.path }}")',
         'if python .github/scripts/python_packaging.py uses-workspace "lambdas/${{ matrix.path }}"; then',
         'req_dir="$RUNNER_TEMP/lambda-requirements/${{ matrix.path }}"',
-        'uv export --locked --project . --package "$package_name" --no-emit-project --no-emit-workspace --no-hashes -o "$req_dir/requirements.txt" --no-default-groups',
-        'uv export --locked --project . --package "$package_name" --no-emit-project --no-emit-workspace --no-hashes -o "$req_dir/test-requirements.txt" --only-group test',
+        'uv export --locked --project . --package "$package_name" --no-emit-project --no-emit-workspace --no-emit-local --no-hashes -o "$req_dir/requirements.txt" --no-default-groups',
+        'uv export --locked --project . --package "$package_name" --no-emit-project --no-emit-workspace --no-emit-local --no-hashes -o "$req_dir/test-requirements.txt" --only-group test',
         'uv export --locked --no-emit-project --no-emit-local --no-hashes --directory "lambdas/${{ matrix.path }}" -o "$req_dir/requirements.txt" --no-default-groups',
         'uv export --locked --no-emit-project --no-emit-local --no-hashes --directory "lambdas/${{ matrix.path }}" -o "$req_dir/test-requirements.txt" --only-group test',
         'mapfile -t local_targets < <(python .github/scripts/python_packaging.py install-targets "lambdas/${{ matrix.path }}")',
@@ -157,7 +159,7 @@ def guardrails() -> int:
     for needle in (
         'package_name=$(python "$REPO_ROOT/.github/scripts/python_packaging.py" package-name "$PACKAGE_PATH")',
         'python "$REPO_ROOT/.github/scripts/python_packaging.py" uses-workspace "$PACKAGE_PATH"',
-        'uv export --locked --project "$REPO_ROOT" --package "$package_name" --no-emit-project --no-emit-workspace --no-hashes -o "$requirements_file" --no-default-groups',
+        'uv export --locked --project "$REPO_ROOT" --package "$package_name" --no-emit-project --no-emit-workspace --no-emit-local --no-hashes -o "$requirements_file" --no-default-groups',
         'uv export --locked --no-emit-project --no-emit-local --no-hashes --directory "$FUNCTION_DIR" -o "$requirements_file" --no-default-groups',
     ):
         if needle not in build_zip:
