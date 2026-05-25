@@ -131,6 +131,31 @@ npm start
 This uses `webpack` under the hood to compile code changes on the
 fly and provide live reloading, useful when developing.
 
+To run the catalog UI against the repo-local LOCAL backend and curated
+filesystem fixtures:
+
+```bash
+cd api/python
+uv run poe catalog-test
+```
+
+Then run the frontend and backend in separate terminals:
+
+```bash
+cd catalog
+PORT=3001 npm start
+```
+
+```bash
+cd api/python
+PYTHONPATH=$PWD \
+QUILT_LOCAL_OBJECT_BACKEND=filesystem \
+QUILT_LOCAL_DATA_DIR=/tmp/quilt-local-data \
+QUILT_CATALOG_URL=http://localhost:3001 \
+uv run --python 3.11 --no-dev --extra catalog \
+  quilt3 catalog --host localhost --port 3000 --no-browser
+```
+
 Make sure that any images you check into the repository are
 [optimized](https://kinsta.com/blog/optimize-images-for-web/) at
 check-in time.

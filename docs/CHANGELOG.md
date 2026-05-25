@@ -16,6 +16,14 @@ Entries inside each section should be ordered by type:
 
 # Changelog
 
+## unreleased - 2026-05-25
+
+### Python API
+
+* [Added] In-repo `api/python/quilt3_local` overrides for filesystem-backed LOCAL catalog development and test coverage
+* [Changed] `quilt3[catalog]` now includes the proxy / preview support dependencies needed by the repo-local LOCAL catalog workflow
+* [Changed] Bump `quilt3` package version to `7.3.1`
+
 ## 7.3.0 - 2026-04-07
 
 ### Python API
