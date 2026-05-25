@@ -45,15 +45,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
       - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
-      - name: Validate Python packaging policy and inventory
+      - name: Validate Python packaging guardrails
         run: |
           python .github/scripts/python_packaging.py guardrails
-          python .github/scripts/python_packaging.py inventory check --json .github/python-packaging/inventory.json --csv .github/python-packaging/inventory.csv
 
   # Enable once the rest of the codebase is formatted
   # format-rest:

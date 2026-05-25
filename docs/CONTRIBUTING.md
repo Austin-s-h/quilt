@@ -58,27 +58,11 @@ Run `uv run poe` to see all configured tasks (or refer to `pyproject.toml`).
 
 ### Python packaging pilot workflow
 
-The repository's progressive `uv` packaging rollout now supports committed local
-path sources for the fixed pilot lambda consumers, while keeping exported
-requirements free of local `../shared`-style entries.
-
-For the fixed pilot packages, a normal locked sync is enough:
-
-```bash
-cd lambdas/preview
-uv sync --locked
-
-cd ../indexer
-uv sync --locked
-```
-
-Regenerate the committed inventory after packaging-boundary changes:
+`lambdas/preview` and `lambdas/indexer` now use committed local `uv` path
+sources for in-repo shared packages while keeping exported requirements free of local path entries. Run the packaging guardrails after changing lambda packaging or source wiring:
 
 ```bash
 repo_root="$(git rev-parse --show-toplevel)"
-python "$repo_root/.github/scripts/python_packaging.py" inventory generate \
-  --json "$repo_root/.github/python-packaging/inventory.json" \
-  --csv "$repo_root/.github/python-packaging/inventory.csv"
 python "$repo_root/.github/scripts/python_packaging.py" guardrails
 ```
 
