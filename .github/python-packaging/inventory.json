@@ -893,16 +893,16 @@
       "python_target": ">=3.11,<4",
       "recent_dependency_churn_examples": [
         {
+          "sha": "6fd8b0d",
+          "subject": "fix: refresh packaging inventory and testdocs lock"
+        },
+        {
           "sha": "7d2f667",
           "subject": "fix: update requirement export paths and improve build scripts"
         },
         {
           "sha": "095c14b",
           "subject": "Quilt3 v7.3.0 (#4808)"
-        },
-        {
-          "sha": "0b2ee43",
-          "subject": "Quilt3 v7.2.0 (#4716)"
         }
       ],
       "resolved_numpy_major": 2,

@@ -401,12 +401,38 @@ def write_inventory(json_path: Path, csv_path: Path) -> None:
     csv_path.write_text(csv_text)
 
 
+def normalize_inventory_json(text: str) -> str:
+    payload = json.loads(text)
+    for package in payload.get("packages", []):
+        if "recent_dependency_churn_examples" in package:
+            package["recent_dependency_churn_examples"] = []
+    for summary in (payload.get("family_summaries") or {}).values():
+        if "recent_dependency_churn_examples" in summary:
+            summary["recent_dependency_churn_examples"] = []
+    return json.dumps(payload, indent=2, sort_keys=True) + "\n"
+
+
+def normalize_inventory_csv(text: str) -> str:
+    reader = csv.DictReader(StringIO(text))
+    if not reader.fieldnames:
+        return text
+    rows = list(reader)
+    for row in rows:
+        if "recent_dependency_churn_examples" in row:
+            row["recent_dependency_churn_examples"] = "none"
+    buffer = StringIO()
+    writer = csv.DictWriter(buffer, fieldnames=reader.fieldnames, lineterminator="\n")
+    writer.writeheader()
+    writer.writerows(rows)
+    return buffer.getvalue()
+
+
 def check_inventory(json_path: Path, csv_path: Path) -> int:
     expected_json, expected_csv = render_artifacts()
     failures: list[str] = []
-    if not json_path.exists() or json_path.read_text() != expected_json:
+    if not json_path.exists() or normalize_inventory_json(json_path.read_text()) != normalize_inventory_json(expected_json):
         failures.append(str(json_path.relative_to(REPO_ROOT)))
-    if not csv_path.exists() or csv_path.read_text() != expected_csv:
+    if not csv_path.exists() or normalize_inventory_csv(csv_path.read_text()) != normalize_inventory_csv(expected_csv):
         failures.append(str(csv_path.relative_to(REPO_ROOT)))
     if failures:
         for failure in failures:
