@@ -228,13 +228,17 @@ wheels = [
 ]
 
 [[package]]
-name = "flowio"
-version = "1.4.0"
+name = "fcsparser"
+version = "0.2.8"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "numpy" },
+    { name = "pandas" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/67/61/5af8df9c7c2c96bd1a2cb758b278d467300e5f4714769ba70e4351da1a4f/flowio-1.4.0.tar.gz", hash = "sha256:c205efcecd1da7da29a1a55c30e09daa7fc132b997cd88910ef06a490755ecf7", size = 19638, upload-time = "2025-05-09T01:28:35.428Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/f1/7b/b8decfe3b0e6c2aca4e9069bb80f54960fe6405a6bf63c01a9ca685ba5c6/fcsparser-0.2.8.tar.gz", hash = "sha256:df0436bf678df1f4ad3274e55fa06773f884fa45d8329015913a6178d10c73ea", size = 14538608, upload-time = "2023-10-17T13:50:21.24Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/1e/10/bfdc8e5b35896d8134a9637ce51c6686f60d8a10fe511de2e07accb8b407/fcsparser-0.2.8-py3-none-any.whl", hash = "sha256:833b02ceff18f34c9304681f5b6675039f5b39a31dfdd9640881f43223bcc2ab", size = 14613064, upload-time = "2023-10-17T13:50:18.119Z" },
+]
 
 [[package]]
 name = "idna"
@@ -825,7 +829,7 @@ requires-dist = [
     { name = "python-pptx", specifier = "~=0.6.21" },
     { name = "quilt-shared", extras = ["boto", "es"], editable = "../../py-shared" },
     { name = "strict-rfc3339", specifier = "~=0.7" },
-    { name = "t4-lambda-shared", extras = ["mem", "preview"], editable = "../shared" },
+    { name = "t4-lambda-shared", extras = ["mem", "preview"], url = "https://github.com/quiltdata/quilt/archive/d496dffbfb4b7a2ae05f6c1f7f0cb7d5d43bc984.zip", subdirectory = "lambdas/shared" },
     { name = "tenacity", specifier = "~=9.0" },
 ]
 
@@ -842,18 +846,18 @@ test = [
 [[package]]
 name = "t4-lambda-shared"
 version = "0.0.3"
-source = { editable = "../shared" }
+source = { url = "https://github.com/quiltdata/quilt/archive/d496dffbfb4b7a2ae05f6c1f7f0cb7d5d43bc984.zip", subdirectory = "lambdas/shared" }
 dependencies = [
     { name = "jsonschema" },
 ]
+sdist = { hash = "sha256:301e81a066f2f01f114bc94563d444f426501af4938e95c666b0ff3c329da439" }
 
 [package.optional-dependencies]
 mem = [
     { name = "psutil" },
 ]
 preview = [
-    { name = "flowio" },
-    { name = "numpy" },
+    { name = "fcsparser" },
     { name = "openpyxl" },
     { name = "pandas" },
     { name = "psutil" },
@@ -864,28 +868,18 @@ preview = [
 [package.metadata]
 requires-dist = [
     { name = "awslambdaric", marker = "extra == 'lambda'", specifier = ">=2,<3" },
-    { name = "flowio", marker = "extra == 'preview'", specifier = "~=1.4" },
+    { name = "fcsparser", marker = "extra == 'preview'", specifier = "~=0.2.1" },
     { name = "jsonschema", specifier = ">=2.6.0" },
-    { name = "numpy", marker = "extra == 'preview'", specifier = ">=1.26,<3" },
     { name = "openpyxl", marker = "extra == 'preview'", specifier = "~=3.1" },
-    { name = "pandas", marker = "extra == 'preview'", specifier = "~=2.2.3" },
+    { name = "pandas", marker = "extra == 'preview'", specifier = "~=2.2" },
     { name = "psutil", marker = "extra == 'mem'", specifier = "~=6.1" },
+    { name = "psutil", marker = "extra == 'preview'", specifier = "~=6.1" },
     { name = "pyarrow", marker = "extra == 'preview'", specifier = "~=18.0" },
-    { name = "t4-lambda-shared", extras = ["mem"], marker = "extra == 'preview'" },
+    { name = "pytest", marker = "extra == 'tests'" },
+    { name = "pytest-cov", marker = "extra == 'tests'" },
     { name = "xlrd", marker = "extra == 'preview'", specifier = "~=2.0" },
 ]
-provides-extras = ["mem", "preview", "lambda"]
-
-[package.metadata.requires-dev]
-test = [
-    { name = "py-w3c", specifier = "~=0.3.1" },
-    { name = "pytest", specifier = "~=8.4" },
-    { name = "pytest-cov", specifier = "~=7.0" },
-    { name = "pytest-env", specifier = "~=1.1" },
-    { name = "pytest-mock", specifier = "~=3.15" },
-    { name = "t4-lambda-shared", extras = ["mem", "preview"] },
-    { name = "testfixtures", specifier = "~=6.14.1" },
-]
+provides-extras = ["tests", "mem", "preview", "lambda"]
 
 [[package]]
 name = "tenacity"

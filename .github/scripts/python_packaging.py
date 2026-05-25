@@ -13,15 +13,14 @@ import tomllib
 REPO_ROOT = Path(__file__).resolve().parents[2]
 ALLOWED_LOCAL_SOURCE_LAMBDAS = {
     "lambdas/indexer",
-    "lambdas/preview",
 }
 INTERNAL_DEPENDENCY_NAMES = {
     "quilt3",
     "quilt-shared",
     "t4-lambda-shared",
-    "t4-lambda_shared",
-    "t4_lambda_shared",
 }
+T4_LAMBDA_SHARED_DEPENDENCY = "t4-lambda-shared"
+T4_LAMBDA_SHARED_SOURCE_URL = "https://github.com/quiltdata/quilt/archive/d496dffbfb4b7a2ae05f6c1f7f0cb7d5d43bc984.zip"
 PROD_DOCKERFILES = (
     REPO_ROOT / "lambdas/indexer/Dockerfile",
     REPO_ROOT / "lambdas/tabular_preview/Dockerfile",
@@ -76,6 +75,16 @@ def iter_internal_source_entries(pyproject: dict[str, Any]) -> list[tuple[str, d
     return rows
 
 
+def is_pinned_t4_shared_source(source: dict[str, Any]) -> bool:
+    return (
+        source.get("url") == T4_LAMBDA_SHARED_SOURCE_URL
+        and source.get("subdirectory") == "lambdas/shared"
+        and "path" not in source
+        and source.get("workspace") is not True
+        and source.get("editable") is not True
+    )
+
+
 def iter_dependency_entries(pyproject: dict[str, Any]) -> list[str]:
     project = pyproject.get("project", {})
     entries = list(project.get("dependencies") or [])
@@ -128,6 +137,13 @@ def guardrails() -> int:
         allow_local_sources = package_path in ALLOWED_LOCAL_SOURCE_LAMBDAS
 
         for dependency, source in iter_internal_source_entries(pyproject):
+            normalized_dependency = normalize_name(dependency)
+            if normalized_dependency == T4_LAMBDA_SHARED_DEPENDENCY:
+                if not is_pinned_t4_shared_source(source):
+                    failures.append(
+                        f"{package_path} must source {dependency} from the pinned quiltdata/quilt archive URL"
+                    )
+                continue
             if ("path" in source or source.get("workspace") is True) and not allow_local_sources:
                 failures.append(f"{package_path} commits a lambda local source for {dependency}")
             if source.get("editable") is True and not allow_local_sources:
