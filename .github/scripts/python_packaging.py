@@ -11,16 +11,19 @@ from typing import Any
 import tomllib
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-ALLOWED_LOCAL_SOURCE_LAMBDAS = {
-    "lambdas/indexer",
-}
+ALLOWED_LOCAL_SOURCE_LAMBDAS: set[str] = set()
 INTERNAL_DEPENDENCY_NAMES = {
     "quilt3",
     "quilt-shared",
     "t4-lambda-shared",
 }
-T4_LAMBDA_SHARED_DEPENDENCY = "t4-lambda-shared"
 T4_LAMBDA_SHARED_SOURCE_URL = "https://github.com/quiltdata/quilt/archive/d496dffbfb4b7a2ae05f6c1f7f0cb7d5d43bc984.zip"
+PINNED_INTERNAL_SOURCES = {
+    "t4-lambda-shared": (T4_LAMBDA_SHARED_SOURCE_URL, "lambdas/shared"),
+}
+WORKSPACE_INTERNAL_SOURCES = {
+    "quilt-shared": REPO_ROOT / "py-shared",
+}
 PROD_DOCKERFILES = (
     REPO_ROOT / "lambdas/indexer/Dockerfile",
     REPO_ROOT / "lambdas/tabular_preview/Dockerfile",
@@ -48,10 +51,18 @@ def iter_lambda_pyprojects() -> list[Path]:
     return sorted((REPO_ROOT / "lambdas").glob("*/pyproject.toml"))
 
 
-def path_source_targets_for(project_dir: Path) -> list[Path]:
+def install_targets_for(project_dir: Path) -> list[Path]:
     pyproject = load_toml(project_dir / "pyproject.toml")
-    sources = ((pyproject.get("tool") or {}).get("uv") or {}).get("sources") or {}
     targets: list[Path] = []
+    seen: set[Path] = set()
+    for dependency in iter_dependency_entries(pyproject):
+        target = WORKSPACE_INTERNAL_SOURCES.get(dependency_name(dependency))
+        if target is None or target in seen:
+            continue
+        targets.append(target)
+        seen.add(target)
+
+    sources = ((pyproject.get("tool") or {}).get("uv") or {}).get("sources") or {}
     for source in sources.values():
         if not isinstance(source, dict):
             continue
@@ -61,7 +72,10 @@ def path_source_targets_for(project_dir: Path) -> list[Path]:
         target = (project_dir / path).resolve()
         if not target.exists():
             raise FileNotFoundError(f"Local source path does not exist: {target}")
+        if target in seen:
+            continue
         targets.append(target)
+        seen.add(target)
     return targets
 
 
@@ -75,10 +89,28 @@ def iter_internal_source_entries(pyproject: dict[str, Any]) -> list[tuple[str, d
     return rows
 
 
-def is_pinned_t4_shared_source(source: dict[str, Any]) -> bool:
+def package_name_for(project_dir: Path) -> str:
+    project = load_toml(project_dir / "pyproject.toml").get("project") or {}
+    name = project.get("name")
+    if not isinstance(name, str) or not name:
+        raise ValueError(f"Missing project.name in {project_dir / 'pyproject.toml'}")
+    return name
+
+
+def workspace_members() -> set[str]:
+    root_pyproject = load_toml(REPO_ROOT / "pyproject.toml")
+    members = (((root_pyproject.get("tool") or {}).get("uv") or {}).get("workspace") or {}).get("members") or []
+    return {member for member in members if isinstance(member, str)}
+
+
+def uses_workspace(project_dir: Path) -> bool:
+    return project_dir.relative_to(REPO_ROOT).as_posix() in workspace_members()
+
+
+def is_pinned_source(source: dict[str, Any], *, url: str, subdirectory: str) -> bool:
     return (
-        source.get("url") == T4_LAMBDA_SHARED_SOURCE_URL
-        and source.get("subdirectory") == "lambdas/shared"
+        source.get("url") == url
+        and source.get("subdirectory") == subdirectory
         and "path" not in source
         and source.get("workspace") is not True
         and source.get("editable") is not True
@@ -98,12 +130,22 @@ def iter_dependency_entries(pyproject: dict[str, Any]) -> list[str]:
 def guardrails() -> int:
     failures: list[str] = []
 
+    root_pyproject = load_toml(REPO_ROOT / "pyproject.toml")
+    root_sources = ((root_pyproject.get("tool") or {}).get("uv") or {}).get("sources") or {}
+    quilt_shared_source = root_sources.get("quilt-shared")
+    if not isinstance(quilt_shared_source, dict) or quilt_shared_source.get("workspace") is not True:
+        failures.append("pyproject.toml must source quilt-shared from the uv workspace")
+
     py_ci = (REPO_ROOT / ".github/workflows/py-ci.yml").read_text()
     for needle in (
         'python .github/scripts/python_packaging.py guardrails',
+        'package_name=$(python .github/scripts/python_packaging.py package-name "lambdas/${{ matrix.path }}")',
+        'if python .github/scripts/python_packaging.py uses-workspace "lambdas/${{ matrix.path }}"; then',
         'req_dir="$RUNNER_TEMP/lambda-requirements/${{ matrix.path }}"',
-        'uv export --locked --no-emit-project --no-emit-local --no-hashes --directory lambdas/${{ matrix.path }} -o "$req_dir/requirements.txt" --no-default-groups',
-        'uv export --locked --no-emit-project --no-emit-local --no-hashes --directory lambdas/${{ matrix.path }} -o "$req_dir/test-requirements.txt" --only-group test',
+        'uv export --locked --project . --package "$package_name" --no-emit-project --no-emit-workspace --no-hashes -o "$req_dir/requirements.txt" --no-default-groups',
+        'uv export --locked --project . --package "$package_name" --no-emit-project --no-emit-workspace --no-hashes -o "$req_dir/test-requirements.txt" --only-group test',
+        'uv export --locked --no-emit-project --no-emit-local --no-hashes --directory "lambdas/${{ matrix.path }}" -o "$req_dir/requirements.txt" --no-default-groups',
+        'uv export --locked --no-emit-project --no-emit-local --no-hashes --directory "lambdas/${{ matrix.path }}" -o "$req_dir/test-requirements.txt" --only-group test',
         'mapfile -t local_targets < <(python .github/scripts/python_packaging.py install-targets "lambdas/${{ matrix.path }}")',
         'python -m pip install -t deps --no-deps -r "$req_dir/requirements.txt" "${local_targets[@]}" lambdas/${{ matrix.path }}',
         'python -m pip install -r "$req_dir/test-requirements.txt"',
@@ -112,11 +154,14 @@ def guardrails() -> int:
             failures.append(f".github/workflows/py-ci.yml is missing expected packaging contract: {needle}")
 
     build_zip = (REPO_ROOT / "lambdas/scripts/build_zip.sh").read_text()
-    if (
-        'uv export --locked --no-emit-project --no-emit-local --no-hashes --directory "$FUNCTION_DIR" -o "$requirements_file" --no-default-groups'
-        not in build_zip
+    for needle in (
+        'package_name=$(python "$REPO_ROOT/.github/scripts/python_packaging.py" package-name "$PACKAGE_PATH")',
+        'python "$REPO_ROOT/.github/scripts/python_packaging.py" uses-workspace "$PACKAGE_PATH"',
+        'uv export --locked --project "$REPO_ROOT" --package "$package_name" --no-emit-project --no-emit-workspace --no-hashes -o "$requirements_file" --no-default-groups',
+        'uv export --locked --no-emit-project --no-emit-local --no-hashes --directory "$FUNCTION_DIR" -o "$requirements_file" --no-default-groups',
     ):
-        failures.append("lambdas/scripts/build_zip.sh no longer preserves the per-directory export contract")
+        if needle not in build_zip:
+            failures.append(f"lambdas/scripts/build_zip.sh is missing expected workspace export contract: {needle}")
     if 'uv pip install --no-compile --no-deps --target . -r "$requirements_file" "${install_targets[@]}"' not in build_zip:
         failures.append("lambdas/scripts/build_zip.sh no longer installs from the exported requirements.txt in the build directory")
 
@@ -138,10 +183,15 @@ def guardrails() -> int:
 
         for dependency, source in iter_internal_source_entries(pyproject):
             normalized_dependency = normalize_name(dependency)
-            if normalized_dependency == T4_LAMBDA_SHARED_DEPENDENCY:
-                if not is_pinned_t4_shared_source(source):
+            if normalized_dependency in WORKSPACE_INTERNAL_SOURCES:
+                if source.get("workspace") is not True:
+                    failures.append(f"{package_path} must source {dependency} from the uv workspace")
+                continue
+            if normalized_dependency in PINNED_INTERNAL_SOURCES:
+                expected_url, expected_subdirectory = PINNED_INTERNAL_SOURCES[normalized_dependency]
+                if not is_pinned_source(source, url=expected_url, subdirectory=expected_subdirectory):
                     failures.append(
-                        f"{package_path} must source {dependency} from the pinned quiltdata/quilt archive URL"
+                        f"{package_path} must source {dependency} from the pinned {normalized_dependency} archive URL"
                     )
                 continue
             if ("path" in source or source.get("workspace") is True) and not allow_local_sources:
@@ -167,16 +217,28 @@ def guardrails() -> int:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Python packaging helpers for the local-source pilot.")
+    parser = argparse.ArgumentParser(description="Python packaging helpers for the workspace packaging flow.")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     subparsers.add_parser("guardrails", help="Validate packaging guardrails for lambda export/build behavior.")
 
     install_targets = subparsers.add_parser(
         "install-targets",
-        help="Print committed local path source directories for a package, one absolute path per line.",
+        help="Print local install target directories for a package, one absolute path per line.",
     )
     install_targets.add_argument("package_path", help="Repo-relative package path (for example: lambdas/preview)")
+
+    package_name = subparsers.add_parser(
+        "package-name",
+        help="Print the project.name for a repo-relative package path.",
+    )
+    package_name.add_argument("package_path", help="Repo-relative package path (for example: lambdas/preview)")
+
+    uses_workspace_parser = subparsers.add_parser(
+        "uses-workspace",
+        help="Exit successfully if the package path is managed by the root uv workspace.",
+    )
+    uses_workspace_parser.add_argument("package_path", help="Repo-relative package path (for example: lambdas/preview)")
 
     args = parser.parse_args()
 
@@ -184,9 +246,16 @@ def main() -> int:
         return guardrails()
 
     if args.command == "install-targets":
-        for target in path_source_targets_for(REPO_ROOT / args.package_path):
+        for target in install_targets_for(REPO_ROOT / args.package_path):
             print(target)
         return 0
+
+    if args.command == "package-name":
+        print(package_name_for(REPO_ROOT / args.package_path))
+        return 0
+
+    if args.command == "uses-workspace":
+        return 0 if uses_workspace(REPO_ROOT / args.package_path) else 1
 
     raise AssertionError(f"Unhandled command: {args.command}")
 

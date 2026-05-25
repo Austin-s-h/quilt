@@ -1,11 +1,11 @@
 [project]
 name = "t4_lambda_iceberg"
-version = "0.1.0"
+version = "0.2.0"
 description = "Add your description here"
 authors = [
     { name = "Sergey Fedoseev", email = "fedoseev.sergey@quiltdata.io" }
 ]
-requires-python = "==3.13.*"
+requires-python = ">=3.12,<3.14"
 dependencies = [
     "boto3>=1.40.41,<2.0.0",
     "quilt-shared[boto]",
@@ -24,7 +24,4 @@ test = [
 ]
 
 [tool.uv]
-default-groups = ["test"]
-
-[tool.uv.sources]
-quilt-shared = { url = "https://github.com/quiltdata/quilt/archive/f90584485ba84a9d46fe4c7014f858a4b57738bd.zip", subdirectory = "py-shared" }
+default-groups = []

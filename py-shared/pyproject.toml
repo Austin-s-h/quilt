@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "quilt-shared"
 description = "Shared code for Quilt backend and lambdas"
-version = "0.1.1"
+version = "0.2.0"
 requires-python = ">= 3.9, < 4"
 dependencies = [
 ]
@@ -32,15 +32,15 @@ es = [
 
 [dependency-groups]
 test = [
-    "pytest~=8.4",
-    "pytest-cov~=6.2",
+    "pytest~=9.0",
+    "pytest-cov~=7.0",
     "pytest-env~=1.1",
     "pytest-mock~=3.15",
     "quilt-shared[pydantic,boto,quilt,es]",
 ]
 
 [tool.uv]
-default-groups = ["test"]
+default-groups = []
 
 [tool.black]
 line-length = 119

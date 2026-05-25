@@ -179,10 +179,16 @@ jobs:
       - uses: astral-sh/setup-uv@v7
       - name: Export requirements.txt from uv.lock
         run: |
+          package_name=$(python .github/scripts/python_packaging.py package-name "lambdas/${{ matrix.path }}")
           req_dir="$RUNNER_TEMP/lambda-requirements/${{ matrix.path }}"
           mkdir -p "$req_dir"
-          uv export --locked --no-emit-project --no-emit-local --no-hashes --directory lambdas/${{ matrix.path }} -o "$req_dir/requirements.txt" --no-default-groups
-          uv export --locked --no-emit-project --no-emit-local --no-hashes --directory lambdas/${{ matrix.path }} -o "$req_dir/test-requirements.txt" --only-group test
+          if python .github/scripts/python_packaging.py uses-workspace "lambdas/${{ matrix.path }}"; then
+            uv export --locked --project . --package "$package_name" --no-emit-project --no-emit-workspace --no-hashes -o "$req_dir/requirements.txt" --no-default-groups
+            uv export --locked --project . --package "$package_name" --no-emit-project --no-emit-workspace --no-hashes -o "$req_dir/test-requirements.txt" --only-group test
+          else
+            uv export --locked --no-emit-project --no-emit-local --no-hashes --directory "lambdas/${{ matrix.path }}" -o "$req_dir/requirements.txt" --no-default-groups
+            uv export --locked --no-emit-project --no-emit-local --no-hashes --directory "lambdas/${{ matrix.path }}" -o "$req_dir/test-requirements.txt" --only-group test
+          fi
       - name: Install dependencies
         run: |
           req_dir="$RUNNER_TEMP/lambda-requirements/${{ matrix.path }}"

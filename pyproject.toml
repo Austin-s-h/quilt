@@ -1,0 +1,21 @@
+[project]
+name = "quilt-python-workspace"
+version = "0.1.0"
+requires-python = ">=3.12,<3.14"
+
+[tool.uv]
+package = false
+
+[tool.uv.sources]
+quilt-shared = { workspace = true }
+
+[tool.uv.workspace]
+members = [
+    "py-shared",
+    "lambdas/es_ingest",
+    "lambdas/iceberg",
+    "lambdas/indexer",
+    "lambdas/manifest_indexer",
+    "lambdas/pkgpush",
+    "lambdas/s3hash",
+]
