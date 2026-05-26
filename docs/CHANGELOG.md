@@ -16,14 +16,45 @@ Entries inside each section should be ordered by type:
 
 # Changelog
 
-## unreleased - 2026-05-25
+## unreleased - 2026-05-26
 
 ### Python API
 
 * [Added] In-repo `api/python/quilt3_local` overrides for filesystem-backed LOCAL catalog development and test coverage
+* [Added] S3 multipart upload support in local catalog s3proxy
+* [Added] Lambda subprocess runner (`lambda_runner.py`) for isolated uv-based execution of preview/tabular lambdas in local mode
+* [Fixed] `ApiTelemetry` decorator now preserves `__signature__`, fixing `inspect.signature()` failures through `@classmethod` (resolves pydoc-markdown gendocs crash)
 * [Changed] `quilt3[catalog]` now includes the proxy / preview support dependencies needed by the repo-local LOCAL catalog workflow
 * [Changed] Bump `quilt3` package version to `7.4.0`
 * [Changed] Internalize `quilt-shared` via a root `uv` workspace and move workspace-backed lambda consumers to a single root lockfile
+
+### Lambdas
+
+* [Added] FCS indexer support: `.fcs` files are now indexed with column names, metadata, Vega-Lite scatter specs, and warning info
+* [Added] FCS warning/fallback test coverage for "Metadata only" and "Unable to parse" paths in the indexer
+* [Fixed] `test_read_notebook` now accepts `jsonschema.ValidationError` for notebooks with missing cell metadata (nbformat >=5.10 compat)
+* [Fixed] Tabular preview parquet subprocess test: file server now supports HTTP Range requests required by pyarrow/fsspec seekable reads
+* [Changed] All lambda Python versions unified to >=3.13 (except SDK which remains >=3.11)
+* [Changed] Lambda dependencies modernized: relaxed pins, dropped unmaintained forks, consolidated lockfiles
+* [Changed] `t4-lambda-shared` internalized as workspace member (no longer fetched via archive URL)
+* [Changed] Thumbnail lambda: restored LibreOffice for PPTX rendering (reverted pymupdf experiment), kept DPI increase
+* [Changed] Dockerfile build contexts restructured for workspace-aware `uv sync`
+
+### Catalog (JS)
+
+* [Fixed] Prettier formatting across 10 files (Filters, BucketIcon, Perspective, Search Table, GraphQL wrappers, types)
+* [Fixed] Infinite re-render loop in PDF preview renderer
+* [Fixed] Error boundary added to file preview view for crash isolation
+* [Fixed] TypeScript compatibility issues and deprecation warnings
+* [Changed] npm audit fix reducing vulnerabilities from 90 to 55
+
+### CI / Build
+
+* [Added] `test-local-catalog` job in `py-ci.yml` for local catalog backend integration tests
+* [Fixed] `npm ci` failure resolved via lockfile regeneration
+* [Changed] All `.python-version` files pinned to 3.13
+* [Changed] Workspace-level `pyproject.toml` and `uv.lock` added at repo root
+* [Changed] `ariadne-codegen` upgraded to 0.18
 
 ## 7.3.0 - 2026-04-07
 
