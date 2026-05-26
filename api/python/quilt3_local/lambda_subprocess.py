@@ -53,13 +53,18 @@ class LambdaProcess:
             return
 
         cmd = [
-            "uv", "run",
-            "--project", str(project_dir),
+            "uv",
+            "run",
+            "--project",
+            str(project_dir),
             sys.executable if _same_python(project_dir) else "python",
             str(runner_path),
-            "--module", self.config.module,
-            "--port", "0",
-            "--s3-proxy-origin", self.s3_proxy_origin,
+            "--module",
+            self.config.module,
+            "--port",
+            "0",
+            "--s3-proxy-origin",
+            self.s3_proxy_origin,
         ]
 
         logger.info(f"[lambda:{self.config.name}] Starting: {' '.join(cmd)}")
@@ -182,9 +187,7 @@ def detect_repo_root() -> Path:
             return current
         current = current.parent
 
-    raise RuntimeError(
-        "Cannot detect repository root. Set QUILT_REPO_ROOT environment variable."
-    )
+    raise RuntimeError("Cannot detect repository root. Set QUILT_REPO_ROOT environment variable.")
 
 
 LAMBDA_CONFIGS = [

@@ -41,7 +41,6 @@ class _ASGIResponse:
         return json.loads(self.decoded_body)
 
 
-
 def _write_demo_package(bucket_root):
     (bucket_root / "hello.txt").write_text("hello world\n")
     quilt_dir = bucket_root / ".quilt"
@@ -651,6 +650,7 @@ def _patch_lambda_lifespan(monkeypatch, local_main):
     from unittest.mock import MagicMock
 
     from quilt3_local.lambda_subprocess import LambdaManager
+    from quilt3_local.lambdas import lambdas
 
     mock_manager = MagicMock(spec=LambdaManager)
     mock_manager.get_port.return_value = None
@@ -658,7 +658,12 @@ def _patch_lambda_lifespan(monkeypatch, local_main):
     @asynccontextmanager
     async def _mock_lifespan(_app):
         _app.state.lambda_manager = mock_manager
-        yield
+        lambdas.state.lambda_manager = mock_manager
+        try:
+            yield
+        finally:
+            if hasattr(local_main, "proxy_context") and local_main.proxy_context is not None:
+                await local_main.proxy_context.close()
 
     local_main.app.router.lifespan_context = _mock_lifespan
     return mock_manager
@@ -779,9 +784,20 @@ def test_preview_lambda_subprocess_serves_curated_fixtures(tmp_path, fixture_nam
     project_dir = repo_root / "lambdas" / "preview"
 
     proc = subprocess.Popen(
-        ["uv", "run", "--project", str(project_dir), "python", str(runner_path),
-         "--module", "t4_lambda_preview", "--port", "0",
-         "--s3-proxy-origin", f"http://127.0.0.1:{file_server_port}"],
+        [
+            "uv",
+            "run",
+            "--project",
+            str(project_dir),
+            "python",
+            str(runner_path),
+            "--module",
+            "t4_lambda_preview",
+            "--port",
+            "0",
+            "--s3-proxy-origin",
+            f"http://127.0.0.1:{file_server_port}",
+        ],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
     )
@@ -798,7 +814,11 @@ def test_preview_lambda_subprocess_serves_curated_fixtures(tmp_path, fixture_nam
         )
 
         assert resp.status_code == 200
-        body = json.loads(gzip.decompress(resp.content)) if resp.headers.get("Content-Encoding") == "gzip" else resp.json()
+        body = (
+            json.loads(gzip.decompress(resp.content))
+            if resp.headers.get("Content-Encoding") == "gzip"
+            else resp.json()
+        )
 
         if fixture_name == "text":
             assert body["info"]["data"]["head"][0] == "Line 1"
@@ -848,9 +868,20 @@ def test_tabular_preview_lambda_subprocess_serves_curated_fixtures(
     project_dir = repo_root / "lambdas" / "tabular_preview"
 
     proc = subprocess.Popen(
-        ["uv", "run", "--project", str(project_dir), "python", str(runner_path),
-         "--module", "t4_lambda_tabular_preview", "--port", "0",
-         "--s3-proxy-origin", f"http://127.0.0.1:{file_server_port}"],
+        [
+            "uv",
+            "run",
+            "--project",
+            str(project_dir),
+            "python",
+            str(runner_path),
+            "--module",
+            "t4_lambda_tabular_preview",
+            "--port",
+            "0",
+            "--s3-proxy-origin",
+            f"http://127.0.0.1:{file_server_port}",
+        ],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
     )

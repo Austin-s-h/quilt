@@ -96,7 +96,7 @@ class LambdaHandler(BaseHTTPRequestHandler):
             args = {
                 "httpMethod": self.command,
                 "path": path,
-                "pathParameters": {"proxy": path[len(LAMBDA_PATH) + 1:]},
+                "pathParameters": {"proxy": path[len(LAMBDA_PATH) + 1 :]},
                 "queryStringParameters": query or None,
                 "headers": headers or None,
                 "body": b64encode(req_body or b"").decode(),
@@ -146,7 +146,9 @@ def main():
     parser = argparse.ArgumentParser(description="Lambda subprocess runner")
     parser.add_argument("--module", required=True, help="Python module with lambda_handler (e.g., t4_lambda_preview)")
     parser.add_argument("--port", type=int, default=0, help="Port to listen on (0 = OS-assigned)")
-    parser.add_argument("--s3-proxy-origin", default="", help="Local S3 proxy origin to allow (e.g., http://localhost:3000/__s3proxy)")
+    parser.add_argument(
+        "--s3-proxy-origin", default="", help="Local S3 proxy origin to allow (e.g., http://localhost:3000/__s3proxy)"
+    )
     args = parser.parse_args()
 
     handler = _load_handler(args.module, args.s3_proxy_origin)

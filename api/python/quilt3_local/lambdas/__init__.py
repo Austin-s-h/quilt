@@ -48,8 +48,7 @@ async def lambda_request(request: fastapi.Request, name: str, path: str = ""):
     body = await request.body()
 
     forward_headers = {
-        k: v for k, v in request.headers.items()
-        if k.lower() not in ("host", "transfer-encoding", "connection")
+        k: v for k, v in request.headers.items() if k.lower() not in ("host", "transfer-encoding", "connection")
     }
 
     async with session.request(
@@ -61,10 +60,7 @@ async def lambda_request(request: fastapi.Request, name: str, path: str = ""):
     ) as resp:
         content = await resp.read()
         excluded_headers = {"transfer-encoding", "connection", "content-length"}
-        resp_headers = {
-            k: v for k, v in resp.headers.items()
-            if k.lower() not in excluded_headers
-        }
+        resp_headers = {k: v for k, v in resp.headers.items() if k.lower() not in excluded_headers}
 
         return fastapi.Response(
             content=content,

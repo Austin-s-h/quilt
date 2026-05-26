@@ -518,7 +518,7 @@ def objects_search_result_first_page(result: dict, *_, size: T.Optional[int] = N
 type_defs = ariadne.load_schema_from_path(str(resource_path("schema.graphql")))
 
 schema = ariadne.make_executable_schema(
-    [type_defs, LOCAL_SEARCH_TYPE_DEFS],
+    type_defs,
     QueryType,
     DatetimeScalar,
     PackageListType,

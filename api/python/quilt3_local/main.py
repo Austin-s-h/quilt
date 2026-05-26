@@ -11,9 +11,8 @@ import starlette.staticfiles
 
 from ._upstream import resource_path
 from .api import api
-from .lambdas import close_client as close_lambda_client
-from .lambdas import lambdas
 from .lambda_subprocess import LAMBDA_CONFIGS, LambdaManager, detect_repo_root
+from .lambdas import close_client as close_lambda_client, lambdas
 from .s3proxy import s3proxy
 from .settings import local_origin
 
@@ -34,6 +33,7 @@ async def lifespan(_app: fastapi.FastAPI):
     manager = LambdaManager(configs=LAMBDA_CONFIGS, repo_root=repo_root, s3_proxy_origin=s3_proxy_origin)
     await manager.start_all()
     _app.state.lambda_manager = manager
+    lambdas.state.lambda_manager = manager
     try:
         yield
     finally:
