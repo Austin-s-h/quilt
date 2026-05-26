@@ -101,7 +101,7 @@ jobs:
           python-version: '3.11'
       - uses: astral-sh/setup-uv@v7
       - name: Run LOCAL catalog backend tests
-        run: uv run poe catalog-test-ci
+        run: uv run --python 3.11 --no-default-groups --group local-catalog-test --extra catalog pytest tests/test_local_mode.py
 
   test-client:
     strategy:
