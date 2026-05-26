@@ -1,49 +1,73 @@
-import asyncio
-import base64
-import functools
+from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
+import aiohttp
 import fastapi
 
-from . import preview, s3select, tabular_preview, thumbnail
-
-LAMBDAS = {
-    "thumbnail": thumbnail,
-    "preview": preview,
-    "s3select": s3select,
-    "tabular-preview": tabular_preview,
-}
+if TYPE_CHECKING:
+    from ..lambda_subprocess import LambdaManager
 
 lambdas = fastapi.FastAPI()
+
+_http_session: aiohttp.ClientSession | None = None
+
+
+def _get_session() -> aiohttp.ClientSession:
+    global _http_session
+    if _http_session is None:
+        _http_session = aiohttp.ClientSession(
+            timeout=aiohttp.ClientTimeout(total=30),
+        )
+    return _http_session
+
+
+async def close_client() -> None:
+    global _http_session
+    if _http_session is not None:
+        await _http_session.close()
+        _http_session = None
+
+
+def _get_manager(request: fastapi.Request) -> LambdaManager:
+    return request.app.state.lambda_manager
 
 
 @lambdas.api_route("/{name}", methods=["GET", "POST", "OPTIONS"])
 @lambdas.api_route("/{name}/{path:path}", methods=["GET", "POST", "OPTIONS"])
 async def lambda_request(request: fastapi.Request, name: str, path: str = ""):
-    if name not in LAMBDAS:
-        raise fastapi.HTTPException(404, "No such lambda")
+    manager: LambdaManager = _get_manager(request)
+    port = manager.get_port(name)
+    if port is None:
+        raise fastapi.HTTPException(503, f"Lambda '{name}' is not available")
 
-    req_body = await request.body()
-    args = {
-        "httpMethod": request.method,
-        "path": request.url.path,
-        "pathParameters": {"proxy": path},
-        "queryStringParameters": dict(request.query_params) or None,
-        "headers": request.headers or None,
-        "body": base64.b64encode(req_body),
-        "isBase64Encoded": True,
+    session = _get_session()
+    target_path = f"/lambda/{path}" if path else "/lambda"
+    url = f"http://127.0.0.1:{port}{target_path}"
+
+    body = await request.body()
+
+    forward_headers = {
+        k: v for k, v in request.headers.items()
+        if k.lower() not in ("host", "transfer-encoding", "connection")
     }
 
-    result = await asyncio.get_running_loop().run_in_executor(
-        None,
-        functools.partial(LAMBDAS[name].lambda_handler, args, None),
-    )
+    async with session.request(
+        method=request.method,
+        url=url,
+        headers=forward_headers,
+        params=dict(request.query_params),
+        data=body if body else None,
+    ) as resp:
+        content = await resp.read()
+        excluded_headers = {"transfer-encoding", "connection", "content-length"}
+        resp_headers = {
+            k: v for k, v in resp.headers.items()
+            if k.lower() not in excluded_headers
+        }
 
-    body = result["body"]
-    if result.get("isBase64Encoded", False):
-        content = base64.b64decode(body)
-    elif isinstance(body, memoryview):
-        content = body.tobytes()
-    else:
-        content = body.encode()
-
-    return fastapi.Response(content=content, status_code=result["statusCode"], headers=result["headers"])
+        return fastapi.Response(
+            content=content,
+            status_code=resp.status,
+            headers=resp_headers,
+        )

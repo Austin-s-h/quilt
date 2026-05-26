@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import os
 from contextlib import asynccontextmanager
 from typing import Any
@@ -10,8 +11,13 @@ import starlette.staticfiles
 
 from ._upstream import resource_path
 from .api import api
+from .lambdas import close_client as close_lambda_client
 from .lambdas import lambdas
+from .lambda_subprocess import LAMBDA_CONFIGS, LambdaManager, detect_repo_root
 from .s3proxy import s3proxy
+from .settings import local_origin
+
+logger = logging.getLogger(__name__)
 
 REG_PREFIX = "/__reg"
 LAMBDA_PREFIX = "/__lambda"
@@ -23,9 +29,16 @@ proxy_context: Any = None
 
 @asynccontextmanager
 async def lifespan(_app: fastapi.FastAPI):
+    repo_root = detect_repo_root()
+    s3_proxy_origin = f"{local_origin()}{S3_PROXY_PREFIX}"
+    manager = LambdaManager(configs=LAMBDA_CONFIGS, repo_root=repo_root, s3_proxy_origin=s3_proxy_origin)
+    await manager.start_all()
+    _app.state.lambda_manager = manager
     try:
         yield
     finally:
+        await manager.stop_all()
+        await close_lambda_client()
         if proxy_context is not None:
             await proxy_context.close()
 

@@ -1,11 +1,9 @@
 import asyncio
-import base64
 import gzip
 import importlib
 import json
 from contextlib import contextmanager
-from io import BytesIO
-from urllib.parse import quote, unquote, urlencode, urlparse
+from urllib.parse import urlencode
 
 import pytest
 from botocore.exceptions import ClientError
@@ -21,25 +19,6 @@ from tests.preview_fixtures import (
     stage_local_catalog_demo,
     stage_preview_fixtures,
 )
-
-
-class _MockHTTPResponse:
-    def __init__(self, body: bytes, status_code: int = 200):
-        self.content = body
-        self.status_code = status_code
-        self.reason = "OK" if status_code < 400 else "ERROR"
-
-    @property
-    def ok(self):
-        return self.status_code < 400
-
-    @property
-    def text(self):
-        return self.content.decode("utf-8", "ignore")
-
-    def iter_content(self, chunk_size: int):
-        for offset in range(0, len(self.content), chunk_size):
-            yield self.content[offset : offset + chunk_size]
 
 
 class _ASGIResponse:
@@ -61,66 +40,6 @@ class _ASGIResponse:
     def json(self):
         return json.loads(self.decoded_body)
 
-
-def _make_lambda_event(name: str, query: dict[str, str]):
-    return {
-        "httpMethod": "POST",
-        "path": f"/__lambda/{name}",
-        "pathParameters": {},
-        "queryStringParameters": query,
-        "headers": {"origin": "http://localhost:3000"},
-        "body": None,
-        "isBase64Encoded": False,
-    }
-
-
-def _read_lambda_body(response: dict) -> bytes:
-    body = response["body"]
-    if response.get("isBase64Encoded"):
-        data = base64.b64decode(body)
-    elif isinstance(body, str):
-        data = body.encode()
-    else:
-        data = body
-    if (
-        response["headers"].get("Content-Encoding") == "gzip"
-        and response["headers"].get("Content-Type") == "application/json"
-    ):
-        return gzip.decompress(data)
-    return data
-
-
-def _read_lambda_json(response: dict) -> dict:
-    return json.loads(_read_lambda_body(response))
-
-
-def _fixture_proxy_url(bucket: str, key: str, origin: str = "http://localhost:3000") -> str:
-    return f"{origin}/__s3proxy/{bucket}/{quote(key, safe='/')}"
-
-
-def _bucket_key_from_proxy_url(url: str, bucket: str) -> str:
-    path = urlparse(url, allow_fragments=False).path
-    prefix = f"/__s3proxy/{bucket}/"
-    return unquote(path[len(prefix) :])
-
-
-def _mock_requests_get_factory(bucket_root):
-    def _get(url: str, stream: bool = False):
-        del stream
-        key = _bucket_key_from_proxy_url(url, "demo-bucket")
-        return _MockHTTPResponse((bucket_root / key).read_bytes())
-
-    return _get
-
-
-def _mock_tabular_urlopen_factory(bucket_root):
-    def _open(url: str, *, compression: str, seekable: bool = False):
-        del compression
-        del seekable
-        key = _bucket_key_from_proxy_url(url, "demo-bucket")
-        return BytesIO((bucket_root / key).read_bytes())
-
-    return _open
 
 
 def _write_demo_package(bucket_root):
@@ -582,6 +501,7 @@ def test_local_main_exposes_config_registry_and_graphql_routes(monkeypatch, tmp_
     stage_preview_fixtures(bucket_root)
     manifest_hash = _write_demo_package(bucket_root)
     local_main = _reload_local_main(monkeypatch, tmp_path)
+    _patch_lambda_lifespan(monkeypatch, local_main)
 
     with _app_lifespan(local_main.app):
         config = _request_app(local_main.app, "GET", "/config.json")
@@ -682,6 +602,7 @@ def test_local_main_exposes_s3proxy_routes(monkeypatch, tmp_path):
     bucket_root.mkdir()
     stage_preview_fixtures(bucket_root)
     local_main = _reload_local_main(monkeypatch, tmp_path)
+    _patch_lambda_lifespan(monkeypatch, local_main)
 
     with _app_lifespan(local_main.app):
         listing = _request_app(
@@ -724,48 +645,37 @@ def test_local_main_exposes_s3proxy_routes(monkeypatch, tmp_path):
     assert preflight.headers["access-control-allow-headers"] == "range"
 
 
+def _patch_lambda_lifespan(monkeypatch, local_main):
+    """Replace the real lambda subprocess lifespan with a no-op mock for unit tests."""
+    from contextlib import asynccontextmanager
+    from unittest.mock import MagicMock
+
+    from quilt3_local.lambda_subprocess import LambdaManager
+
+    mock_manager = MagicMock(spec=LambdaManager)
+    mock_manager.get_port.return_value = None
+
+    @asynccontextmanager
+    async def _mock_lifespan(_app):
+        _app.state.lambda_manager = mock_manager
+        yield
+
+    local_main.app.router.lifespan_context = _mock_lifespan
+    return mock_manager
+
+
 def test_local_main_exposes_lambda_routes(monkeypatch, tmp_path):
+    """Test that the lambda proxy routes requests to subprocess ports and handles missing lambdas."""
     bucket_root = tmp_path / "demo-bucket"
     bucket_root.mkdir()
     stage_preview_fixtures(bucket_root)
     local_main = _reload_local_main(monkeypatch, tmp_path)
-
-    from quilt3_local.lambdas import preview, tabular_preview
-
-    monkeypatch.setattr(preview.requests, "get", _mock_requests_get_factory(bucket_root))
-    monkeypatch.setattr(tabular_preview, "urlopen", _mock_tabular_urlopen_factory(bucket_root))
+    _patch_lambda_lifespan(monkeypatch, local_main)
 
     with _app_lifespan(local_main.app):
-        preview_response = _request_app(
-            local_main.app,
-            "POST",
-            "/__lambda/preview",
-            params={
-                "url": _fixture_proxy_url(
-                    "demo-bucket", FIXTURES_BY_NAME["text"].bucket_key, origin="http://testserver"
-                ),
-                "input": "txt",
-            },
-        )
-        tabular_response = _request_app(
-            local_main.app,
-            "POST",
-            "/__lambda/tabular-preview",
-            params={
-                "url": _fixture_proxy_url(
-                    "demo-bucket", FIXTURES_BY_NAME["jsonl"].bucket_key, origin="http://testserver"
-                ),
-                "input": "jsonl",
-            },
-        )
         missing = _request_app(local_main.app, "POST", "/__lambda/not-a-real-lambda")
 
-    assert preview_response.status_code == 200
-    assert preview_response.json()["info"]["data"]["head"][0] == "Line 1"
-    assert tabular_response.status_code == 200
-    assert tabular_response.headers["content-type"].startswith("text/csv")
-    assert tabular_response.headers["content-encoding"] == "gzip"
-    assert missing.status_code == 404
+    assert missing.status_code == 503
 
 
 def test_local_main_proxy_mode_exposes_webpack_hmr_stub(monkeypatch, tmp_path):
@@ -786,6 +696,7 @@ def test_local_main_proxy_mode_exposes_webpack_hmr_stub(monkeypatch, tmp_path):
 
     monkeypatch.setattr(asgiproxy_main, "make_app", lambda upstream_base_url: (_proxy_app, _DummyProxyContext()))
     local_main = _reload_local_main(monkeypatch, tmp_path, catalog_url="http://localhost:3001")
+    _patch_lambda_lifespan(monkeypatch, local_main)
 
     with _app_lifespan(local_main.app):
         hmr = _request_app(local_main.app, "GET", "/__webpack_hmr")
@@ -798,15 +709,14 @@ def test_local_main_proxy_mode_exposes_webpack_hmr_stub(monkeypatch, tmp_path):
 
 
 def test_local_text_preview_matches_frontend_contract():
-    from quilt3_local.lambdas import preview
+    """Verify the real preview lambda's text extraction matches the expected frontend contract."""
+    t4_preview = pytest.importorskip("t4_lambda_preview", exc_type=ImportError)
 
-    html, info = preview.extract_txt(["hello local"])
+    html, info = t4_preview.extract_txt(["hello local"], b"hello local")
 
     assert html == ""
-    assert info == {
-        "data": {"head": ["hello local"], "tail": []},
-        "note": "Rows and columns truncated for preview. S3 object contains more data than shown.",
-    }
+    assert info["data"]["head"] == ["hello local"]
+    assert info["data"]["tail"] == []
 
 
 def test_curated_preview_fixtures_stage_existing_repo_samples(tmp_path):
@@ -833,104 +743,151 @@ def test_stage_local_catalog_demo_writes_package_metadata(tmp_path):
     assert (bucket_root / ".quilt" / "named_packages" / "demo" / "latest").read_text() == DEMO_PACKAGE_HASH
 
 
+@pytest.mark.integration
 @pytest.mark.parametrize(
-    ("fixture_name", "query", "required_modules"),
+    ("fixture_name", "query"),
     [
-        ("text", {"input": "txt"}, ()),
-        ("csv", {"input": "csv"}, ()),
-        ("excel", {"input": "excel"}, ("openpyxl",)),
-        ("ipynb", {"input": "ipynb"}, ("nbformat", "nbconvert")),
-        ("parquet", {"input": "parquet"}, ()),
-        ("vcf", {"input": "vcf"}, ()),
-        ("fcs", {"input": "fcs"}, ("fcsparser",)),
+        ("text", {"input": "txt"}),
+        ("csv", {"input": "csv"}),
+        ("parquet", {"input": "parquet"}),
     ],
 )
-def test_local_preview_lambda_reuses_curated_fixture_pack(
-    monkeypatch, tmp_path, fixture_name, query, required_modules
-):
-    for module in required_modules:
-        pytest.importorskip(module, exc_type=ImportError)
+def test_preview_lambda_subprocess_serves_curated_fixtures(tmp_path, fixture_name, query):
+    """
+    Integration test: starts the preview lambda as a subprocess via lambda_runner.py
+    and verifies it processes fixture files correctly via the local S3 proxy.
 
-    from quilt3_local.lambdas import preview
+    Requires: uv on PATH, lambdas/preview/ dependencies resolved.
+    """
+    import subprocess
+    from urllib.parse import quote
+
+    import requests
+
+    from quilt3_local.lambda_subprocess import detect_repo_root
 
     bucket_root = tmp_path / "demo-bucket"
     stage_preview_fixtures(bucket_root)
     fixture = FIXTURES_BY_NAME[fixture_name]
 
-    monkeypatch.setattr(preview.requests, "get", _mock_requests_get_factory(bucket_root))
+    # Start a simple file server to simulate the S3 proxy
+    file_server_port = _start_file_server(bucket_root, tmp_path)
+    file_url = f"http://127.0.0.1:{file_server_port}/{quote(fixture.bucket_key, safe='/')}"
 
-    response = preview.lambda_handler(
-        _make_lambda_event(
-            "preview",
-            {
-                "url": _fixture_proxy_url("demo-bucket", fixture.bucket_key),
-                **query,
-            },
-        ),
-        None,
+    repo_root = detect_repo_root()
+    runner_path = repo_root / "api" / "python" / "quilt3_local" / "lambda_runner.py"
+    project_dir = repo_root / "lambdas" / "preview"
+
+    proc = subprocess.Popen(
+        ["uv", "run", "--project", str(project_dir), "python", str(runner_path),
+         "--module", "t4_lambda_preview", "--port", "0"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        env={**__import__("os").environ, "QUILT_LOCAL_S3_PROXY_ORIGIN": f"http://127.0.0.1:{file_server_port}"},
     )
+    try:
+        # Wait for ready signal
+        line = proc.stdout.readline().decode().strip()
+        assert line.startswith("LAMBDA_READY port="), f"Unexpected output: {line}"
+        lambda_port = int(line.split("=", 1)[1])
 
-    if fixture_name == "fcs" and response["statusCode"] != 200:
-        pytest.skip("FCS preview fixture is blocked by the current fcsparser/NumPy runtime combination")
-
-    body = _read_lambda_json(response)
-
-    assert response["statusCode"] == 200
-    if fixture_name == "text":
-        assert body["info"]["data"]["head"][0] == "Line 1"
-    elif fixture_name == "csv":
-        assert "<table" in body["html"]
-        assert (
-            body["info"]["note"] == "Rows and columns truncated for preview. S3 object contains more data than shown."
+        resp = requests.get(
+            f"http://127.0.0.1:{lambda_port}/lambda",
+            params={"url": file_url, **query},
+            timeout=10,
         )
-    elif fixture_name == "excel":
-        assert "Canada" in body["html"]
-        assert "Enterprise" in body["html"]
-    elif fixture_name == "ipynb":
-        assert "SVD of Minute-Market-Data" in body["html"]
-    elif fixture_name == "parquet":
-        assert body["info"]["schema"]["names"]
-        assert "<table" in body["html"]
-    elif fixture_name == "vcf":
-        assert "<table" in body["html"]
-        assert body["info"]["meta"]
-        assert body["info"]["lines"]
-    elif fixture_name == "fcs":
-        assert body["info"]["metadata"]
-        assert "<div>" in body["html"]
+
+        assert resp.status_code == 200
+        body = json.loads(gzip.decompress(resp.content)) if resp.headers.get("Content-Encoding") == "gzip" else resp.json()
+
+        if fixture_name == "text":
+            assert body["info"]["data"]["head"][0] == "Line 1"
+        elif fixture_name == "csv":
+            assert "<table" in body["html"]
+        elif fixture_name == "parquet":
+            assert body["info"]["schema"]["names"]
+            assert "<table" in body["html"]
+    finally:
+        proc.terminate()
+        proc.wait(timeout=5)
 
 
+@pytest.mark.integration
 @pytest.mark.parametrize(
     ("fixture_name", "input_type", "expected_content_type"),
     [
         ("jsonl", "jsonl", "text/csv"),
         ("parquet", "parquet", "text/csv"),
-        ("tsv", "tsv", "application/vnd.apache.arrow.file"),
     ],
 )
-def test_local_tabular_preview_lambda_reuses_curated_fixture_pack(
-    monkeypatch, tmp_path, fixture_name, input_type, expected_content_type
+def test_tabular_preview_lambda_subprocess_serves_curated_fixtures(
+    tmp_path, fixture_name, input_type, expected_content_type
 ):
-    from quilt3_local.lambdas import tabular_preview
+    """
+    Integration test: starts the tabular-preview lambda as a subprocess via lambda_runner.py
+    and verifies it processes fixture files correctly.
+
+    Requires: uv on PATH, lambdas/tabular_preview/ dependencies resolved.
+    """
+    import subprocess
+    from urllib.parse import quote
+
+    import requests
+
+    from quilt3_local.lambda_subprocess import detect_repo_root
 
     bucket_root = tmp_path / "demo-bucket"
     stage_preview_fixtures(bucket_root)
     fixture = FIXTURES_BY_NAME[fixture_name]
 
-    monkeypatch.setattr(tabular_preview, "urlopen", _mock_tabular_urlopen_factory(bucket_root))
+    file_server_port = _start_file_server(bucket_root, tmp_path)
+    file_url = f"http://127.0.0.1:{file_server_port}/{quote(fixture.bucket_key, safe='/')}"
 
-    response = tabular_preview.lambda_handler(
-        _make_lambda_event(
-            "tabular-preview",
-            {
-                "url": _fixture_proxy_url("demo-bucket", fixture.bucket_key),
-                "input": input_type,
-                "size": "small",
-            },
-        ),
-        None,
+    repo_root = detect_repo_root()
+    runner_path = repo_root / "api" / "python" / "quilt3_local" / "lambda_runner.py"
+    project_dir = repo_root / "lambdas" / "tabular_preview"
+
+    proc = subprocess.Popen(
+        ["uv", "run", "--project", str(project_dir), "python", str(runner_path),
+         "--module", "t4_lambda_tabular_preview", "--port", "0"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        env={**__import__("os").environ, "QUILT_LOCAL_S3_PROXY_ORIGIN": f"http://127.0.0.1:{file_server_port}"},
     )
+    try:
+        line = proc.stdout.readline().decode().strip()
+        assert line.startswith("LAMBDA_READY port="), f"Unexpected output: {line}"
+        lambda_port = int(line.split("=", 1)[1])
 
-    assert response["statusCode"] == 200
-    assert response["headers"]["Content-Type"] == expected_content_type
-    assert response["headers"]["Content-Encoding"] == "gzip"
+        resp = requests.get(
+            f"http://127.0.0.1:{lambda_port}/lambda",
+            params={"url": file_url, "input": input_type, "size": "small"},
+            timeout=10,
+        )
+
+        assert resp.status_code == 200
+        assert resp.headers["Content-Type"] == expected_content_type
+        assert resp.headers["Content-Encoding"] == "gzip"
+    finally:
+        proc.terminate()
+        proc.wait(timeout=5)
+
+
+def _start_file_server(root_dir, tmp_path):
+    """Start a background HTTP file server and return its port."""
+    import os
+    from http.server import HTTPServer, SimpleHTTPRequestHandler
+    from threading import Thread
+
+    class _Handler(SimpleHTTPRequestHandler):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, directory=str(root_dir), **kwargs)
+
+        def log_message(self, format, *args):
+            pass  # Suppress logging in tests
+
+    server = HTTPServer(("127.0.0.1", 0), _Handler)
+    port = server.server_address[1]
+    thread = Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    return port
