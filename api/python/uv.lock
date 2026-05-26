@@ -984,7 +984,7 @@ wheels = [
 
 [package.optional-dependencies]
 toml = [
-    { name = "tomli", marker = "python_full_version < '3.10'" },
+    { name = "tomli", marker = "python_full_version < '3.10' or (extra == 'extra-6-quilt3-catalog' and extra == 'group-6-quilt3-dev')" },
 ]
 
 [[package]]
@@ -992,9 +992,14 @@ name = "coverage"
 version = "7.11.0"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
-    "python_full_version >= '3.12'",
-    "python_full_version == '3.11.*'",
-    "python_full_version == '3.10.*'",
+    "python_full_version >= '3.12' and extra != 'extra-6-quilt3-catalog' and extra == 'group-6-quilt3-dev'",
+    "python_full_version == '3.11.*' and extra != 'extra-6-quilt3-catalog' and extra == 'group-6-quilt3-dev'",
+    "python_full_version == '3.10.*' and extra != 'extra-6-quilt3-catalog' and extra == 'group-6-quilt3-dev'",
+    "python_full_version >= '3.11' and extra == 'extra-6-quilt3-catalog' and extra != 'group-6-quilt3-dev'",
+    "python_full_version == '3.10.*' and extra == 'extra-6-quilt3-catalog' and extra != 'group-6-quilt3-dev'",
+    "python_full_version >= '3.12' and extra != 'extra-6-quilt3-catalog' and extra != 'group-6-quilt3-dev'",
+    "python_full_version == '3.11.*' and extra != 'extra-6-quilt3-catalog' and extra != 'group-6-quilt3-dev'",
+    "python_full_version == '3.10.*' and extra != 'extra-6-quilt3-catalog' and extra != 'group-6-quilt3-dev'",
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/1c/38/ee22495420457259d2f3390309505ea98f98a5eed40901cf62196abad006/coverage-7.11.0.tar.gz", hash = "sha256:167bd504ac1ca2af7ff3b81d245dfea0292c5032ebef9d66cc08a7d28c1b8050", size = 811905, upload-time = "2025-10-15T15:15:08.542Z" }
 wheels = [
@@ -1093,7 +1098,7 @@ wheels = [
 
 [package.optional-dependencies]
 toml = [
-    { name = "tomli", marker = "python_full_version >= '3.10' and python_full_version <= '3.11'" },
+    { name = "tomli", marker = "(python_full_version >= '3.10' and python_full_version <= '3.11') or (python_full_version < '3.10' and extra == 'extra-6-quilt3-catalog' and extra == 'group-6-quilt3-dev') or (python_full_version > '3.11' and extra == 'extra-6-quilt3-catalog' and extra == 'group-6-quilt3-dev')" },
 ]
 
 [[package]]
@@ -1528,7 +1533,7 @@ name = "graphql-core"
 version = "3.2.6"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "typing-extensions", marker = "python_full_version < '3.10'" },
+    { name = "typing-extensions", marker = "python_full_version < '3.10' or (extra == 'extra-6-quilt3-catalog' and extra == 'group-6-quilt3-dev')" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/c4/16/7574029da84834349b60ed71614d66ca3afe46e9bf9c7b9562102acb7d4f/graphql_core-3.2.6.tar.gz", hash = "sha256:c08eec22f9e40f0bd61d805907e3b3b1b9a320bc606e23dc145eebca07c8fbab", size = 505353, upload-time = "2025-01-26T16:36:27.374Z" }
 wheels = [
@@ -1709,9 +1714,14 @@ name = "iniconfig"
 version = "2.3.0"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
-    "python_full_version >= '3.12'",
-    "python_full_version == '3.11.*'",
-    "python_full_version == '3.10.*'",
+    "python_full_version >= '3.12' and extra != 'extra-6-quilt3-catalog' and extra == 'group-6-quilt3-dev'",
+    "python_full_version == '3.11.*' and extra != 'extra-6-quilt3-catalog' and extra == 'group-6-quilt3-dev'",
+    "python_full_version == '3.10.*' and extra != 'extra-6-quilt3-catalog' and extra == 'group-6-quilt3-dev'",
+    "python_full_version >= '3.11' and extra == 'extra-6-quilt3-catalog' and extra != 'group-6-quilt3-dev'",
+    "python_full_version == '3.10.*' and extra == 'extra-6-quilt3-catalog' and extra != 'group-6-quilt3-dev'",
+    "python_full_version >= '3.12' and extra != 'extra-6-quilt3-catalog' and extra != 'group-6-quilt3-dev'",
+    "python_full_version == '3.11.*' and extra != 'extra-6-quilt3-catalog' and extra != 'group-6-quilt3-dev'",
+    "python_full_version == '3.10.*' and extra != 'extra-6-quilt3-catalog' and extra != 'group-6-quilt3-dev'",
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/72/34/14ca021ce8e5dfedc35312d08ba8bf51fdd999c576889fc2c24cb97f4f10/iniconfig-2.3.0.tar.gz", hash = "sha256:c76315c77db068650d49c5b56314774a7804df16fee4402c1f19d6d15d8c4730", size = 20503, upload-time = "2025-10-18T21:55:43.219Z" }
 wheels = [
@@ -3472,14 +3482,14 @@ name = "pytest"
 version = "8.4.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "colorama", marker = "sys_platform == 'win32'" },
-    { name = "exceptiongroup", marker = "python_full_version < '3.11'" },
-    { name = "iniconfig", version = "2.1.0", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.10' and extra == 'group-6-quilt3-dev') or (extra == 'extra-6-quilt3-catalog' and extra == 'group-6-quilt3-dev')" },
-    { name = "iniconfig", version = "2.3.0", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version >= '3.10' and extra == 'group-6-quilt3-dev') or (extra == 'extra-6-quilt3-catalog' and extra == 'group-6-quilt3-dev')" },
+    { name = "colorama", marker = "sys_platform == 'win32' or (extra == 'extra-6-quilt3-catalog' and extra == 'group-6-quilt3-dev')" },
+    { name = "exceptiongroup", marker = "python_full_version < '3.11' or (extra == 'extra-6-quilt3-catalog' and extra == 'group-6-quilt3-dev')" },
+    { name = "iniconfig", version = "2.1.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10' or (extra == 'extra-6-quilt3-catalog' and extra == 'group-6-quilt3-dev')" },
+    { name = "iniconfig", version = "2.3.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10' or (extra == 'extra-6-quilt3-catalog' and extra == 'group-6-quilt3-dev')" },
     { name = "packaging" },
     { name = "pluggy" },
     { name = "pygments" },
-    { name = "tomli", marker = "python_full_version < '3.11'" },
+    { name = "tomli", marker = "python_full_version < '3.11' or (extra == 'extra-6-quilt3-catalog' and extra == 'group-6-quilt3-dev')" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/a3/5c/00a0e072241553e1a7496d638deababa67c5058571567b92a7eaa258397c/pytest-8.4.2.tar.gz", hash = "sha256:86c0d0b93306b961d58d62a4db4879f27fe25513d4b969df351abdddb3c30e01", size = 1519618, upload-time = "2025-09-04T14:34:22.711Z" }
 wheels = [
@@ -3491,8 +3501,8 @@ name = "pytest-cov"
 version = "7.0.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "coverage", version = "7.10.7", source = { registry = "https://pypi.org/simple" }, extra = ["toml"], marker = "(python_full_version < '3.10' and extra == 'group-6-quilt3-dev') or (extra == 'extra-6-quilt3-catalog' and extra == 'group-6-quilt3-dev')" },
-    { name = "coverage", version = "7.11.0", source = { registry = "https://pypi.org/simple" }, extra = ["toml"], marker = "(python_full_version >= '3.10' and extra == 'group-6-quilt3-dev') or (extra == 'extra-6-quilt3-catalog' and extra == 'group-6-quilt3-dev')" },
+    { name = "coverage", version = "7.10.7", source = { registry = "https://pypi.org/simple" }, extra = ["toml"], marker = "python_full_version < '3.10' or (extra == 'extra-6-quilt3-catalog' and extra == 'group-6-quilt3-dev')" },
+    { name = "coverage", version = "7.11.0", source = { registry = "https://pypi.org/simple" }, extra = ["toml"], marker = "python_full_version >= '3.10' or (extra == 'extra-6-quilt3-catalog' and extra == 'group-6-quilt3-dev')" },
     { name = "pluggy" },
     { name = "pytest" },
 ]
@@ -3509,8 +3519,8 @@ resolution-markers = [
     "python_full_version < '3.10'",
 ]
 dependencies = [
-    { name = "pytest", marker = "python_full_version < '3.10'" },
-    { name = "tomli", marker = "python_full_version < '3.10'" },
+    { name = "pytest", marker = "python_full_version < '3.10' or (extra == 'extra-6-quilt3-catalog' and extra == 'group-6-quilt3-dev')" },
+    { name = "tomli", marker = "python_full_version < '3.10' or (extra == 'extra-6-quilt3-catalog' and extra == 'group-6-quilt3-dev')" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/1f/31/27f28431a16b83cab7a636dce59cf397517807d247caa38ee67d65e71ef8/pytest_env-1.1.5.tar.gz", hash = "sha256:91209840aa0e43385073ac464a554ad2947cc2fd663a9debf88d03b01e0cc1cf", size = 8911, upload-time = "2024-09-17T22:39:18.566Z" }
 wheels = [
@@ -3522,13 +3532,18 @@ name = "pytest-env"
 version = "1.2.0"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
-    "python_full_version >= '3.12'",
-    "python_full_version == '3.11.*'",
-    "python_full_version == '3.10.*'",
+    "python_full_version >= '3.12' and extra != 'extra-6-quilt3-catalog' and extra == 'group-6-quilt3-dev'",
+    "python_full_version == '3.11.*' and extra != 'extra-6-quilt3-catalog' and extra == 'group-6-quilt3-dev'",
+    "python_full_version == '3.10.*' and extra != 'extra-6-quilt3-catalog' and extra == 'group-6-quilt3-dev'",
+    "python_full_version >= '3.11' and extra == 'extra-6-quilt3-catalog' and extra != 'group-6-quilt3-dev'",
+    "python_full_version == '3.10.*' and extra == 'extra-6-quilt3-catalog' and extra != 'group-6-quilt3-dev'",
+    "python_full_version >= '3.12' and extra != 'extra-6-quilt3-catalog' and extra != 'group-6-quilt3-dev'",
+    "python_full_version == '3.11.*' and extra != 'extra-6-quilt3-catalog' and extra != 'group-6-quilt3-dev'",
+    "python_full_version == '3.10.*' and extra != 'extra-6-quilt3-catalog' and extra != 'group-6-quilt3-dev'",
 ]
 dependencies = [
-    { name = "pytest", marker = "python_full_version >= '3.10'" },
-    { name = "tomli", marker = "python_full_version == '3.10.*'" },
+    { name = "pytest", marker = "python_full_version >= '3.10' or (extra == 'extra-6-quilt3-catalog' and extra == 'group-6-quilt3-dev')" },
+    { name = "tomli", marker = "python_full_version == '3.10.*' or (extra == 'extra-6-quilt3-catalog' and extra == 'group-6-quilt3-dev')" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/13/12/9c87d0ca45d5992473208bcef2828169fa7d39b8d7fc6e3401f5c08b8bf7/pytest_env-1.2.0.tar.gz", hash = "sha256:475e2ebe8626cee01f491f304a74b12137742397d6c784ea4bc258f069232b80", size = 8973, upload-time = "2025-10-09T19:15:47.42Z" }
 wheels = [
@@ -3814,6 +3829,14 @@ dev = [
     { name = "responses" },
     { name = "ruff" },
 ]
+local-catalog-test = [
+    { name = "graphql-core" },
+    { name = "pytest" },
+    { name = "pytest-cov" },
+    { name = "pytest-env", version = "1.1.5", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10' or (extra == 'extra-6-quilt3-catalog' and extra == 'group-6-quilt3-dev')" },
+    { name = "pytest-env", version = "1.2.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10' or (extra == 'extra-6-quilt3-catalog' and extra == 'group-6-quilt3-dev')" },
+    { name = "pytest-subtests" },
+]
 
 [package.metadata]
 requires-dist = [
@@ -3851,6 +3874,13 @@ dev = [
     { name = "quilt3", extras = ["pyarrow", "anndata"] },
     { name = "responses" },
     { name = "ruff", specifier = ">=0.12.11" },
+]
+local-catalog-test = [
+    { name = "graphql-core" },
+    { name = "pytest", specifier = "~=8.4" },
+    { name = "pytest-cov" },
+    { name = "pytest-env" },
+    { name = "pytest-subtests" },
 ]
 
 [[package]]

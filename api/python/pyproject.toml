@@ -81,6 +81,13 @@ dev = [
     "lxml-html-clean>=0.4",
     "quilt3[pyarrow,anndata]",
 ]
+local-catalog-test = [
+    "graphql-core",
+    "pytest~=8.4",
+    "pytest-cov",
+    "pytest-env",
+    "pytest-subtests",
+]
 
 [tool.uv]
 conflicts = [
@@ -98,13 +105,13 @@ extend = "../../ruff.toml"
 _ensure-clean.cmd = "git diff --exit-code"
 
 test.help = "Run test suite"
-test.cmd = "pytest --disable-warnings"
+test.cmd = "pytest --disable-warnings --ignore=tests/test_local_mode.py"
 
 test-verbose.help = "Run tests with verbose output"
-test-verbose.cmd = "pytest -v"
+test-verbose.cmd = "pytest -v --ignore=tests/test_local_mode.py"
 
 test-cov.help = "Run tests with coverage report"
-test-cov.cmd = "pytest --cov=. --cov-report=term-missing"
+test-cov.cmd = "pytest --cov=. --cov-report=term-missing --ignore=tests/test_local_mode.py"
 
 lint.help = "Run Ruff linter"
 lint.cmd = "ruff check ."
@@ -202,16 +209,6 @@ printf '%s\\n' \
   'Prepared LOCAL catalog test state.' \
   'Frontend: cd ../../catalog && PORT=3001 npm start' \
   'Backend: cd . && PYTHONPATH=$PWD QUILT_LOCAL_OBJECT_BACKEND=filesystem QUILT_LOCAL_DATA_DIR=/tmp/quilt-local-data QUILT_CATALOG_URL=http://localhost:3001 uv run --isolated --python 3.11 --no-dev --extra catalog quilt3 catalog --host localhost --port 3000 --no-browser'
-"""
-
-catalog-test-ci.help = "Run LOCAL catalog backend tests in an isolated catalog environment"
-catalog-test-ci.shell = """
-uv run --isolated --python 3.11 --no-dev --extra catalog \
-  --with 'pytest~=8.4' \
-  --with 'pytest-env~=1.1' \
-  --with 'pytest-cov~=7.0' \
-  --with 'pytest-subtests~=0.15.0' \
-  pytest tests/test_local_mode.py
 """
 
 catalog-test.help = "Prepare the LOCAL catalog filesystem test state"

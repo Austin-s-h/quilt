@@ -9,14 +9,10 @@ from urllib.parse import quote, unquote, urlencode, urlparse
 
 import pytest
 from botocore.exceptions import ClientError
+from graphql import graphql
 
-pytest.importorskip("graphql", reason="catalog extra (quilt3[catalog]) is required for LOCAL mode tests")
-pytest.importorskip("quilt3_local", reason="catalog extra (quilt3[catalog]) is required for LOCAL mode tests")
-
-from graphql import graphql  # noqa: E402
-
-from quilt3_local import buckets  # noqa: E402
-from quilt3_local.context import QuiltContext  # noqa: E402
+from quilt3_local import buckets
+from quilt3_local.context import QuiltContext
 from tests.preview_fixtures import (
     CURATED_PREVIEW_FIXTURES,
     DEMO_PACKAGE_HASH,

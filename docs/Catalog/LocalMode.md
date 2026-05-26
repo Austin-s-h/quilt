@@ -46,11 +46,11 @@ That task:
 - stages the curated preview fixtures, including dog_watermark.pdf
 ```
 
-To run just the LOCAL backend test suite in the same isolated style:
+To run just the LOCAL backend test suite with the dedicated local-catalog test group:
 
 ```bash
 cd quilt/api/python
-uv run poe catalog-test-ci
+uv run --python 3.11 --no-default-groups --group local-catalog-test --extra catalog pytest tests/test_local_mode.py
 ```
 
 ## Frontend Proxy Mode
