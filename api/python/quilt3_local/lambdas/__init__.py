@@ -59,7 +59,7 @@ async def lambda_request(request: fastapi.Request, name: str, path: str = ""):
         data=body if body else None,
     ) as resp:
         content = await resp.read()
-        excluded_headers = {"transfer-encoding", "connection", "content-length"}
+        excluded_headers = {"transfer-encoding", "connection", "content-length", "content-encoding"}
         resp_headers = {k: v for k, v in resp.headers.items() if k.lower() not in excluded_headers}
 
         return fastapi.Response(

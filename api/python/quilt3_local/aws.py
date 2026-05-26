@@ -66,7 +66,7 @@ def _default_experiment_universal_schema(_bucket: str) -> bytes:
 
 
 def _default_workflows_config(bucket: str) -> bytes:
-    schema_url = _bucket_root(bucket).joinpath(".quilt", "workflows", "schemas", "experiment-universal.json").as_uri()
+    schema_url = f"s3://{bucket}/.quilt/workflows/schemas/experiment-universal.json"
     return b"".join(
         (
             b'version:\n',
