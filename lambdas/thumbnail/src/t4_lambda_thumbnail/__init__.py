@@ -7,12 +7,10 @@ n-dimensional data are made, specifically that dimension order is TCZYX(S), or,
 Timepoint-Channel-SpacialZ-SpacialY-SpacialX-(Samples).
 """
 
-import contextlib
 import functools
 import json
 import os
 import shutil
-import subprocess
 import sys
 import tempfile
 import urllib.parse
@@ -249,30 +247,26 @@ def format_aicsimage_to_prepped(img: BioImage) -> da.Array:
     return img.reader.dask_data
 
 
-@contextlib.contextmanager
-def pptx_to_pdf(*, path: str, page: int):
-    with tempfile.TemporaryDirectory() as out_dir:
-        with tempfile.TemporaryDirectory() as tmp_dir:
-            try:
-                subprocess.run(
-                    (
-                        "libreoffice",
-                        "--convert-to",
-                        'pdf:impress_pdf_Export:{"PageRange":{"type":"string","value":"%s-%s"}}' % (page, page),
-                        "--outdir",
-                        out_dir,
-                        path,
-                    ),
-                    check=True,
-                    env={
-                        **os.environ,
-                        # This is needed because LibreOffice writes some stuff to $HOME/.config.
-                        "HOME": tmp_dir,
-                    },
-                )
-            except FileNotFoundError as exc:
-                raise PDFThumbError("Missing required command: libreoffice") from exc
-        yield os.path.join(out_dir, os.path.splitext(os.path.basename(path))[0] + ".pdf")
+def render_pptx_page(*, path: str, page: int, dpi: int) -> Image.Image:
+    """Render a single PPTX page to a PIL Image using pymupdf."""
+    import pymupdf
+
+    try:
+        doc = pymupdf.open(path)
+    except Exception as exc:
+        raise PDFThumbError(f"Failed to open PPTX: {exc}") from exc
+
+    page_index = page - 1
+    if page_index < 0 or page_index >= len(doc):
+        raise PDFThumbError(f"Page {page} is out of range (document has {len(doc)} pages)")
+
+    pdfpage = doc[page_index]
+    zoom = dpi / 72
+    mat = pymupdf.Matrix(zoom, zoom)
+    pix = pdfpage.get_pixmap(matrix=mat)
+    img = Image.frombytes("RGB", (pix.width, pix.height), pix.samples)
+    doc.close()
+    return img
 
 
 
@@ -315,10 +309,22 @@ def handle_pdf(*, path: str, page: int, size: int, count_pages: bool):
 
 
 def handle_pptx(*, path: str, page: int, size: int, count_pages: bool):
-    with pptx_to_pdf(path=path, page=page) as pdf_path:
-        info, data = handle_pdf(path=pdf_path, page=1, size=size, count_pages=False)
+    fmt = "JPEG"
+    render_dpi = get_pdf_render_dpi()
+    page_image = render_pptx_page(path=path, page=page, dpi=render_dpi)
+    thumb = resize_pdf_page(page_image, size=size)
+    info = {
+        "thumbnail_format": fmt,
+        "thumbnail_size": thumb.size,
+        "pdf_render_dpi": render_dpi,
+        "pdf_resize_filter": "LANCZOS",
+    }
     if count_pages:
         info["page_count"] = len(pptx.Presentation(path).slides)
+
+    thumbnail_bytes = BytesIO()
+    thumb.save(thumbnail_bytes, fmt)
+    data = thumbnail_bytes.getvalue()
 
     return info, data
 
