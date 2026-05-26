@@ -52,11 +52,6 @@ class LambdaProcess:
             logger.error(f"[lambda:{self.config.name}] Project dir not found: {project_dir}")
             return
 
-        env = {
-            **os.environ,
-            "QUILT_LOCAL_S3_PROXY_ORIGIN": self.s3_proxy_origin,
-        }
-
         cmd = [
             "uv", "run",
             "--project", str(project_dir),
@@ -64,6 +59,7 @@ class LambdaProcess:
             str(runner_path),
             "--module", self.config.module,
             "--port", "0",
+            "--s3-proxy-origin", self.s3_proxy_origin,
         ]
 
         logger.info(f"[lambda:{self.config.name}] Starting: {' '.join(cmd)}")
@@ -72,7 +68,6 @@ class LambdaProcess:
             *cmd,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
-            env=env,
         )
 
         # Read the ready signal from stdout

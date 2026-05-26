@@ -13,8 +13,8 @@ from __future__ import annotations
 
 import argparse
 import importlib
-import os
 import sys
+import types
 from base64 import b64decode, b64encode
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import parse_qsl, unquote, urlparse
@@ -22,14 +22,13 @@ from urllib.parse import parse_qsl, unquote, urlparse
 LAMBDA_PATH = "/lambda"
 
 
-def _patch_url_validation(module):
+def _patch_url_validation(module: types.ModuleType, proxy_origin: str):
     """
     Monkey-patch URL validation functions to accept local S3 proxy URLs.
 
     Production lambdas reject non-S3 URLs. In local mode, URLs point at
     http://localhost:<port>/__s3proxy/... which needs to be accepted.
     """
-    proxy_origin = os.environ.get("QUILT_LOCAL_S3_PROXY_ORIGIN", "")
     if not proxy_origin:
         return
 
@@ -62,9 +61,9 @@ def _patch_url_validation(module):
         module.is_s3_url = patched_is_s3_url
 
 
-def _load_handler(module_name: str):
+def _load_handler(module_name: str, proxy_origin: str):
     module = importlib.import_module(module_name)
-    _patch_url_validation(module)
+    _patch_url_validation(module, proxy_origin)
     handler = getattr(module, "lambda_handler", None)
     if handler is None:
         raise AttributeError(f"{module_name} has no lambda_handler")
@@ -72,7 +71,7 @@ def _load_handler(module_name: str):
 
 
 class LambdaHandler(BaseHTTPRequestHandler):
-    lambda_handler = None
+    lambda_handler: staticmethod = None  # type: ignore[assignment]
 
     def log_message(self, format, *args):
         # Route access logs to stderr (parent reads and prefixes them)
@@ -147,9 +146,10 @@ def main():
     parser = argparse.ArgumentParser(description="Lambda subprocess runner")
     parser.add_argument("--module", required=True, help="Python module with lambda_handler (e.g., t4_lambda_preview)")
     parser.add_argument("--port", type=int, default=0, help="Port to listen on (0 = OS-assigned)")
+    parser.add_argument("--s3-proxy-origin", default="", help="Local S3 proxy origin to allow (e.g., http://localhost:3000/__s3proxy)")
     args = parser.parse_args()
 
-    handler = _load_handler(args.module)
+    handler = _load_handler(args.module, args.s3_proxy_origin)
     LambdaHandler.lambda_handler = staticmethod(handler)
 
     server = HTTPServer(("127.0.0.1", args.port), LambdaHandler)

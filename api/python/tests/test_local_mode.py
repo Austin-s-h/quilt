@@ -780,10 +780,10 @@ def test_preview_lambda_subprocess_serves_curated_fixtures(tmp_path, fixture_nam
 
     proc = subprocess.Popen(
         ["uv", "run", "--project", str(project_dir), "python", str(runner_path),
-         "--module", "t4_lambda_preview", "--port", "0"],
+         "--module", "t4_lambda_preview", "--port", "0",
+         "--s3-proxy-origin", f"http://127.0.0.1:{file_server_port}"],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
-        env={**__import__("os").environ, "QUILT_LOCAL_S3_PROXY_ORIGIN": f"http://127.0.0.1:{file_server_port}"},
     )
     try:
         # Wait for ready signal
@@ -849,10 +849,10 @@ def test_tabular_preview_lambda_subprocess_serves_curated_fixtures(
 
     proc = subprocess.Popen(
         ["uv", "run", "--project", str(project_dir), "python", str(runner_path),
-         "--module", "t4_lambda_tabular_preview", "--port", "0"],
+         "--module", "t4_lambda_tabular_preview", "--port", "0",
+         "--s3-proxy-origin", f"http://127.0.0.1:{file_server_port}"],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
-        env={**__import__("os").environ, "QUILT_LOCAL_S3_PROXY_ORIGIN": f"http://127.0.0.1:{file_server_port}"},
     )
     try:
         line = proc.stdout.readline().decode().strip()
