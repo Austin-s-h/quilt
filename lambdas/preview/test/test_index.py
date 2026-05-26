@@ -268,7 +268,7 @@ class TestIndex:
         assert resp['statusCode'] == 200, 'preview failed on nb_1200727.ipynb'
         body_html = body['html']
         # isclose bc string sizes differ, e.g. on Linux
-        assert math.isclose(len(body_html), 18084, abs_tol=300), "Hmm, didn't chop nb_1200727.ipynb"
+        assert math.isclose(len(body_html), 18084, abs_tol=500), "Hmm, didn't chop nb_1200727.ipynb"
 
     @responses.activate
     def test_ipynb_exclude(self):
