@@ -1,7 +1,7 @@
 [project]
 name = "t4_lambda_pkgevents"
 version = "0.2.0"
-requires-python = "==3.13.*"
+requires-python = ">=3.13"
 dependencies = [
     "boto3~=1.40",
     "t4-lambda-shared",
@@ -23,4 +23,4 @@ test = [
 default-groups = ["test"]
 
 [tool.uv.sources]
-t4-lambda-shared = { url = "https://github.com/quiltdata/quilt/archive/d496dffbfb4b7a2ae05f6c1f7f0cb7d5d43bc984.zip", subdirectory = "lambdas/shared" }
+t4-lambda-shared = { path = "../shared" }

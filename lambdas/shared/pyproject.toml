@@ -3,24 +3,24 @@ name = "t4_lambda_shared"
 version = "0.1.0"
 requires-python = ">=3.12"
 dependencies = [
-    "jsonschema>=2.6.0",
+    "jsonschema>=4,<5",
 ]
 
 [project.optional-dependencies]
 mem = [
-    "psutil~=6.1",
+    "psutil>=6",
 ]
 preview = [
-    "flowio~=1.4",
+    "flowio>=1.4",
     "numpy>=1.26,<3",
-    "openpyxl~=3.1",
-    "pandas~=2.2.3",
-    "pyarrow~=18.0",
-    "t4-lambda-shared[mem]",
-    "xlrd~=2.0",
+    "openpyxl>=3.1",
+    "pandas>=2.2",
+    "psutil>=6",
+    "pyarrow>=18",
+    "xlrd>=2,<3",
 ]
 lambda = [
-    "awslambdaric>=2,<4",
+    "awslambdaric>=3,<4",
 ]
 
 [build-system]
