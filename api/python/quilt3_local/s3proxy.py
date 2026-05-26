@@ -1,12 +1,15 @@
 from __future__ import annotations
 
 import re
+import uuid
 import xml.etree.ElementTree as ET
 from urllib.parse import quote
 
 import fastapi
 
 from . import aws
+
+_multipart_uploads: dict[str, dict] = {}
 
 s3proxy = fastapi.FastAPI()
 
@@ -191,6 +194,58 @@ async def _dispatch(request: fastapi.Request, bucket: str, key: str):
             headers=headers,
         )
 
+    if request.method == "POST" and _has_flag_param(request, "uploads"):
+        upload_id = uuid.uuid4().hex
+        _multipart_uploads[upload_id] = {"bucket": bucket, "key": key, "parts": {}}
+        body = (
+            f'<?xml version="1.0" encoding="UTF-8"?>'
+            f'<InitiateMultipartUploadResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/">'
+            f'<Bucket>{bucket}</Bucket>'
+            f'<Key>{key}</Key>'
+            f'<UploadId>{upload_id}</UploadId>'
+            f'</InitiateMultipartUploadResult>'
+        ).encode()
+        headers = dict(cors_headers)
+        headers["content-type"] = "application/xml"
+        return fastapi.Response(content=body, status_code=200, headers=headers)
+
+    if request.method == "PUT" and request.query_params.get("uploadId"):
+        upload_id = request.query_params["uploadId"]
+        part_number = int(request.query_params.get("partNumber", "1"))
+        upload = _multipart_uploads.get(upload_id)
+        if upload is None:
+            headers = dict(cors_headers)
+            return fastapi.Response(content=b"No such upload", status_code=404, headers=headers)
+        upload["parts"][part_number] = await request.body()
+        etag = f'"{uuid.uuid4().hex}"'
+        headers = dict(cors_headers)
+        headers["etag"] = etag
+        return fastapi.Response(content=b"", status_code=200, headers=headers)
+
+    if request.method == "POST" and request.query_params.get("uploadId"):
+        upload_id = request.query_params["uploadId"]
+        upload = _multipart_uploads.pop(upload_id, None)
+        if upload is None:
+            headers = dict(cors_headers)
+            return fastapi.Response(content=b"No such upload", status_code=404, headers=headers)
+        assembled = b"".join(upload["parts"][k] for k in sorted(upload["parts"]))
+        response = await aws.fetch_object(
+            Bucket=upload["bucket"],
+            Key=upload["key"],
+            Method="PUT",
+            Body=assembled,
+        )
+        body = (
+            f'<?xml version="1.0" encoding="UTF-8"?>'
+            f'<CompleteMultipartUploadResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/">'
+            f'<Bucket>{upload["bucket"]}</Bucket>'
+            f'<Key>{upload["key"]}</Key>'
+            f'</CompleteMultipartUploadResult>'
+        ).encode()
+        headers = dict(cors_headers)
+        headers["content-type"] = "application/xml"
+        return fastapi.Response(content=body, status_code=200, headers=headers)
+
     response = await aws.fetch_object(
         Bucket=bucket,
         Key=key,
@@ -215,8 +270,8 @@ async def _dispatch(request: fastapi.Request, bucket: str, key: str):
     )
 
 
-@s3proxy.api_route("/{host}", methods=["GET", "HEAD", "PUT", "OPTIONS"])
-@s3proxy.api_route("/{host}/{s3_path:path}", methods=["GET", "HEAD", "PUT", "OPTIONS"])
+@s3proxy.api_route("/{host}", methods=["GET", "HEAD", "PUT", "POST", "OPTIONS"])
+@s3proxy.api_route("/{host}/{s3_path:path}", methods=["GET", "HEAD", "PUT", "POST", "OPTIONS"])
 async def host_style_proxy(request: fastapi.Request, host: str, s3_path: str = ""):
     try:
         bucket, _region = _parse_host_style(host)
@@ -229,7 +284,7 @@ async def host_style_proxy(request: fastapi.Request, host: str, s3_path: str = "
         return await _dispatch(request, bucket, key)
 
 
-@s3proxy.api_route("/{s3_region}/{s3_bucket}", methods=["GET", "HEAD", "PUT", "OPTIONS"])
-@s3proxy.api_route("/{s3_region}/{s3_bucket}/{s3_path:path}", methods=["GET", "HEAD", "PUT", "OPTIONS"])
+@s3proxy.api_route("/{s3_region}/{s3_bucket}", methods=["GET", "HEAD", "PUT", "POST", "OPTIONS"])
+@s3proxy.api_route("/{s3_region}/{s3_bucket}/{s3_path:path}", methods=["GET", "HEAD", "PUT", "POST", "OPTIONS"])
 async def legacy_proxy(request: fastapi.Request, s3_region: str, s3_bucket: str, s3_path: str = ""):
     return await _dispatch(request, s3_bucket, s3_path)
