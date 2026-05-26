@@ -31,11 +31,7 @@ class Request:
 class ELBRequest(Request):
     def __init__(self, event, context):
         super().__init__(event, context)
-        self.args = dict(
-            urllib.parse.parse_qsl(
-                "&".join(f"{key}={value}" for key, value in self.args.items())
-            )
-        )
+        self.args = dict(urllib.parse.parse_qsl("&".join(f"{key}={value}" for key, value in self.args.items())))
 
 
 def api(cors_origins=(), *, request_class=Request):
@@ -76,9 +72,7 @@ def api(cors_origins=(), *, request_class=Request):
                     {
                         "access-control-allow-origin": "*",
                         "access-control-allow-methods": "OPTIONS,HEAD,GET,POST",
-                        "access-control-allow-headers": request.headers.get(
-                            "access-control-request-headers", ""
-                        ),
+                        "access-control-allow-headers": request.headers.get("access-control-request-headers", ""),
                         "access-control-expose-headers": f"*, Authorization, {QUILT_INFO_HEADER}",
                         "access-control-max-age": "86400",
                     }

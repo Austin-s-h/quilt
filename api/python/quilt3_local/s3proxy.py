@@ -19,16 +19,18 @@ def _cors_headers(request: fastapi.Request) -> dict:
         "access-control-allow-methods": request.headers.get("access-control-request-method", ""),
         "access-control-allow-origin": "*",
         "access-control-max-age": "3000",
-        "access-control-expose-headers": ", ".join([
-            "Content-Length",
-            "Content-Range",
-            "ETag",
-            "x-amz-bucket-region",
-            "x-amz-delete-marker",
-            "x-amz-request-id",
-            "x-amz-version-id",
-            "x-amz-storage-class",
-        ]),
+        "access-control-expose-headers": ", ".join(
+            [
+                "Content-Length",
+                "Content-Range",
+                "ETag",
+                "x-amz-bucket-region",
+                "x-amz-delete-marker",
+                "x-amz-request-id",
+                "x-amz-version-id",
+                "x-amz-storage-class",
+            ]
+        ),
     }
 
 

@@ -59,6 +59,7 @@ ignore = [
 
 [lint.per-file-ignores]
 "docs/**" = ["I001"]
+"py-shared/src/**" = ["UP047"]
 
 [lint.isort]
 known-first-party = ["quilt3", "quilt_shared", "t4_lambda_*"]

@@ -7,11 +7,7 @@ def _filesystem_bucket_names() -> list[str]:
     root = settings.data_dir()
     if root is None or not root.exists():
         return []
-    return sorted(
-        entry.name
-        for entry in root.iterdir()
-        if entry.is_dir() and not entry.name.startswith(".")
-    )
+    return sorted(entry.name for entry in root.iterdir() if entry.is_dir() and not entry.name.startswith("."))
 
 
 def _bucket_config(bucket: str) -> dict:

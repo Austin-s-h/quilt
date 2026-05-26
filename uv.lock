@@ -1359,6 +1359,8 @@ requires-dist = [
     { name = "platformdirs", specifier = ">=2" },
     { name = "pyarrow", marker = "extra == 'pyarrow'", specifier = ">=0.14.1" },
     { name = "pydantic", specifier = ">=2.0.0,<3.0.0" },
+    { name = "pypdfium2", marker = "extra == 'catalog'", specifier = ">=4,<5" },
+    { name = "python-pptx", marker = "extra == 'catalog'", specifier = "~=1.0.0" },
     { name = "pyyaml", specifier = ">=5.1" },
     { name = "quilt3-local", marker = "extra == 'catalog'", specifier = ">=2,<3" },
     { name = "requests", specifier = ">=2.12.4" },
@@ -1380,6 +1382,13 @@ dev = [
     { name = "quilt3", extras = ["pyarrow", "anndata"] },
     { name = "responses" },
     { name = "ruff", specifier = ">=0.12.11" },
+]
+local-catalog-test = [
+    { name = "graphql-core" },
+    { name = "pytest", specifier = "~=8.4" },
+    { name = "pytest-cov" },
+    { name = "pytest-env" },
+    { name = "pytest-subtests" },
 ]
 
 [[package]]

@@ -58,40 +58,31 @@ def _default_readme(bucket: str) -> bytes:
 
 
 def _default_bucket_preferences(bucket: str) -> bytes:
-    return (
-        "ui:\n"
-        "  sourceBuckets:\n"
-        f'    "{bucket}": {{}}\n'
-    ).encode()
+    return (f"ui:\n  sourceBuckets:\n    \"{bucket}\": {{}}\n").encode()
 
 
 def _default_experiment_universal_schema(_bucket: str) -> bytes:
-    return (
-        b'{\n'
-        b'  "$schema": "http://json-schema.org/draft-07/schema#",\n'
-        b'  "type": "object"\n'
-        b'}\n'
-    )
+    return b'{\n  "$schema": "http://json-schema.org/draft-07/schema#",\n  "type": "object"\n}\n'
 
 
 def _default_workflows_config(bucket: str) -> bytes:
-    schema_url = _bucket_root(bucket).joinpath(
-        ".quilt", "workflows", "schemas", "experiment-universal.json"
-    ).as_uri()
-    return b"".join((
-        b'version:\n',
-        b'  base: "1"\n',
-        b'  catalog: "1"\n',
-        b'default_workflow: "experiment"\n',
-        b'is_workflow_required: false\n',
-        b'workflows:\n',
-        b'  experiment:\n',
-        b'    name: Experiment\n',
-        b'    metadata_schema: experiment-universal\n',
-        b'schemas:\n',
-        b'  experiment-universal:\n',
-        f'    url: {schema_url}\n'.encode(),
-    ))
+    schema_url = _bucket_root(bucket).joinpath(".quilt", "workflows", "schemas", "experiment-universal.json").as_uri()
+    return b"".join(
+        (
+            b'version:\n',
+            b'  base: "1"\n',
+            b'  catalog: "1"\n',
+            b'default_workflow: "experiment"\n',
+            b'is_workflow_required: false\n',
+            b'workflows:\n',
+            b'  experiment:\n',
+            b'    name: Experiment\n',
+            b'    metadata_schema: experiment-universal\n',
+            b'schemas:\n',
+            b'  experiment-universal:\n',
+            f'    url: {schema_url}\n'.encode(),
+        )
+    )
 
 
 def _default_queries_config(_bucket: str) -> bytes:
@@ -111,11 +102,7 @@ _DEFAULT_SUMMARIZE_GROUP_ORDER = (
 
 
 def _default_quilt_summarize(bucket: str) -> bytes:
-    preview_objects = [
-        item["Key"]
-        for item in _filesystem_real_objects(bucket)
-        if item["Key"].startswith("preview/")
-    ]
+    preview_objects = [item["Key"] for item in _filesystem_real_objects(bucket) if item["Key"].startswith("preview/")]
     if not preview_objects:
         return b"[]\n"
 
@@ -125,12 +112,8 @@ def _default_quilt_summarize(bucket: str) -> bytes:
         group = parts[1] if len(parts) > 2 else "misc"
         grouped.setdefault(group, []).append(key)
 
-    ordered_groups = [
-        group for group in _DEFAULT_SUMMARIZE_GROUP_ORDER if group in grouped
-    ]
-    ordered_groups.extend(
-        sorted(group for group in grouped if group not in _DEFAULT_SUMMARIZE_GROUP_ORDER)
-    )
+    ordered_groups = [group for group in _DEFAULT_SUMMARIZE_GROUP_ORDER if group in grouped]
+    ordered_groups.extend(sorted(group for group in grouped if group not in _DEFAULT_SUMMARIZE_GROUP_ORDER))
 
     summarize = [
         [
@@ -157,11 +140,7 @@ CONVENTIONAL_KEY_GROUPS = (
     (".quilt/queries/config.yaml", ".quilt/queries/config.yml"),
 )
 
-CONVENTIONAL_KEY_LOOKUP = {
-    alias.casefold(): group
-    for group in CONVENTIONAL_KEY_GROUPS
-    for alias in group
-}
+CONVENTIONAL_KEY_LOOKUP = {alias.casefold(): group for group in CONVENTIONAL_KEY_GROUPS for alias in group}
 
 CONVENTIONAL_DEFAULT_FACTORIES = {
     "README.md": _default_readme,
@@ -240,14 +219,12 @@ def _find_case_insensitive_path(bucket: str, key: str) -> Path | None:
         matches = []
         if exact.exists():
             matches.append(exact)
-        matches.extend(sorted(
-            (
-                child
-                for child in current.iterdir()
-                if child.name.casefold() == part.casefold() and child != exact
-            ),
-            key=lambda child: child.name,
-        ))
+        matches.extend(
+            sorted(
+                (child for child in current.iterdir() if child.name.casefold() == part.casefold() and child != exact),
+                key=lambda child: child.name,
+            )
+        )
         for candidate in matches:
             resolved = _walk(candidate, index + 1)
             if resolved is not None:
@@ -309,13 +286,15 @@ def _filesystem_real_objects(bucket: str) -> list[FilesystemObjectEntry]:
         if not path.is_file():
             continue
         key = path.relative_to(bucket_root).as_posix()
-        objects.append({
-            "Key": key,
-            "Size": path.stat().st_size,
-            "ETag": _etag_for_path(path),
-            "LastModified": _mtime(path),
-            "StorageClass": "STANDARD",
-        })
+        objects.append(
+            {
+                "Key": key,
+                "Size": path.stat().st_size,
+                "ETag": _etag_for_path(path),
+                "LastModified": _mtime(path),
+                "StorageClass": "STANDARD",
+            }
+        )
 
     return sorted(objects, key=lambda item: item["Key"])
 
@@ -327,13 +306,15 @@ def _filesystem_objects(bucket: str) -> list[FilesystemObjectEntry]:
         metadata = _filesystem_object_metadata(bucket, canonical_key)
         if metadata is None or metadata["Key"] != canonical_key:
             continue
-        objects.append({
-            "Key": canonical_key,
-            "Size": metadata["Size"],
-            "ETag": metadata["ETag"],
-            "LastModified": metadata["LastModified"],
-            "StorageClass": "STANDARD",
-        })
+        objects.append(
+            {
+                "Key": canonical_key,
+                "Size": metadata["Size"],
+                "ETag": metadata["ETag"],
+                "LastModified": metadata["LastModified"],
+                "StorageClass": "STANDARD",
+            }
+        )
 
     return sorted(objects, key=lambda item: item["Key"])
 
@@ -375,15 +356,17 @@ async def list_object_versions(*, Bucket: str, Prefix: str = "", MaxKeys: int = 
         versions = []
         metadata = _filesystem_object_metadata(Bucket, Prefix)
         if metadata is not None:
-            versions.append({
-                "Key": Prefix,
-                "VersionId": "null",
-                "IsLatest": True,
-                "LastModified": metadata["LastModified"],
-                "ETag": metadata["ETag"],
-                "Size": metadata["Size"],
-                "StorageClass": "STANDARD",
-            })
+            versions.append(
+                {
+                    "Key": Prefix,
+                    "VersionId": "null",
+                    "IsLatest": True,
+                    "LastModified": metadata["LastModified"],
+                    "ETag": metadata["ETag"],
+                    "Size": metadata["Size"],
+                    "StorageClass": "STANDARD",
+                }
+            )
         return {
             "Name": Bucket,
             "Prefix": Prefix,
@@ -427,7 +410,7 @@ async def list_objects_page(
         contents: list[FilesystemObjectEntry] = []
         for item in objects:
             key = item["Key"]
-            remainder = key[len(Prefix):]
+            remainder = key[len(Prefix) :]
             if Delimiter and Delimiter in remainder:
                 child = remainder.split(Delimiter, 1)[0]
                 prefixes.add(f"{Prefix}{child}{Delimiter}")
@@ -440,11 +423,7 @@ async def list_objects_page(
         items.sort(key=lambda item: item[0])
 
         if ContinuationToken:
-            items = [
-                item
-                for item in items
-                if item[0] > ContinuationToken
-            ]
+            items = [item for item in items if item[0] > ContinuationToken]
 
         truncated = len(items) > MaxKeys
         page = items[:MaxKeys]
@@ -462,11 +441,7 @@ async def list_objects_page(
             "IsTruncated": truncated,
             "NextContinuationToken": next_token,
             "Contents": [item[2] for item in page if item[1] == "content"],
-            "CommonPrefixes": [
-                {"Prefix": item[0]}
-                for item in page
-                if item[1] == "prefix"
-            ],
+            "CommonPrefixes": [{"Prefix": item[0]} for item in page if item[1] == "prefix"],
         }
 
     def _list_page():
@@ -606,7 +581,7 @@ async def fetch_object(
             start_s, _, end_s = Range[6:].partition("-")
             start = int(start_s) if start_s else 0
             end = int(end_s) if end_s else len(data) - 1
-            data = data[start:end + 1]
+            data = data[start : end + 1]
             status = 206
             headers["content-range"] = f"bytes {start}-{end}/{metadata['Size']}"
             headers["content-length"] = str(len(data))
