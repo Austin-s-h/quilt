@@ -1,7 +1,7 @@
 [project]
 name = "t4_lambda_s3hash"
 version = "0.2.0"
-requires-python = ">=3.12,<3.15"
+requires-python = ">=3.13"
 dependencies = [
     "aiobotocore ~= 2.15",
     "types-aiobotocore[s3] ~= 2.15",

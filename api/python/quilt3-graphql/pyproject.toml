@@ -3,7 +3,7 @@ name = "quilt3-graphql-codegen"
 version = "0.2.0"
 description = "GraphQL client code generator for quilt3"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.13"
 
 [dependency-groups]
 dev = [
