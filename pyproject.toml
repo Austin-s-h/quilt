@@ -8,10 +8,12 @@ package = false
 
 [tool.uv.sources]
 quilt-shared = { workspace = true }
+t4-lambda-shared = { workspace = true }
 
 [tool.uv.workspace]
 members = [
     "py-shared",
+    "lambdas/shared",
     "lambdas/es_ingest",
     "lambdas/iceberg",
     "lambdas/indexer",

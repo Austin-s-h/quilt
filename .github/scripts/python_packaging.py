@@ -25,6 +25,7 @@ PINNED_INTERNAL_SOURCES = {
 }
 WORKSPACE_INTERNAL_SOURCES = {
     "quilt-shared": REPO_ROOT / "py-shared",
+    "t4-lambda-shared": REPO_ROOT / "lambdas/shared",
 }
 PROD_DOCKERFILES = (
     REPO_ROOT / "lambdas/indexer/Dockerfile",
@@ -182,10 +183,11 @@ def guardrails() -> int:
         package_path = pyproject_path.parent.relative_to(REPO_ROOT).as_posix()
         pyproject = load_toml(pyproject_path)
         allow_local_sources = package_path in ALLOWED_LOCAL_SOURCE_LAMBDAS
+        is_workspace_member = package_path in workspace_members()
 
         for dependency, source in iter_internal_source_entries(pyproject):
             normalized_dependency = normalize_name(dependency)
-            if normalized_dependency in WORKSPACE_INTERNAL_SOURCES:
+            if normalized_dependency in WORKSPACE_INTERNAL_SOURCES and is_workspace_member:
                 if source.get("workspace") is not True:
                     failures.append(f"{package_path} must source {dependency} from the uv workspace")
                 continue
