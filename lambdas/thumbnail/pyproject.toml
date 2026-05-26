@@ -1,6 +1,6 @@
 [project]
 name = "t4_lambda_thumbnail"
-version = "0.0.1"
+version = "0.2.0"
 requires-python = "~=3.13.0"
 
 dependencies = [
