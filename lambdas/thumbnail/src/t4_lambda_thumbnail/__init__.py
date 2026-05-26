@@ -23,7 +23,6 @@ import bioio_ome_tiff
 import bioio_tifffile
 import dask.array as da
 import numpy as np
-import pptx
 import requests
 from bioio import BioImage
 from PIL import Image
@@ -248,7 +247,12 @@ def format_aicsimage_to_prepped(img: BioImage) -> da.Array:
 
 
 def render_pptx_page(*, path: str, page: int, dpi: int) -> Image.Image:
-    """Render a single PPTX page to a PIL Image using pymupdf."""
+    """Render a single PPTX slide to a PIL Image using pymupdf.
+
+    pymupdf renders PPTX as a single tall page with all slides stacked
+    vertically. We use a clip rect to render only the requested slide's
+    region at full DPI, avoiding unnecessary work for other slides.
+    """
     import pymupdf
 
     try:
@@ -256,14 +260,27 @@ def render_pptx_page(*, path: str, page: int, dpi: int) -> Image.Image:
     except Exception as exc:
         raise PDFThumbError(f"Failed to open PPTX: {exc}") from exc
 
-    page_index = page - 1
-    if page_index < 0 or page_index >= len(doc):
-        raise PDFThumbError(f"Page {page} is out of range (document has {len(doc)} pages)")
+    if len(doc) == 0:
+        doc.close()
+        raise PDFThumbError("PPTX document has no renderable content")
 
-    pdfpage = doc[page_index]
+    n_slides = _count_pptx_slides_from_zip(path)
+    if page < 1 or page > n_slides:
+        doc.close()
+        raise PDFThumbError(f"Page {page} is out of range (document has {n_slides} slides)")
+
+    mupdf_page = doc[0]
+    slide_height = mupdf_page.rect.height / n_slides
+    clip = pymupdf.Rect(
+        0,
+        slide_height * (page - 1),
+        mupdf_page.rect.width,
+        slide_height * page,
+    )
+
     zoom = dpi / 72
     mat = pymupdf.Matrix(zoom, zoom)
-    pix = pdfpage.get_pixmap(matrix=mat)
+    pix = mupdf_page.get_pixmap(matrix=mat, clip=clip)
     img = Image.frombytes("RGB", (pix.width, pix.height), pix.samples)
     doc.close()
     return img
@@ -308,6 +325,14 @@ def handle_pdf(*, path: str, page: int, size: int, count_pages: bool):
     return info, data
 
 
+def _count_pptx_slides_from_zip(path: str) -> int:
+    """Count slides by inspecting the PPTX zip structure (no python-pptx needed)."""
+    import zipfile
+
+    with zipfile.ZipFile(path) as zf:
+        return sum(1 for n in zf.namelist() if n.startswith("ppt/slides/slide") and n.endswith(".xml"))
+
+
 def handle_pptx(*, path: str, page: int, size: int, count_pages: bool):
     fmt = "JPEG"
     render_dpi = get_pdf_render_dpi()
@@ -320,7 +345,7 @@ def handle_pptx(*, path: str, page: int, size: int, count_pages: bool):
         "pdf_resize_filter": "LANCZOS",
     }
     if count_pages:
-        info["page_count"] = len(pptx.Presentation(path).slides)
+        info["page_count"] = _count_pptx_slides_from_zip(path)
 
     thumbnail_bytes = BytesIO()
     thumb.save(thumbnail_bytes, fmt)
