@@ -900,7 +900,7 @@ def test_tabular_preview_lambda_subprocess_serves_curated_fixtures(
 
 
 def _start_file_server(root_dir, tmp_path):
-    """Start a background HTTP file server and return its port."""
+    """Start a background HTTP file server with Range request support."""
     import os
     from http.server import HTTPServer, SimpleHTTPRequestHandler
     from threading import Thread
@@ -911,6 +911,50 @@ def _start_file_server(root_dir, tmp_path):
 
         def log_message(self, format, *args):
             pass  # Suppress logging in tests
+
+        def do_GET(self):
+            path = self.translate_path(self.path)
+            if not os.path.isfile(path):
+                super().do_GET()
+                return
+
+            range_header = self.headers.get("Range")
+            if range_header is None:
+                super().do_GET()
+                return
+
+            file_size = os.path.getsize(path)
+            # Parse "bytes=START-END"
+            range_spec = range_header.replace("bytes=", "")
+            parts = range_spec.split("-")
+            start = int(parts[0]) if parts[0] else 0
+            end = int(parts[1]) if parts[1] else file_size - 1
+            end = min(end, file_size - 1)
+            length = end - start + 1
+
+            with open(path, "rb") as f:
+                f.seek(start)
+                data = f.read(length)
+
+            self.send_response(206)
+            self.send_header("Content-Type", self.guess_type(path))
+            self.send_header("Content-Length", str(length))
+            self.send_header("Content-Range", f"bytes {start}-{end}/{file_size}")
+            self.send_header("Accept-Ranges", "bytes")
+            self.end_headers()
+            self.wfile.write(data)
+
+        def do_HEAD(self):
+            path = self.translate_path(self.path)
+            if os.path.isfile(path):
+                file_size = os.path.getsize(path)
+                self.send_response(200)
+                self.send_header("Content-Type", self.guess_type(path))
+                self.send_header("Content-Length", str(file_size))
+                self.send_header("Accept-Ranges", "bytes")
+                self.end_headers()
+            else:
+                super().do_HEAD()
 
     server = HTTPServer(("127.0.0.1", 0), _Handler)
     port = server.server_address[1]
