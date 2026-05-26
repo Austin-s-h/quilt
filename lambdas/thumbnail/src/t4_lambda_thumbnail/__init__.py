@@ -7,10 +7,12 @@ n-dimensional data are made, specifically that dimension order is TCZYX(S), or,
 Timepoint-Channel-SpacialZ-SpacialY-SpacialX-(Samples).
 """
 
+import contextlib
 import functools
 import json
 import os
 import shutil
+import subprocess
 import sys
 import tempfile
 import urllib.parse
@@ -23,6 +25,7 @@ import bioio_ome_tiff
 import bioio_tifffile
 import dask.array as da
 import numpy as np
+import pptx
 import requests
 from bioio import BioImage
 from PIL import Image
@@ -246,44 +249,30 @@ def format_aicsimage_to_prepped(img: BioImage) -> da.Array:
     return img.reader.dask_data
 
 
-def render_pptx_page(*, path: str, page: int, dpi: int) -> Image.Image:
-    """Render a single PPTX slide to a PIL Image using pymupdf.
-
-    pymupdf renders PPTX as a single tall page with all slides stacked
-    vertically. We use a clip rect to render only the requested slide's
-    region at full DPI, avoiding unnecessary work for other slides.
-    """
-    import pymupdf
-
-    try:
-        doc = pymupdf.open(path)
-    except Exception as exc:
-        raise PDFThumbError(f"Failed to open PPTX: {exc}") from exc
-
-    if len(doc) == 0:
-        doc.close()
-        raise PDFThumbError("PPTX document has no renderable content")
-
-    n_slides = _count_pptx_slides_from_zip(path)
-    if page < 1 or page > n_slides:
-        doc.close()
-        raise PDFThumbError(f"Page {page} is out of range (document has {n_slides} slides)")
-
-    mupdf_page = doc[0]
-    slide_height = mupdf_page.rect.height / n_slides
-    clip = pymupdf.Rect(
-        0,
-        slide_height * (page - 1),
-        mupdf_page.rect.width,
-        slide_height * page,
-    )
-
-    zoom = dpi / 72
-    mat = pymupdf.Matrix(zoom, zoom)
-    pix = mupdf_page.get_pixmap(matrix=mat, clip=clip)
-    img = Image.frombytes("RGB", (pix.width, pix.height), pix.samples)
-    doc.close()
-    return img
+@contextlib.contextmanager
+def pptx_to_pdf(*, path: str, page: int):
+    with tempfile.TemporaryDirectory() as out_dir:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            try:
+                subprocess.run(
+                    (
+                        "libreoffice",
+                        "--convert-to",
+                        'pdf:impress_pdf_Export:{"PageRange":{"type":"string","value":"%s-%s"}}' % (page, page),
+                        "--outdir",
+                        out_dir,
+                        path,
+                    ),
+                    check=True,
+                    env={
+                        **os.environ,
+                        # This is needed because LibreOffice writes some stuff to $HOME/.config.
+                        "HOME": tmp_dir,
+                    },
+                )
+            except FileNotFoundError as exc:
+                raise PDFThumbError("Missing required command: libreoffice") from exc
+        yield os.path.join(out_dir, os.path.splitext(os.path.basename(path))[0] + ".pdf")
 
 
 
@@ -325,31 +314,11 @@ def handle_pdf(*, path: str, page: int, size: int, count_pages: bool):
     return info, data
 
 
-def _count_pptx_slides_from_zip(path: str) -> int:
-    """Count slides by inspecting the PPTX zip structure (no python-pptx needed)."""
-    import zipfile
-
-    with zipfile.ZipFile(path) as zf:
-        return sum(1 for n in zf.namelist() if n.startswith("ppt/slides/slide") and n.endswith(".xml"))
-
-
 def handle_pptx(*, path: str, page: int, size: int, count_pages: bool):
-    fmt = "JPEG"
-    render_dpi = get_pdf_render_dpi()
-    page_image = render_pptx_page(path=path, page=page, dpi=render_dpi)
-    thumb = resize_pdf_page(page_image, size=size)
-    info = {
-        "thumbnail_format": fmt,
-        "thumbnail_size": thumb.size,
-        "pdf_render_dpi": render_dpi,
-        "pdf_resize_filter": "LANCZOS",
-    }
+    with pptx_to_pdf(path=path, page=page) as pdf_path:
+        info, data = handle_pdf(path=pdf_path, page=1, size=size, count_pages=False)
     if count_pages:
-        info["page_count"] = _count_pptx_slides_from_zip(path)
-
-    thumbnail_bytes = BytesIO()
-    thumb.save(thumbnail_bytes, fmt)
-    data = thumbnail_bytes.getvalue()
+        info["page_count"] = len(pptx.Presentation(path).slides)
 
     return info, data
 
