@@ -145,9 +145,8 @@ const fetchPreview = async ({ handle, url, type, compression, query }) => {
 export function usePreview({ type, handle, query }, options) {
   const sign = AWS.Signer.useS3Signer({ forceProxy: cfg.mode === 'LOCAL' })
   const compression = getCompression(handle.key)
-  const url = useMemoEq(
-    [sign, handle.bucket, handle.key, handle.version],
-    () => sign(handle),
+  const url = useMemoEq([sign, handle.bucket, handle.key, handle.version], () =>
+    sign(handle),
   )
   return Data.use(fetchPreview, { handle, url, type, compression, query }, options)
 }

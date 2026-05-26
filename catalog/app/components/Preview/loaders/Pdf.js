@@ -46,9 +46,8 @@ async function loadPdf({ url, handle }) {
 
 export const Loader = function PdfLoader({ handle, children }) {
   const sign = AWS.Signer.useS3Signer()
-  const url = useMemoEq(
-    [sign, handle.bucket, handle.key, handle.version],
-    () => sign(handle),
+  const url = useMemoEq([sign, handle.bucket, handle.key, handle.version], () =>
+    sign(handle),
   )
   const data = Data.use(loadPdf, { url, handle })
   return children(utils.useErrorHandling(data.result, { handle, retry: data.fetch }))
