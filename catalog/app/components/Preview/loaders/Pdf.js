@@ -18,7 +18,7 @@ async function loadPdf({ url, handle }) {
     const search = mkSearch({
       url,
       input: type,
-      size: 'w1024h768',
+      size: 'w2048h1536',
       countPages: true,
     })
     const r = await fetch(`${cfg.apiGatewayEndpoint}/thumbnail${search}`)

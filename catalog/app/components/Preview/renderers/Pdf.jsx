@@ -29,7 +29,7 @@ async function loadBlob({ signRef, handle, page, type, firstPageBlobRef }) {
     const search = mkSearch({
       url,
       input: type,
-      size: 'w1024h768',
+      size: 'w2048h1536',
       page,
     })
     const r = await fetch(`${cfg.apiGatewayEndpoint}/thumbnail${search}`)

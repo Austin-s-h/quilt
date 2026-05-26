@@ -62,4 +62,10 @@ async def package_name_valid(payload: dict):
     return {"valid": bool(PACKAGE_NAME_RE.match(payload.get("name") or ""))}
 
 
+@api.get("/voila/")
+@api.get("/voila/{path:path}")
+async def voila_stub(path: str = ""):
+    raise fastapi.HTTPException(404, "Voila is not available in LOCAL mode")
+
+
 api.mount("/graphql", ariadne.asgi.GraphQL(graphql_schema), "GraphQL")

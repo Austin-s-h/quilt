@@ -10,7 +10,7 @@ import pypdfium2
 from PIL import Image
 
 DEFAULT_PDF_RENDER_DPI = 300
-MAX_PDF_RENDER_DPI = 300
+MAX_PDF_RENDER_DPI = 600
 
 
 class PDFThumbError(Exception):
