@@ -11,18 +11,21 @@ from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 ALLOWED_LOCAL_SOURCE_LAMBDAS = {
+    "lambdas/access_counts",
+    "lambdas/pkgevents",
     "lambdas/pkgpush",
+    "lambdas/preview",
     "lambdas/s3hash",
+    "lambdas/tabular_preview",
+    "lambdas/thumbnail",
+    "lambdas/transcode",
 }
 INTERNAL_DEPENDENCY_NAMES = {
     "quilt3",
     "quilt-shared",
     "t4-lambda-shared",
 }
-T4_LAMBDA_SHARED_SOURCE_URL = "https://github.com/quiltdata/quilt/archive/d496dffbfb4b7a2ae05f6c1f7f0cb7d5d43bc984.zip"
-PINNED_INTERNAL_SOURCES = {
-    "t4-lambda-shared": (T4_LAMBDA_SHARED_SOURCE_URL, "lambdas/shared"),
-}
+PINNED_INTERNAL_SOURCES: dict[str, tuple[str, str]] = {}
 WORKSPACE_INTERNAL_SOURCES = {
     "quilt-shared": REPO_ROOT / "py-shared",
     "t4-lambda-shared": REPO_ROOT / "lambdas/shared",
