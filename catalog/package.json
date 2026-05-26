@@ -229,5 +229,8 @@
     "webpack": "^5.90.1",
     "webpack-cli": "^5.1.4",
     "webpack-dev-server": "^5.2.1"
+  },
+  "optionalDependencies": {
+    "yaml": "^2.9.0"
   }
 }

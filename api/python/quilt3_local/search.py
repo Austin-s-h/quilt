@@ -149,7 +149,10 @@ def _encode_cursor(kind: str, payload: dict) -> str:
 
 
 def decode_cursor(cursor: str) -> dict:
-    return json.loads(base64.urlsafe_b64decode(cursor.encode()).decode())
+    try:
+        return json.loads(base64.urlsafe_b64decode(cursor.encode() + b"==").decode())
+    except Exception as exc:
+        raise ValueError("Invalid search cursor") from exc
 
 
 def _page(hits: list[dict], *, offset: int, size: int, cursor_payload: dict | None, kind: str) -> dict:
@@ -412,7 +415,15 @@ def object_result_page(result: dict, *, size: int | None, order: str | None) -> 
 
 
 async def search_more_packages(after: str, size: int | None = None) -> dict:
-    payload = decode_cursor(after)
+    try:
+        payload = decode_cursor(after)
+    except ValueError:
+        return {
+            "__typename": "OperationError",
+            "name": "CursorError",
+            "message": "Search cursor is invalid.",
+            "context": None,
+        }
     result = await package_search_result(
         buckets_filter=payload.get("buckets"),
         search_string=payload.get("searchString"),
@@ -438,7 +449,15 @@ async def search_more_packages(after: str, size: int | None = None) -> dict:
 
 
 async def search_more_objects(after: str, size: int | None = None) -> dict:
-    payload = decode_cursor(after)
+    try:
+        payload = decode_cursor(after)
+    except ValueError:
+        return {
+            "__typename": "OperationError",
+            "name": "CursorError",
+            "message": "Search cursor is invalid.",
+            "context": None,
+        }
     result = await object_search_result(
         buckets_filter=payload.get("buckets"),
         search_string=payload.get("searchString"),

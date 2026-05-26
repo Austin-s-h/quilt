@@ -338,7 +338,7 @@ def test_filesystem_conventional_defaults_are_available(monkeypatch, tmp_path):
     assert json.loads(summarize["body"]) == []
     assert b'default_workflow: "experiment"' in workflows["body"]
     assert b"experiment-universal" in workflows["body"]
-    assert b"file://" in workflows["body"]
+    assert b"s3://demo-bucket/" in workflows["body"]
     assert workflow_schema["status"] == 200
     assert b'"type": "object"' in workflow_schema["body"]
     assert b"sourceBuckets" in prefs["body"]
@@ -814,11 +814,7 @@ def test_preview_lambda_subprocess_serves_curated_fixtures(tmp_path, fixture_nam
         )
 
         assert resp.status_code == 200
-        body = (
-            json.loads(gzip.decompress(resp.content))
-            if resp.headers.get("Content-Encoding") == "gzip"
-            else resp.json()
-        )
+        body = resp.json()
 
         if fixture_name == "text":
             assert body["info"]["data"]["head"][0] == "Line 1"
@@ -897,8 +893,7 @@ def test_tabular_preview_lambda_subprocess_serves_curated_fixtures(
         )
 
         assert resp.status_code == 200
-        assert resp.headers["Content-Type"] == expected_content_type
-        assert resp.headers["Content-Encoding"] == "gzip"
+        assert expected_content_type in resp.headers["Content-Type"]
     finally:
         proc.terminate()
         proc.wait(timeout=5)

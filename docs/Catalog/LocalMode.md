@@ -123,11 +123,13 @@ fresh LOCAL session, stop any overlapping services and confirm ports `3000` and
 Inspect current listeners:
 
 ```bash
-cd quilt
+# Linux
 ss -ltnp | grep -E ':(3000|3001)\b' || true
+# macOS
+lsof -iTCP:3000 -iTCP:3001 -sTCP:LISTEN 2>/dev/null || true
 ```
 
-Stop the processes by PID from the `ss` output:
+Stop the processes by PID from the output above:
 
 ```bash
 kill <PID_FROM_PORT_3001>
@@ -137,7 +139,10 @@ kill <PID_FROM_PORT_3000>
 Verify the ports are clear, then restart Node and Python:
 
 ```bash
+# Linux
 ss -ltnp | grep -E ':(3000|3001)\b' || true
+# macOS
+lsof -iTCP:3000 -iTCP:3001 -sTCP:LISTEN 2>/dev/null || true
 cd catalog
 PORT=3001 npm start
 ```
@@ -228,96 +233,39 @@ In filesystem mode:
 - real files override those defaults immediately, and the conventional config paths are resolved case-insensitively so README / config case variants still work during local testing
 ```
 
-## Capability Checklist
+## Current Scope
 
-The current LOCAL stack is good enough for a best-effort product demo, but only
-for a specific subset of Catalog behavior.
-
-What is ready for a local demo today:
-
-```text
-- source-tree frontend changes through webpack on port 3001
-- LOCAL backend routing on port 3000
-- package and file reads from either real S3 or the filesystem backend
-- same-origin object fetches through /__s3proxy
-- discovered filesystem buckets on the landing page and bucket tabs
-- bucket Overview stats, sample objects, and text previews in filesystem LOCAL mode
-- bucket Packages search/listing backed by a minimal LOCAL search implementation
-- package tree browsing for filesystem-backed package revisions
-- the always-on license subscription query is suppressed in LOCAL mode to reduce demo noise
-```
-
-What is not production-faithful yet:
-
-```text
-- LOCAL GraphQL does not implement the full production query surface
-- LOCAL search is intentionally minimal and is implemented only deeply enough for
-	bucket Overview, Workflows, and Packages flows
-- filesystem mode is a storage mock, not a full AWS service mock
-- the LOCAL lambda path runs the thumbnail/preview handlers in-process, not in an
-	isolated Lambda runtime with real timeout, memory, or cold-start behavior
-- write, upload, and mutation-heavy flows are still incomplete in LOCAL mode
-```
-
-What blocks a full local replacement for the production Catalog API:
-
-```text
-- missing GraphQL resolvers for search, subscription, and several mutation flows
-- no endpoint-override path yet for a full S3-compatible backend such as LocalStack or MinIO
-- no local equivalent of production auth, IAM, or STS behavior beyond the narrow LOCAL shim
-- no realistic emulation of Lambda resource ceilings for heavy preview and conversion workloads
-```
-
-## Current Limits
-
-The setup above is useful for frontend development, but it is still not a full
+LOCAL mode is a **read-oriented development environment** useful for frontend
+iteration, preview validation, and product demos. It is not a full
 production-equivalent local stack.
 
-What works today:
+### What works
 
-```text
-- LOCAL config and routing through http://localhost:3000
-- Webpack hot reload on port 3001
-- GraphQL read paths implemented by quilt3_local, including status, bucketConfigs,
-	package reads, and the minimal search surface used by bucket Overview/Packages pages
-- LOCAL object URLs routed through /__s3proxy instead of browser-side S3 presigning
-- Read-oriented package browsing and preview flows against either real S3 or the
-	filesystem backend
-```
+| Capability | Notes |
+|------------|-------|
+| Frontend hot reload | webpack dev server on port 3001, proxied through port 3000 |
+| LOCAL backend routing | `/__reg`, `/__lambda`, `/__s3proxy` on port 3000 |
+| Package and file reads | real S3 **or** filesystem backend |
+| Filesystem bucket discovery | each dir under `$QUILT_LOCAL_DATA_DIR` appears as a bucket |
+| Bucket Overview / Packages | stats, sample objects, text previews, search/listing |
+| Package tree browsing | filesystem-backed revisions with namespace resolution |
+| Object previews | thumbnail, tabular, and text previews via lambda subprocesses |
+| Subscription suppression | license/admin queries paused in LOCAL mode |
 
-What still depends on real AWS when `QUILT_LOCAL_OBJECT_BACKEND=aws`:
+### What requires real AWS (`QUILT_LOCAL_OBJECT_BACKEND=aws`)
 
-```text
-- /__reg/api/auth/get_credentials uses boto3 STS or your current session creds
-- object reads ultimately come from S3 using your active AWS credentials
-```
+- `/__reg/api/auth/get_credentials` uses boto3 STS or your active session
+- Object reads come from S3 using your current AWS credentials
 
-What is still incomplete in filesystem mode:
+### What is incomplete
 
-```text
-- GraphQL write mutations and package construction flows are still not implemented
-- the local proxy supports direct object reads and simple PUTs, but not the full
-	upload lifecycle used by production Catalog flows
-- this mode is aimed at local browsing and preview validation, not full multi-user
-	Catalog behavior
-```
-
-What is currently incomplete in LOCAL GraphQL:
-
-```text
-- Queries work for the LOCAL subset
-- The schema includes many shared mutations from the main Catalog schema
-- Mutations such as bucketAdd are present in schema but currently fail at execution
-	in LOCAL mode because the corresponding resolvers are not implemented there
-```
-
-In practice, LOCAL mode is now best treated as a read-oriented development
-environment with either:
-
-```text
-- real AWS objects, or
-- a filesystem-backed local object store for browsing and preview validation
-```
+- GraphQL covers only the read subset; mutations like `bucketAdd` are in the
+  schema but their resolvers are not implemented
+- LOCAL search is intentionally minimal — only deep enough for bucket Overview,
+  Workflows, and Packages flows
+- Filesystem mode is a storage mock, not a full AWS service mock
+- Lambda subprocesses do not enforce real timeout, memory, or cold-start behavior
+- Write, upload, and multi-user flows are still incomplete
 
 ## Toward a True Local AWS Mock
 
