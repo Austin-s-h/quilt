@@ -8,6 +8,7 @@ dependencies = [
     "quilt3",
     "pytest-codeblocks>=0.17",
     "altair>=5",
+    "numpy>=2.1",
     "pandas>=2.1",
     "pytest>=8",
 ]

@@ -2,32 +2,8 @@
 # quilt3.admin.types
 
 
-## Permission(bucket: str, level: quilt3.\_graphql\_client.enums.BucketPermissionLevel) -> None  {#Permission}
-
-
 ## PolicySummary(id: str, title: str, arn: str, managed: bool, permissions: list[quilt3.admin.types.Permission]) -> None  {#PolicySummary}
 Policy without back-references to roles (avoids circular nesting).
-
-## ManagedRole(id: str, name: str, arn: str, policies: list[quilt3.admin.types.PolicySummary], permissions: list[quilt3.admin.types.Permission], typename\_\_: Literal['ManagedRole']) -> None  {#ManagedRole}
-
-
-## UnmanagedRole(id: str, name: str, arn: str, typename\_\_: Literal['UnmanagedRole']) -> None  {#UnmanagedRole}
-
-
-## Policy(id: str, title: str, arn: str, managed: bool, permissions: list[quilt3.admin.types.Permission], roles: list[quilt3.admin.types.ManagedRole]) -> None  {#Policy}
-
-
-## User(name: str, email: str, date\_joined: datetime.datetime, last\_login: datetime.datetime, is\_active: bool, is\_admin: bool, is\_sso\_only: bool, is\_service: bool, role: Optional[Annotated[Union[quilt3.admin.types.ManagedRole, quilt3.admin.types.UnmanagedRole], FieldInfo(annotation=NoneType, required=True, discriminator='typename\_\_')]], extra\_roles: list[typing.Annotated[typing.Union[quilt3.admin.types.ManagedRole, quilt3.admin.types.UnmanagedRole], FieldInfo(annotation=NoneType, required=True, discriminator='typename\_\_')]]) -> None  {#User}
-
-
-## SSOConfig(text: str, timestamp: datetime.datetime, uploader: quilt3.admin.types.User) -> None  {#SSOConfig}
-
-
-## TabulatorTable(name: str, config: str) -> None  {#TabulatorTable}
-
-
-## Bucket(name: str, title: str, icon\_url: Optional[str], description: Optional[str], overview\_url: Optional[str], tags: Optional[list[str]], relevance\_score: int, last\_indexed: Optional[datetime.datetime], sns\_notification\_arn: Optional[str], scanner\_parallel\_shards\_depth: Optional[int], skip\_meta\_data\_indexing: Optional[bool], file\_extensions\_to\_index: Optional[list[str]], index\_content\_bytes: Optional[int], prefixes: list[str]) -> None  {#Bucket}
-
 
 # quilt3.admin.api_keys
 Admin API for managing API keys.

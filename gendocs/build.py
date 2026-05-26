@@ -16,12 +16,30 @@ def gen_walkthrough_doc():
     subprocess.check_call(["./gen_walkthrough.sh"])
 
 
-def _patch_pydocmd_classmethod_support():
-    """Patch pydocmd loader to handle classmethod descriptors in Python 3.12+."""
-    import inspect
+def _patch_pydocmd_for_python313():
+    """Patch pydocmd for Python 3.12+ compatibility.
 
+    Fixes:
+    - classmethod descriptors not directly callable by inspect.signature()
+    - dunder attributes (__hash__, __slots__, __firstlineno__, etc.) leaking into docs
+    """
+    import re
+
+    import pydocmd.__main__ as pydocmd_mod
+    import pydocmd.imp as imp
     import pydocmd.loader as loader
 
+    # Skip all dunder attributes — none belong in API docs
+    _original_dir_object = imp.dir_object
+
+    def _patched_dir_object(name, sort_order='line', need_docstrings=True):
+        result = _original_dir_object(name, sort_order, need_docstrings)
+        return [key for key in result if not re.match(r'__\w+__$', key)]
+
+    imp.dir_object = _patched_dir_object
+    pydocmd_mod.dir_object = _patched_dir_object
+
+    # Handle classmethod descriptors in signature introspection
     _original_get_function_signature = loader.get_function_signature
 
     def _patched_get_function_signature(function, owner_class=None):
@@ -47,7 +65,7 @@ if __name__ == "__main__":
     else:
         print("Using custom args for mkdocs.")
 
-    _patch_pydocmd_classmethod_support()
+    _patch_pydocmd_for_python313()
 
     print("\nStarting pydocmd_main...")
 

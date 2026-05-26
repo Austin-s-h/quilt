@@ -2,31 +2,6 @@
 # Package()  {#Package}
 In-memory representation of a package
 
-## __firstlineno__
-int([x]) -> integer
-int(x, base=10) -> integer
-
-Convert a number or string to an integer, or return 0 if no arguments
-are given.  If x is a number, return x.__int__().  For floating-point
-numbers, this truncates towards zero.
-
-If x is not a number or if base is given, then x must be a string,
-bytes, or bytearray instance representing an integer literal in the
-given base.  The literal can be preceded by '+' or '-' and be surrounded
-by whitespace.  The base defaults to 10.  Valid bases are 0 and 2-36.
-Base 0 means to interpret the base from the string as an integer literal.
-```python
->>> int('0b100', base=0)
-4
-
-## __static_attributes__
-Built-in immutable sequence.
-
-If no argument is given, the constructor returns an empty tuple.
-If iterable is specified the tuple is initialized from iterable's items.
-
-If the argument is a tuple, the return value is the same object.
-
 ## manifest
 
 Provides a generator of the dicts that make up the serialized package.
@@ -42,11 +17,6 @@ Note that physical keys are not hashed because the package has
 __Returns__
 
 A string that represents the top hash of the package
-
-
-## Package.\_\_repr\_\_(self, max\_lines=20)  {#Package.\_\_repr\_\_}
-
-String representation of the Package.
 
 
 ## Package.install(cls, name, registry=None, top\_hash=None, dest=None, dest\_registry=None, \*, path=None)  {#Package.install}
@@ -85,30 +55,6 @@ __Arguments__
 * __name(string)__:  name of package to load
 * __registry(string)__:  location of registry to load package from
 * __top_hash(string)__:  top hash of package version to load
-
-
-## Package.\_\_contains\_\_(self, logical\_key)  {#Package.\_\_contains\_\_}
-
-Checks whether the package contains a specified logical_key.
-
-__Returns__
-
-True or False
-
-
-## Package.\_\_getitem\_\_(self, logical\_key)  {#Package.\_\_getitem\_\_}
-
-Filters the package based on prefix, and returns either a new Package
-    or a PackageEntry.
-
-__Arguments__
-
-* __prefix(str)__:  prefix to filter on
-
-__Returns__
-
-PackageEntry if prefix matches a logical_key exactly
-otherwise Package
 
 
 ## Package.fetch(self, dest='./')  {#Package.fetch}
@@ -481,42 +427,6 @@ __Returns__
 
 a PackageEntry
 
-## __firstlineno__
-int([x]) -> integer
-int(x, base=10) -> integer
-
-Convert a number or string to an integer, or return 0 if no arguments
-are given.  If x is a number, return x.__int__().  For floating-point
-numbers, this truncates towards zero.
-
-If x is not a number or if base is given, then x must be a string,
-bytes, or bytearray instance representing an integer literal in the
-given base.  The literal can be preceded by '+' or '-' and be surrounded
-by whitespace.  The base defaults to 10.  Valid bases are 0 and 2-36.
-Base 0 means to interpret the base from the string as an integer literal.
-```python
->>> int('0b100', base=0)
-4
-
-## __hash__
-The type of the None singleton.
-
-## __slots__
-Built-in immutable sequence.
-
-If no argument is given, the constructor returns an empty tuple.
-If iterable is specified the tuple is initialized from iterable's items.
-
-If the argument is a tuple, the return value is the same object.
-
-## __static_attributes__
-Built-in immutable sequence.
-
-If no argument is given, the constructor returns an empty tuple.
-If iterable is specified the tuple is initialized from iterable's items.
-
-If the argument is a tuple, the return value is the same object.
-
 ## PackageEntry.as\_dict(self)  {#PackageEntry.as\_dict}
 
 Returns dict representation of entry.
@@ -608,9 +518,4 @@ __Arguments__
 __Returns__
 
 None
-
-
-## PackageEntry.\_\_call\_\_(self, func=None, \*\*kwargs)  {#PackageEntry.\_\_call\_\_}
-
-Shorthand for self.deserialize()
 
