@@ -58,9 +58,15 @@ def install_targets_for(project_dir: Path) -> list[Path]:
     pyproject = load_toml(project_dir / "pyproject.toml")
     targets: list[Path] = []
     seen: set[Path] = set()
+    is_member = project_dir.relative_to(REPO_ROOT).as_posix() in workspace_members()
+    sources = ((pyproject.get("tool") or {}).get("uv") or {}).get("sources") or {}
     for dependency in iter_dependency_entries(pyproject):
-        target = WORKSPACE_INTERNAL_SOURCES.get(dependency_name(dependency))
+        dep_name = dependency_name(dependency)
+        target = WORKSPACE_INTERNAL_SOURCES.get(dep_name)
         if target is None or target in seen:
+            continue
+        dep_source = sources.get(dep_name) or sources.get(dep_name.replace("-", "_")) or {}
+        if not is_member and dep_source.get("workspace") is not True:
             continue
         targets.append(target)
         seen.add(target)
