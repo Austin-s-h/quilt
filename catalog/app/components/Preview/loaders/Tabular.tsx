@@ -135,7 +135,7 @@ async function getCsvFromResponse(r: Response): Promise<ArrayBuffer | string> {
 interface LoadTabularDataArgs {
   compression?: 'gz' | 'bz2'
   handle: Model.S3.S3ObjectLocation
-  sign: (h: Model.S3.S3ObjectLocation) => string
+  sign: (h: Model.S3.S3ObjectLocation, opts?: $TSFixMe) => string
   type: TabularType
   size: 'small' | 'medium' | 'large'
 }
@@ -149,8 +149,8 @@ interface TabularDataOutput {
 
 const loadTabularData = async ({
   compression,
-  size,
   handle,
+  size,
   sign,
   type,
 }: LoadTabularDataArgs): Promise<TabularDataOutput> => {
@@ -211,6 +211,13 @@ export const Loader = function TabularLoader({
 }: TabularLoaderProps) {
   const [gated, setGated] = React.useState(true)
   const sign = AWS.Signer.useS3Signer()
+  const signRef = React.useRef(sign)
+  signRef.current = sign
+  const stableSign = React.useCallback(
+    (nextHandle: Model.S3.S3ObjectLocation, opts?: $TSFixMe) =>
+      signRef.current(nextHandle, opts),
+    [],
+  )
   const type = React.useMemo(() => detectTabularType(handle.key), [handle.key])
   const onLoadMore = React.useCallback(() => setGated(false), [])
   const size = React.useMemo(
@@ -233,7 +240,7 @@ export const Loader = function TabularLoader({
     compression,
     size,
     handle,
-    sign,
+    sign: stableSign,
     type,
   })
   // TODO: get correct sizes from API

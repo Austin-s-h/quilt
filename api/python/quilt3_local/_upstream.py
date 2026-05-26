@@ -8,6 +8,7 @@ from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 UPSTREAM_ALIAS = "_quilt3_local_upstream"
+WORKSPACE_ALIAS = "_quilt3_local_workspace"
 
 
 @lru_cache
@@ -64,6 +65,29 @@ def load_module(name: str = ""):
     )
     if spec is None or spec.loader is None:
         raise ImportError(f"Unable to load upstream module: {name or 'quilt3_local'}")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[alias] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+def load_workspace_package(name: str, package_dir: Path):
+    alias = f"{WORKSPACE_ALIAS}.{name}"
+    if alias in sys.modules:
+        return sys.modules[alias]
+
+    path = package_dir / "__init__.py"
+    if not path.exists():
+        raise ImportError(f"Unable to locate workspace package: {package_dir}")
+
+    spec = importlib.util.spec_from_file_location(
+        alias,
+        path,
+        submodule_search_locations=[str(package_dir)],
+    )
+    if spec is None or spec.loader is None:
+        raise ImportError(f"Unable to load workspace package: {name}")
+
     module = importlib.util.module_from_spec(spec)
     sys.modules[alias] = module
     spec.loader.exec_module(module)

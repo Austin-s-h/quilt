@@ -177,8 +177,9 @@ SCHEMA = {
     "type": "object",
     "properties": {
         "url": {"type": "string"},
-        "input": {"enum": ["csv", "jsonl", "excel", "parquet"]},
-        "compression": {"enum": ["gz", None]},
+        "input": {"enum": ["csv", "tsv", "jsonl", "excel", "parquet"]},
+        "compression": {"enum": ["gz", "bz2", None]},
+        "size": {"enum": list(OUTPUT_SIZES)},
         "output": {"enum": list(OUTPUT_SIZES)},
         "delimiter": {"type": "string", "minLength": 1, "maxLength": 1},
     },
@@ -196,10 +197,11 @@ def lambda_handler(request):
 
     input_type = request.args["input"]
     compression = request.args.get("compression")
-    output_size = OUTPUT_SIZES[request.args.get("output", "small")]
+    output_size = OUTPUT_SIZES[request.args.get("size", request.args.get("output", "small"))]
 
     handlers = {
         "csv": functools.partial(preview_csv, delimiter=request.args.get("delimiter", ",")),
+        "tsv": functools.partial(preview_csv, delimiter=request.args.get("delimiter", "\t")),
         "jsonl": preview_jsonl,
         "excel": preview_excel,
         "parquet": preview_parquet,

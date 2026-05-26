@@ -282,6 +282,25 @@ def test_filesystem_bucket_root_rejects_path_traversal(monkeypatch, tmp_path):
             raise AssertionError("Expected PermissionError for bucket traversal")
 
 
+def test_local_proxy_url_accepts_loopback_aliases(monkeypatch):
+    monkeypatch.setenv("QUILT_LOCAL_ORIGIN", "http://localhost:3000")
+
+    from quilt3_local import settings
+
+    assert settings.is_local_proxy_url(
+        "http://127.0.0.1:3000/__s3proxy/demo-bucket/object.txt"
+    )
+    assert settings.is_local_proxy_url(
+        "http://localhost:3000/__s3proxy/demo-bucket/object.txt"
+    )
+    assert not settings.is_local_proxy_url(
+        "http://127.0.0.1:4000/__s3proxy/demo-bucket/object.txt"
+    )
+    assert not settings.is_local_proxy_url(
+        "http://example.com:3000/__s3proxy/demo-bucket/object.txt"
+    )
+
+
 def test_aws_bucket_exists_returns_false_for_missing_bucket(monkeypatch):
     monkeypatch.delenv("QUILT_LOCAL_OBJECT_BACKEND", raising=False)
 
@@ -865,6 +884,7 @@ def test_local_preview_lambda_reuses_curated_fixture_pack(monkeypatch, tmp_path,
     [
         ("jsonl", "jsonl", "text/csv"),
         ("parquet", "parquet", "text/csv"),
+        ("tsv", "tsv", "application/vnd.apache.arrow.file"),
     ],
 )
 def test_local_tabular_preview_lambda_reuses_curated_fixture_pack(monkeypatch, tmp_path, fixture_name, input_type, expected_content_type):
@@ -882,6 +902,7 @@ def test_local_tabular_preview_lambda_reuses_curated_fixture_pack(monkeypatch, t
             {
                 "url": _fixture_proxy_url("demo-bucket", fixture.bucket_key),
                 "input": input_type,
+                "size": "small",
             },
         ),
         None,

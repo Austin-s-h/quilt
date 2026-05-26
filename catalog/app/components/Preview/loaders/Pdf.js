@@ -3,15 +3,15 @@ import { HTTPError } from 'utils/APIConnector'
 import * as AWS from 'utils/AWS'
 import * as Data from 'utils/Data'
 import { mkSearch } from 'utils/NamedRoutes'
+import useMemoEq from 'utils/useMemoEq'
 
 import { PreviewData, PreviewError } from '../types'
 import * as utils from './utils'
 
 export const detect = utils.extIn(['.pdf', '.pptx'])
 
-async function loadPdf({ sign, handle }) {
+async function loadPdf({ url, handle }) {
   try {
-    const url = sign(handle)
     const type = (handle.logicalKey || handle.key).toLowerCase().endsWith('.pptx')
       ? 'pptx'
       : 'pdf'
@@ -46,6 +46,10 @@ async function loadPdf({ sign, handle }) {
 
 export const Loader = function PdfLoader({ handle, children }) {
   const sign = AWS.Signer.useS3Signer()
-  const data = Data.use(loadPdf, { sign, handle })
+  const url = useMemoEq(
+    [sign, handle.bucket, handle.key, handle.version],
+    () => sign(handle),
+  )
+  const data = Data.use(loadPdf, { url, handle })
   return children(utils.useErrorHandling(data.result, { handle, retry: data.fetch }))
 }
