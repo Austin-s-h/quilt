@@ -40,7 +40,12 @@ async function loadPdf({ url, handle }) {
     console.warn('error loading pdf preview', { ...e })
     // eslint-disable-next-line no-console
     console.error(e)
-    throw e
+    throw PreviewError.Unexpected({
+      handle,
+      retry: null,
+      message: e.message || String(e),
+      originalError: e,
+    })
   }
 }
 
