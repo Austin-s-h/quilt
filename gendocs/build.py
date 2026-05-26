@@ -16,6 +16,22 @@ def gen_walkthrough_doc():
     subprocess.check_call(["./gen_walkthrough.sh"])
 
 
+def _patch_pydocmd_classmethod_support():
+    """Patch pydocmd loader to handle classmethod descriptors in Python 3.12+."""
+    import inspect
+
+    import pydocmd.loader as loader
+
+    _original_get_function_signature = loader.get_function_signature
+
+    def _patched_get_function_signature(function, owner_class=None):
+        if isinstance(function, classmethod):
+            function = function.__func__
+        return _original_get_function_signature(function, owner_class)
+
+    loader.get_function_signature = _patched_get_function_signature
+
+
 if __name__ == "__main__":
     # CLI and Walkthrough docs uses custom script to generate documentation markdown, so do that first
     generate_cli_api_reference_docs()
@@ -30,6 +46,8 @@ if __name__ == "__main__":
         sys.argv.append('build')
     else:
         print("Using custom args for mkdocs.")
+
+    _patch_pydocmd_classmethod_support()
 
     print("\nStarting pydocmd_main...")
 

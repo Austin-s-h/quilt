@@ -2,6 +2,31 @@
 # Package()  {#Package}
 In-memory representation of a package
 
+## __firstlineno__
+int([x]) -> integer
+int(x, base=10) -> integer
+
+Convert a number or string to an integer, or return 0 if no arguments
+are given.  If x is a number, return x.__int__().  For floating-point
+numbers, this truncates towards zero.
+
+If x is not a number or if base is given, then x must be a string,
+bytes, or bytearray instance representing an integer literal in the
+given base.  The literal can be preceded by '+' or '-' and be surrounded
+by whitespace.  The base defaults to 10.  Valid bases are 0 and 2-36.
+Base 0 means to interpret the base from the string as an integer literal.
+```python
+>>> int('0b100', base=0)
+4
+
+## __static_attributes__
+Built-in immutable sequence.
+
+If no argument is given, the constructor returns an empty tuple.
+If iterable is specified the tuple is initialized from iterable's items.
+
+If the argument is a tuple, the return value is the same object.
+
 ## manifest
 
 Provides a generator of the dicts that make up the serialized package.
@@ -24,7 +49,7 @@ A string that represents the top hash of the package
 String representation of the Package.
 
 
-## Package.install(name, registry=None, top\_hash=None, dest=None, dest\_registry=None, \*, path=None)  {#Package.install}
+## Package.install(cls, name, registry=None, top\_hash=None, dest=None, dest\_registry=None, \*, path=None)  {#Package.install}
 
 Installs a named package to the local registry and downloads its files.
 
@@ -39,7 +64,7 @@ __Arguments__
 * __path(str)__:  If specified, downloads only `path` or its children.
 
 
-## Package.resolve\_hash(name, registry, hash\_prefix)  {#Package.resolve\_hash}
+## Package.resolve\_hash(cls, name, registry, hash\_prefix)  {#Package.resolve\_hash}
 
 Find a hash that starts with a given prefix.
 
@@ -50,7 +75,7 @@ __Arguments__
 * __hash_prefix (str)__:  hash prefix with length between 6 and 64 characters
 
 
-## Package.browse(name, registry=None, top\_hash=None)  {#Package.browse}
+## Package.browse(cls, name, registry=None, top\_hash=None)  {#Package.browse}
 
 Load a package into memory from a registry without making a local copy of
 the manifest.
@@ -112,7 +137,7 @@ Generator that traverses all entries in the package tree and returns tuples of (
 with keys in alphabetical order.
 
 
-## Package.load(readable\_file)  {#Package.load}
+## Package.load(cls, readable\_file)  {#Package.load}
 
 Loads a package from a readable file-like object.
 
@@ -360,7 +385,7 @@ __Returns__
 A new package that points to the copied objects.
 
 
-## Package.rollback(name, registry, top\_hash)  {#Package.rollback}
+## Package.rollback(cls, name, registry, top\_hash)  {#Package.rollback}
 
 Set the "latest" version to the given hash.
 
@@ -456,7 +481,35 @@ __Returns__
 
 a PackageEntry
 
+## __firstlineno__
+int([x]) -> integer
+int(x, base=10) -> integer
+
+Convert a number or string to an integer, or return 0 if no arguments
+are given.  If x is a number, return x.__int__().  For floating-point
+numbers, this truncates towards zero.
+
+If x is not a number or if base is given, then x must be a string,
+bytes, or bytearray instance representing an integer literal in the
+given base.  The literal can be preceded by '+' or '-' and be surrounded
+by whitespace.  The base defaults to 10.  Valid bases are 0 and 2-36.
+Base 0 means to interpret the base from the string as an integer literal.
+```python
+>>> int('0b100', base=0)
+4
+
+## __hash__
+The type of the None singleton.
+
 ## __slots__
+Built-in immutable sequence.
+
+If no argument is given, the constructor returns an empty tuple.
+If iterable is specified the tuple is initialized from iterable's items.
+
+If the argument is a tuple, the return value is the same object.
+
+## __static_attributes__
 Built-in immutable sequence.
 
 If no argument is given, the constructor returns an empty tuple.
