@@ -45,7 +45,7 @@ describe('components/Markdown', () => {
         <img src="https://image/anything" alt="Alternative text"></p>
         <p><span href="anything" src="anything" data-dont-touch="">don’t touch</span>
         <a rel="nofollow base nofollow" title="Link title" href="https://link/anything">link</a>
-        <img src="https://image/anything" alt="Alternative text"></p>
+        <img alt="Alternative text" src="https://image/anything"></p>
         "
       `)
     })
