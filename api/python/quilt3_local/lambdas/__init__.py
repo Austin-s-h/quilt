@@ -57,6 +57,7 @@ async def lambda_request(request: fastapi.Request, name: str, path: str = ""):
         headers=forward_headers,
         params=dict(request.query_params),
         data=body if body else None,
+        allow_redirects=False,
     ) as resp:
         content = await resp.read()
         excluded_headers = {"transfer-encoding", "connection", "content-length", "content-encoding"}

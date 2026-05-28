@@ -194,4 +194,5 @@ LAMBDA_CONFIGS = [
     LambdaConfig(name="preview", project_dir="lambdas/preview", module="t4_lambda_preview"),
     LambdaConfig(name="thumbnail", project_dir="lambdas/thumbnail", module="t4_lambda_thumbnail"),
     LambdaConfig(name="tabular-preview", project_dir="lambdas/tabular_preview", module="t4_lambda_tabular_preview"),
+    LambdaConfig(name="transcode", project_dir="lambdas/transcode", module="t4_lambda_transcode"),
 ]

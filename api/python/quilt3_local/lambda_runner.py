@@ -21,6 +21,19 @@ from urllib.parse import parse_qsl, unquote, urlparse
 
 LAMBDA_PATH = "/lambda"
 
+# Default timeout for local lambda execution (seconds)
+_LOCAL_TIMEOUT_MS = 30_000
+
+
+class _MockLambdaContext:
+    """Minimal mock of the AWS Lambda context object for local execution."""
+
+    def get_remaining_time_in_millis(self) -> int:
+        return _LOCAL_TIMEOUT_MS
+
+
+_mock_context = _MockLambdaContext()
+
 
 def _patch_url_validation(module: types.ModuleType, proxy_origin: str):
     """
@@ -103,7 +116,7 @@ class LambdaHandler(BaseHTTPRequestHandler):
                 "isBase64Encoded": True,
             }
 
-            result = self.lambda_handler(args, None)
+            result = self.lambda_handler(args, _mock_context)
 
             code = result["statusCode"]
             resp_headers = result.get("headers", {})
