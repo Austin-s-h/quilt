@@ -302,6 +302,24 @@ in Linux containers that have network access but do not have access to persisten
 storage. The catalog users's AWS credentials are passed to Jupyter kernel as
 [environment variables](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html#envvars-list).
 
+> **LOCAL mode:** Interactive Voila dashboards are also available in the LOCAL
+> catalog development backend, but they are **opt-in**. They are not installed by
+> default because Voila pulls in a large dependency tree; enable them by
+> installing the `local-voila` extra and setting `QUILT_LOCAL_VOILA=1`. From
+> `api/python`:
+>
+> ```bash
+> uv sync --extra catalog --extra local-voila
+> export QUILT_LOCAL_VOILA=1
+> ```
+>
+> When enabled, the LOCAL backend launches a single persistent Voila server as a
+> managed subprocess and serves it through a dedicated `/__reg/voila` proxy that
+> speaks both HTTP and WebSocket (the live kernel channels require WebSockets).
+> `GET /__reg/voila/` returns `200` once the server is ready, and the catalog
+> exposes Voila mode; without the extra/flag it returns `404` and the catalog
+> hides Voila mode. See [LOCAL mode](LocalMode.md) for details.
+
 ### Environment variables
 When you have a Voila dashboard inside of a Quilt package, you may wish to reference files
 *in the current package revision*. The Quilt catalog sets the following environment variables
@@ -310,6 +328,20 @@ and passes them to the Voila kernel:
 * `QUILT_PKG_BUCKET`
 * `QUILT_PKG_NAME`
 * `QUILT_PKG_TOP_HASH`
+
+> **LOCAL mode:** the same per-package environment variables
+> (`QUILT_PKG_BUCKET`, `QUILT_PKG_NAME`, `QUILT_PKG_TOP_HASH`) are injected into
+> each kernel **per render session**, along with the catalog user's AWS
+> credentials (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`,
+> `AWS_SESSION_TOKEN`). Because LOCAL mode runs one shared Voila server that
+> spawns a fresh kernel per render request, this credential and package env is
+> scoped to the individual session rather than set globally. As in deployed
+> stacks, `quilt3` inside the kernel reads objects from S3 directly with the
+> injected credentials (read-oriented, scoped by what those credentials permit) —
+> no new storage path is introduced. The browser-side `/__s3proxy` CORS shim is
+> not on the kernel's read path. The example below works unchanged against an
+> AWS-backed LOCAL bucket; LOCAL `filesystem` mode is a browser/registry storage
+> mock and does not provide an in-kernel object read path.
 
 You can access these variables in Python and browse the package:
 ```python

@@ -2,11 +2,15 @@ from __future__ import annotations
 
 import ipaddress
 import os
+import tempfile
 from pathlib import Path
 from urllib.parse import urlparse
 
 OBJECT_BACKEND_AWS = "aws"
 OBJECT_BACKEND_FILESYSTEM = "filesystem"
+
+S3_PROXY_PREFIX = "/__s3proxy"
+_TRUTHY = {"1", "true", "yes", "on"}
 
 
 def object_backend() -> str:
@@ -68,3 +72,50 @@ def fake_credentials() -> dict:
         "SessionToken": "LOCALMODESESSIONTOKEN",
         "Expiration": None,
     }
+
+
+def voila_enabled() -> bool:
+    """Whether interactive Voila dashboards are enabled in LOCAL mode (opt-in)."""
+    return os.getenv("QUILT_LOCAL_VOILA", "").strip().lower() in _TRUTHY
+
+
+def voila_notebook_dir() -> Path:
+    """Directory Voila serves notebooks from (the staging dir).
+
+    Honors QUILT_LOCAL_VOILA_DIR, otherwise a stable staging dir under the
+    system temp dir. Created on demand.
+    """
+    value = os.getenv("QUILT_LOCAL_VOILA_DIR")
+    path = Path(value).expanduser().resolve() if value else Path(tempfile.gettempdir()) / "quilt-local-voila"
+    path.mkdir(parents=True, exist_ok=True)
+    return path
+
+
+def local_backend_env() -> dict[str, str]:
+    """Snapshot of the LOCAL backend knobs inherited into the Voila kernel.
+
+    The kernel runs ``quilt3`` against real S3 using the per-session AWS
+    credentials injected by the proxy (see voila_subprocess.translate_render_params),
+    exactly like deployed Voila stacks: object reads go directly to S3 via boto3
+    with those credentials, scoped read-oriented by what the credentials permit.
+    No new storage path is introduced, and the browser-side ``/__s3proxy`` CORS
+    shim is intentionally NOT on the kernel's read path (an in-kernel boto3 client
+    talks to S3 directly, not through the catalog's browser proxy).
+
+    These knobs (region, backend marker) are inherited so the kernel's quilt3
+    region/backend assumptions match the LOCAL backend. They only affect AWS-backed
+    reads; LOCAL ``filesystem`` mode is a browser/registry storage mock and does not
+    provide an in-kernel object read path.
+    """
+    env: dict[str, str] = {
+        "QUILT_LOCAL_OBJECT_BACKEND": object_backend(),
+        "QUILT_LOCAL_DEFAULT_REGION": default_region(),
+        "QUILT_LOCAL_ORIGIN": local_origin(),
+    }
+    dd = data_dir()
+    if dd is not None:
+        env["QUILT_LOCAL_DATA_DIR"] = str(dd)
+    repo_root = os.getenv("QUILT_REPO_ROOT")
+    if repo_root:
+        env["QUILT_REPO_ROOT"] = repo_root
+    return env

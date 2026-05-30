@@ -249,7 +249,7 @@ production-equivalent local stack.
 | Filesystem bucket discovery | each dir under `$QUILT_LOCAL_DATA_DIR` appears as a bucket |
 | Bucket Overview / Packages | stats, sample objects, text previews, search/listing |
 | Package tree browsing | filesystem-backed revisions with namespace resolution |
-| Object previews | thumbnail, tabular, text, and static notebook previews via lambda subprocesses; interactive Voila dashboards are excluded |
+| Object previews | thumbnail, tabular, text, and static notebook previews via lambda subprocesses; interactive Voila dashboards are supported when the opt-in `local-voila` extra is installed (see below) |
 | Subscription suppression | license/admin queries paused in LOCAL mode |
 
 ### What requires real AWS (`QUILT_LOCAL_OBJECT_BACKEND=aws`)
@@ -264,9 +264,58 @@ production-equivalent local stack.
 - LOCAL search is intentionally minimal — only deep enough for bucket Overview,
   Workflows, and Packages flows
 - Filesystem mode is a storage mock, not a full AWS service mock
-- `/voila/` is intentionally stubbed in LOCAL mode; adding the `voila` Python package alone does not provide the kernel orchestration and proxying used by deployed stacks
 - Lambda subprocesses do not enforce real timeout, memory, or cold-start behavior
 - Write, upload, and multi-user flows are still incomplete
+
+### Interactive Voila dashboards (opt-in)
+
+Interactive [Voila](https://github.com/voila-dashboards/voila) dashboards are
+supported in LOCAL mode, but they are **opt-in and not installed by default**
+because Voila pulls in a large transitive dependency tree (tornado, pyzmq,
+ipykernel, jupyter-server). They are gated behind the `local-voila` extra plus
+an explicit enable flag.
+
+When enabled, the LOCAL backend launches a single persistent Voila server as a
+managed subprocess and serves it through a dedicated `/__reg/voila` proxy that
+speaks both **HTTP and WebSocket** (the live Jupyter kernel channels require
+WebSockets, so this is a separate proxy from the HTTP-only `/__lambda` lambda
+proxy). The proxy keeps the iframe same-origin under `/__reg/voila/`, matching
+the catalog's `${registryUrl}/voila/...` contract. Each render request spawns
+its own kernel with per-session environment: the catalog user's AWS credentials
+and the `QUILT_PKG_*` variables are injected per render session. Just as in
+deployed Voila stacks, `quilt3` inside the kernel reads objects from S3 directly
+with those credentials — read-oriented and scoped by what the credentials permit
+— rather than introducing a new storage path. (The browser-side `/__s3proxy`
+CORS shim is not on the kernel's read path; an in-kernel boto3 client talks to S3
+directly. LOCAL `filesystem` mode is a browser/registry storage mock and does not
+provide an in-kernel object read path.)
+
+To enable it, from `api/python`:
+
+```bash
+# install the catalog deps plus the opt-in Voila extra
+uv sync --extra catalog --extra local-voila
+
+# turn the feature on (strictly opt-in)
+export QUILT_LOCAL_VOILA=1
+
+# start the LOCAL backend on :3000 and the webpack dev server on :3001
+# (same as the normal LOCAL workflow)
+```
+
+Behavior:
+
+- With the extra installed and `QUILT_LOCAL_VOILA=1`, `GET /__reg/voila/` returns
+  `200` once the managed Voila server is ready, and the catalog exposes the
+  interactive Voila preview mode.
+- Both halves of the gate are required: the backend mounts the Voila proxy only
+  when `QUILT_LOCAL_VOILA=1` **and** the `local-voila` extra is importable in the
+  backend's environment. With the flag unset, or with the extra not installed,
+  `GET /__reg/voila/` gracefully returns `404` and the catalog hides Voila mode.
+
+This is a developer preview and is not production-equivalent: the server is
+loopback-only, runs without a token, and does not enforce production isolation,
+quotas, or multi-tenant security.
 
 ## Toward a True Local AWS Mock
 
