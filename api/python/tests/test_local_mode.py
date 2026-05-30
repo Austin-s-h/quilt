@@ -505,6 +505,7 @@ def test_local_main_exposes_config_registry_and_graphql_routes(monkeypatch, tmp_
     with _app_lifespan(local_main.app):
         config = _request_app(local_main.app, "GET", "/config.json")
         creds = _request_app(local_main.app, "GET", "/__reg/api/auth/get_credentials")
+        voila = _request_app(local_main.app, "GET", "/__reg/voila/")
         valid_name = _request_app(
             local_main.app, "POST", "/__reg/api/package_name_valid", json_body={"name": "local/demo"}
         )
@@ -569,6 +570,11 @@ def test_local_main_exposes_config_registry_and_graphql_routes(monkeypatch, tmp_
     assert config.json()["stackVersion"] == "local-dev"
     assert creds.status_code == 200
     assert creds.json()["AccessKeyId"] == "LOCALMODEACCESSKEY"
+    assert voila.status_code == 404
+    assert voila.json()["detail"] == (
+        "Voila dashboards are not implemented in LOCAL mode; "
+        "installing the Python package alone is insufficient."
+    )
     assert valid_name.json() == {"valid": True}
     assert invalid_name.json() == {"valid": False}
     assert stats.status_code == 200

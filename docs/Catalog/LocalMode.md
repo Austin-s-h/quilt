@@ -249,7 +249,7 @@ production-equivalent local stack.
 | Filesystem bucket discovery | each dir under `$QUILT_LOCAL_DATA_DIR` appears as a bucket |
 | Bucket Overview / Packages | stats, sample objects, text previews, search/listing |
 | Package tree browsing | filesystem-backed revisions with namespace resolution |
-| Object previews | thumbnail, tabular, and text previews via lambda subprocesses |
+| Object previews | thumbnail, tabular, text, and static notebook previews via lambda subprocesses; interactive Voila dashboards are excluded |
 | Subscription suppression | license/admin queries paused in LOCAL mode |
 
 ### What requires real AWS (`QUILT_LOCAL_OBJECT_BACKEND=aws`)
@@ -264,6 +264,7 @@ production-equivalent local stack.
 - LOCAL search is intentionally minimal — only deep enough for bucket Overview,
   Workflows, and Packages flows
 - Filesystem mode is a storage mock, not a full AWS service mock
+- `/voila/` is intentionally stubbed in LOCAL mode; adding the `voila` Python package alone does not provide the kernel orchestration and proxying used by deployed stacks
 - Lambda subprocesses do not enforce real timeout, memory, or cold-start behavior
 - Write, upload, and multi-user flows are still incomplete
 
