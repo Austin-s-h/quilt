@@ -999,8 +999,13 @@ requires-dist = [
     { name = "boto3", specifier = ">=1.35" },
     { name = "cachetools", marker = "extra == 'catalog'", specifier = ">=5.5" },
     { name = "fastapi", marker = "extra == 'catalog'", specifier = ">=0.115" },
+    { name = "ipykernel", marker = "extra == 'local-voila'", specifier = ">=6" },
     { name = "jsonlines", specifier = ">=4,<5" },
     { name = "jsonschema", specifier = ">=4,<5" },
+    { name = "jupyter-client", marker = "extra == 'local-voila'", specifier = ">=8" },
+    { name = "jupyter-server", marker = "extra == 'local-voila'", specifier = ">=2.0,<3" },
+    { name = "nbclient", marker = "extra == 'local-voila'", specifier = ">=0.10" },
+    { name = "nbconvert", marker = "extra == 'local-voila'", specifier = ">=7" },
     { name = "numpy", marker = "extra == 'pyarrow'", specifier = ">=1.26" },
     { name = "pandas", marker = "extra == 'pyarrow'", specifier = ">=2.1" },
     { name = "platformdirs", specifier = ">=4" },
@@ -1012,8 +1017,9 @@ requires-dist = [
     { name = "tenacity", specifier = ">=9" },
     { name = "tqdm", specifier = ">=4.66" },
     { name = "uvicorn", marker = "extra == 'catalog'", specifier = ">=0.34" },
+    { name = "voila", marker = "extra == 'local-voila'", specifier = ">=0.5,<0.6" },
 ]
-provides-extras = ["pyarrow", "anndata", "catalog"]
+provides-extras = ["pyarrow", "anndata", "catalog", "local-voila"]
 
 [package.metadata.requires-dev]
 dev = [
