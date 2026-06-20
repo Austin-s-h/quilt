@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { render, screen, cleanup } from '@testing-library/react'
+import { render, screen, cleanup, fireEvent, waitFor } from '@testing-library/react'
 import { ThemeProvider, createMuiTheme } from '@material-ui/core/styles'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
@@ -10,9 +10,7 @@ vi.mock('use-resize-observer', () => ({
 }))
 
 const theme = createMuiTheme()
-;(
-  theme.typography as typeof theme.typography & { monospace: { fontFamily: string } }
-).monospace = {
+;(theme.typography as any).monospace = {
   fontFamily: 'monospace',
 }
 
@@ -41,5 +39,53 @@ describe('components/JsonDisplay', () => {
     expect(window.getComputedStyle(root as Element).whiteSpace).toBe('pre-wrap')
     expect(window.getComputedStyle(root as Element).overflowWrap).toBe('anywhere')
     expect(window.getComputedStyle(root as Element).wordBreak).toBe('break-word')
+  })
+
+  it('allows collapsed rows to wrap within the container', async () => {
+    renderWithTheme(
+      <JsonDisplay
+        defaultExpanded={0}
+        name="Metadata"
+        value={{
+          beginanalysis: '1',
+          begindata: '2',
+          beginstext: '3',
+          byteord: '1,2,3,4',
+          datatype: 'F',
+          endanalysis: '4',
+          enddata: '5',
+          endstext: '6',
+          veryLongKeyNameThatWouldOtherwiseForceTheCollapsedRowToStayOnOneLine:
+            'abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz',
+        }}
+      />,
+    )
+
+    await waitFor(() => {
+      expect(screen.getByText(/Metadata:/i)).toBeTruthy()
+    })
+
+    const row = screen.getByText(/Metadata:/i).parentElement
+    expect(row).toBeTruthy()
+    expect(window.getComputedStyle(row as Element).display).toBe('flex')
+    expect(window.getComputedStyle(row as Element).flexWrap).toBe('wrap')
+  })
+
+  it('resets compound expansion when the value changes', async () => {
+    const { rerender } = renderWithTheme(
+      <JsonDisplay defaultExpanded={1} name="Metadata" value={{ beginanalysis: '1' }} />,
+    )
+
+    await screen.findByText(/beginanalysis:/i)
+    fireEvent.click(screen.getByText(/Metadata:/i).parentElement as Element)
+
+    rerender(
+      <ThemeProvider theme={theme}>
+        <JsonDisplay defaultExpanded={1} name="Metadata" value={{ endanalysis: '2' }} />
+      </ThemeProvider>,
+    )
+
+    await screen.findByText(/endanalysis:/i)
+    expect(screen.queryByText(/beginanalysis:/i)).toBeNull()
   })
 })

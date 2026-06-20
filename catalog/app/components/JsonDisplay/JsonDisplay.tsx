@@ -61,8 +61,13 @@ const useStyles = M.makeStyles((t) => ({
   },
   flex: {
     display: 'flex',
+    flexWrap: 'wrap',
     maxWidth: '100%',
     minWidth: 0,
+
+    '& > *': {
+      minWidth: 0,
+    },
   },
   compoundInner: {
     paddingLeft: t.spacing(2),
@@ -73,7 +78,10 @@ const useStyles = M.makeStyles((t) => ({
   iconBlank: {
     paddingRight: t.spacing(2.5),
   },
-  key: {},
+  key: {
+    overflowWrap: 'anywhere',
+    wordBreak: 'break-word',
+  },
   value: {
     maxWidth: '100%',
     minWidth: 0,
@@ -291,10 +299,15 @@ function CompoundEntry({
 }: JsonDisplayInnerProps<CompoundValue>) {
   const braces = Array.isArray(value) ? '[]' : '{}'
   const entries = React.useMemo(() => Object.entries(value), [value])
-  const [stateExpanded, setExpanded] = React.useState(defaultExpanded > 0)
+  const expandedByDefault = defaultExpanded > 0
+  const [stateExpanded, setExpanded] = React.useState(expandedByDefault)
   const toggle = React.useCallback(() => setExpanded((e) => !e), [])
   const empty = !entries.length
   const expanded = !empty && stateExpanded
+
+  React.useEffect(() => {
+    setExpanded(expandedByDefault)
+  }, [value, expandedByDefault])
 
   const availableSpace =
     showKeysWhenCollapsed -
