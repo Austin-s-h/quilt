@@ -115,6 +115,47 @@ def test_pptx_to_pdf_reports_missing_libreoffice_on_path(mocker):
             pass
 
 
+def test_get_libreoffice_env_reuses_tmp_profile(monkeypatch, tmp_path):
+    monkeypatch.setattr(t4_lambda_thumbnail.tempfile, "gettempdir", lambda: str(tmp_path))
+    monkeypatch.setenv("PATH", "/usr/bin")
+    monkeypatch.setenv("LANG", "C.UTF-8")
+
+    env = t4_lambda_thumbnail._get_libreoffice_env()
+
+    assert env == {
+        "HOME": str(tmp_path / t4_lambda_thumbnail.LIBREOFFICE_PROFILE_DIRNAME),
+        "PATH": "/usr/bin",
+        "TMPDIR": str(tmp_path),
+        "LANG": "C.UTF-8",
+    }
+    assert (tmp_path / t4_lambda_thumbnail.LIBREOFFICE_PROFILE_DIRNAME).is_dir()
+
+
+def test_should_preserve_tmp_path_for_libreoffice_profile(monkeypatch, tmp_path):
+    monkeypatch.setattr(t4_lambda_thumbnail.tempfile, "gettempdir", lambda: str(tmp_path))
+    preserved = tmp_path / t4_lambda_thumbnail.LIBREOFFICE_PROFILE_DIRNAME
+    preserved.mkdir()
+    transient = tmp_path / "stale.txt"
+
+    assert t4_lambda_thumbnail._should_preserve_tmp_path(str(preserved)) is True
+    assert t4_lambda_thumbnail._should_preserve_tmp_path(str(transient)) is False
+
+
+def test_pptx_to_pdf_uses_cached_libreoffice_env(mocker, monkeypatch, tmp_path):
+    monkeypatch.setattr(t4_lambda_thumbnail, "_find_libreoffice_bin", lambda: "/usr/bin/soffice")
+    monkeypatch.setattr(t4_lambda_thumbnail.tempfile, "gettempdir", lambda: str(tmp_path))
+    run = mocker.patch("t4_lambda_thumbnail.subprocess.run")
+
+    with t4_lambda_thumbnail.pptx_to_pdf(path="slides.pptx", page=2):
+        pass
+
+    run.assert_called_once()
+    _, kwargs = run.call_args
+    assert kwargs["check"] is True
+    assert kwargs["env"]["HOME"] == str(tmp_path / t4_lambda_thumbnail.LIBREOFFICE_PROFILE_DIRNAME)
+    assert kwargs["env"]["TMPDIR"] == str(tmp_path)
+
+
 @responses.activate
 @pytest.mark.parametrize(
     "input_file, params, expected_thumb, expected_original_size, expected_thumb_size, num_pages, status",

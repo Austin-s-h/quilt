@@ -94,6 +94,7 @@ LIBREOFFICE_REQUIREMENTS_MESSAGE = (
     "PPTX previews require LibreOffice on PATH. Install LibreOffice and expose either "
     "`libreoffice` or `soffice` on PATH. See lambdas/thumbnail/README.md for Linux/macOS/Windows setup."
 )
+LIBREOFFICE_PROFILE_DIRNAME = "quilt-libreoffice-profile"
 
 
 def _find_libreoffice_bin():
@@ -104,6 +105,31 @@ def _find_libreoffice_bin():
     return None
 
 
+def _get_libreoffice_profile_dir() -> str:
+    # Reuse a disk-backed LibreOffice profile across warm invocations so
+    # `soffice` avoids repeated first-run initialization without pinning extra
+    # process memory in the Lambda runtime.
+    profile_dir = os.path.join(tempfile.gettempdir(), LIBREOFFICE_PROFILE_DIRNAME)
+    os.makedirs(profile_dir, exist_ok=True)
+    return profile_dir
+
+
+def _get_libreoffice_env() -> dict[str, str]:
+    env = {
+        "HOME": _get_libreoffice_profile_dir(),
+        "PATH": os.environ.get("PATH", ""),
+        "TMPDIR": tempfile.gettempdir(),
+    }
+    lang = os.environ.get("LANG")
+    if lang:
+        env["LANG"] = lang
+    return env
+
+
+def _should_preserve_tmp_path(path: str) -> bool:
+    return path == _get_libreoffice_profile_dir()
+
+
 def clean_tmp_dir():
     if not CLEANUP_TMP_DIR:
         return
@@ -112,6 +138,8 @@ def clean_tmp_dir():
     for filename in os.listdir(tmp_dir):
         file_path = os.path.join(tmp_dir, filename)
         try:
+            if _should_preserve_tmp_path(file_path):
+                continue
             if os.path.isfile(file_path) or os.path.islink(file_path):
                 os.unlink(file_path)
             elif os.path.isdir(file_path):
@@ -269,29 +297,24 @@ def pptx_to_pdf(*, path: str, page: int):
     if soffice_bin is None:
         raise PDFThumbError(LIBREOFFICE_REQUIREMENTS_MESSAGE)
     with tempfile.TemporaryDirectory() as out_dir:
-        with tempfile.TemporaryDirectory() as tmp_dir:
-            try:
-                subprocess.run(
-                    (
-                        soffice_bin,
-                        "--headless",
-                        "--invisible",
-                        "--nologo",
-                        "--convert-to",
-                        'pdf:impress_pdf_Export:{"PageRange":{"type":"string","value":"%s-%s"}}' % (page, page),
-                        "--outdir",
-                        out_dir,
-                        path,
-                    ),
-                    check=True,
-                    env={
-                        **os.environ,
-                        # This is needed because LibreOffice writes some stuff to $HOME/.config.
-                        "HOME": tmp_dir,
-                    },
-                )
-            except FileNotFoundError as exc:
-                raise PDFThumbError(LIBREOFFICE_REQUIREMENTS_MESSAGE) from exc
+        try:
+            subprocess.run(
+                (
+                    soffice_bin,
+                    "--headless",
+                    "--invisible",
+                    "--nologo",
+                    "--convert-to",
+                    'pdf:impress_pdf_Export:{"PageRange":{"type":"string","value":"%s-%s"}}' % (page, page),
+                    "--outdir",
+                    out_dir,
+                    path,
+                ),
+                check=True,
+                env=_get_libreoffice_env(),
+            )
+        except FileNotFoundError as exc:
+            raise PDFThumbError(LIBREOFFICE_REQUIREMENTS_MESSAGE) from exc
         yield os.path.join(out_dir, os.path.splitext(os.path.basename(path))[0] + ".pdf")
 
 
