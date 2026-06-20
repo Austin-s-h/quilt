@@ -18,7 +18,7 @@ CATALOG_LIMIT_BYTES = 1024 * 1024
 CATALOG_LIMIT_LINES = 512  # must be positive int
 ELASTIC_LIMIT_LINES = 100_000
 READ_CHUNK = 1024
-FCS_SCATTER_LIMIT = 50_000
+FCS_SCATTER_LIMIT = 250_000
 FCS_SCATTER_RANDOM_SEED = 0
 SKIPPED = "Skipped rows; insufficient memory"
 # common string used to explain truncation to user

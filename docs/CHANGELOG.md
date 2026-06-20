@@ -28,7 +28,9 @@ Entries inside each section should be ordered by type:
 * [Added] FCS (`.fcs`) indexer support: column names, metadata, Vega-Lite scatter specs, and warning info, with fallback paths for "Metadata only" and "Unable to parse"
 * [Added] Transcode lambda support for video previews (mp4/webm) via ffmpeg, with passthrough handling
 * [Changed] Thumbnail lambda renders PDFs page-by-page via a dedicated `pdf_thumbnail` helper
+* [Changed] Reuse a persistent `/tmp` LibreOffice profile for warm `.pptx` thumbnail conversions, reducing repeat local/Lambda startup cost without increasing steady-state memory
 * [Changed] FCS previews now emit a multi-panel gating grid (cells → singlets → fluorescence pairs) with `$PnS` marker labels instead of a single scatter ([#4938](https://github.com/quiltdata/quilt/pull/4938))
+* [Changed] Raise the default FCS scatter-chart downsampling cap to 250k events
 * [Fixed] Thumbnail lambda resolves LibreOffice as `libreoffice` or `soffice` and runs it headless for `.pptx` previews ([#4938](https://github.com/quiltdata/quilt/pull/4938))
 
 ### Catalog
@@ -43,6 +45,7 @@ Entries inside each section should be ordered by type:
 * [Added] Filesystem-backed LOCAL catalog mode (`quilt3 catalog`): serve a working catalog from a local directory tree without an AWS stack ([#4938](https://github.com/quiltdata/quilt/pull/4938))
 * [Fixed] Route presigned preview URLs through the LOCAL s3proxy so previews work in `quilt3 catalog` ([#4938](https://github.com/quiltdata/quilt/pull/4938))
 * [Fixed] Size small tabular previews to their content instead of a fixed-height datagrid ([#4938](https://github.com/quiltdata/quilt/pull/4938))
+* [Fixed] FCS metadata previews now start collapsed and reset cleanly when navigating between different FCS files
 
 ## 7.3.0 - 2026-04-07
 

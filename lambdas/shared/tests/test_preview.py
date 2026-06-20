@@ -210,22 +210,23 @@ class TestPreview(TestCase):
         assert 'vegaLite' not in info
 
     def test_fcs_scatter_spec_downsamples(self):
+        limit = 25
         data = pandas.DataFrame(
             {
-                'alpha': range(FCS_SCATTER_LIMIT * 2),
-                'beta': range(FCS_SCATTER_LIMIT * 2, FCS_SCATTER_LIMIT * 4),
+                'alpha': range(limit * 2),
+                'beta': range(limit * 2, limit * 4),
             }
         )
 
-        spec = _build_fcs_scatter_spec(data)
+        spec = _build_fcs_scatter_spec(data, limit=limit)
 
         assert spec['title']['text'] == 'alpha vs beta'
-        assert spec['title']['subtitle'] == f'{FCS_SCATTER_LIMIT} events (downsampled)'
+        assert spec['title']['subtitle'] == f'{limit} events (downsampled)'
         assert spec['encoding']['x']['title'] == 'alpha'
         assert spec['encoding']['y']['title'] == 'beta'
-        assert len(spec['data']['values']) == FCS_SCATTER_LIMIT
+        assert len(spec['data']['values']) == limit
         expected = data[['alpha', 'beta']].sample(
-            n=FCS_SCATTER_LIMIT,
+            n=limit,
             random_state=FCS_SCATTER_RANDOM_SEED,
         )
         assert spec['data']['values'][:5] == [
@@ -233,15 +234,16 @@ class TestPreview(TestCase):
         ]
 
     def test_fcs_scatter_spec_downsampling_is_seeded(self):
+        limit = 25
         data = pandas.DataFrame(
             {
-                'alpha': range(FCS_SCATTER_LIMIT + 37),
-                'beta': range(FCS_SCATTER_LIMIT + 37, (FCS_SCATTER_LIMIT * 2) + 74),
+                'alpha': range(limit + 37),
+                'beta': range(limit + 37, (limit * 2) + 74),
             }
         )
 
-        first = _build_fcs_scatter_spec(data)
-        second = _build_fcs_scatter_spec(data)
+        first = _build_fcs_scatter_spec(data, limit=limit)
+        second = _build_fcs_scatter_spec(data, limit=limit)
 
         assert first['data']['values'] == second['data']['values']
 
