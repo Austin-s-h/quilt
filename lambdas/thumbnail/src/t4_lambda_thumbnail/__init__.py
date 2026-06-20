@@ -89,6 +89,20 @@ SCHEMA = {
     'additionalProperties': False,
 }
 
+LIBREOFFICE_COMMANDS = ("libreoffice", "soffice")
+LIBREOFFICE_REQUIREMENTS_MESSAGE = (
+    "PPTX previews require LibreOffice on PATH. Install LibreOffice and expose either "
+    "`libreoffice` or `soffice` on PATH. See lambdas/thumbnail/README.md for Linux/macOS/Windows setup."
+)
+
+
+def _find_libreoffice_bin():
+    for command in LIBREOFFICE_COMMANDS:
+        resolved = shutil.which(command)
+        if resolved:
+            return resolved
+    return None
+
 
 def clean_tmp_dir():
     if not CLEANUP_TMP_DIR:
@@ -251,9 +265,9 @@ def format_aicsimage_to_prepped(img: BioImage) -> da.Array:
 def pptx_to_pdf(*, path: str, page: int):
     # The binary is "libreoffice" on Lambda/Linux, but Homebrew (macOS) only
     # installs it as "soffice"; both are the same LibreOffice CLI.
-    soffice_bin = shutil.which("libreoffice") or shutil.which("soffice")
+    soffice_bin = _find_libreoffice_bin()
     if soffice_bin is None:
-        raise PDFThumbError("Missing required command: libreoffice")
+        raise PDFThumbError(LIBREOFFICE_REQUIREMENTS_MESSAGE)
     with tempfile.TemporaryDirectory() as out_dir:
         with tempfile.TemporaryDirectory() as tmp_dir:
             try:
@@ -277,7 +291,7 @@ def pptx_to_pdf(*, path: str, page: int):
                     },
                 )
             except FileNotFoundError as exc:
-                raise PDFThumbError("Missing required command: libreoffice") from exc
+                raise PDFThumbError(LIBREOFFICE_REQUIREMENTS_MESSAGE) from exc
         yield os.path.join(out_dir, os.path.splitext(os.path.basename(path))[0] + ".pdf")
 
 

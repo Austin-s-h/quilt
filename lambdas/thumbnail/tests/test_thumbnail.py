@@ -99,9 +99,18 @@ def test_handle_pdf_reports_render_details(mocker):
 
 
 def test_pptx_to_pdf_surfaces_missing_libreoffice(mocker):
+    mocker.patch("t4_lambda_thumbnail.shutil.which", side_effect=[None, "/usr/bin/soffice"])
     mocker.patch("t4_lambda_thumbnail.subprocess.run", side_effect=FileNotFoundError())
 
-    with pytest.raises(t4_lambda_thumbnail.PDFThumbError, match="Missing required command: libreoffice"):
+    with pytest.raises(t4_lambda_thumbnail.PDFThumbError, match="PPTX previews require LibreOffice"):
+        with t4_lambda_thumbnail.pptx_to_pdf(path="slides.pptx", page=1):
+            pass
+
+
+def test_pptx_to_pdf_reports_missing_libreoffice_on_path(mocker):
+    mocker.patch("t4_lambda_thumbnail.shutil.which", return_value=None)
+
+    with pytest.raises(t4_lambda_thumbnail.PDFThumbError, match="expose either `libreoffice` or `soffice` on PATH"):
         with t4_lambda_thumbnail.pptx_to_pdf(path="slides.pptx", page=1):
             pass
 

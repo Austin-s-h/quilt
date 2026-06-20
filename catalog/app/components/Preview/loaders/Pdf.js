@@ -11,10 +11,10 @@ import * as utils from './utils'
 export const detect = utils.extIn(['.pdf', '.pptx'])
 
 async function loadPdf({ url, handle }) {
+  const type = (handle.logicalKey || handle.key).toLowerCase().endsWith('.pptx')
+    ? 'pptx'
+    : 'pdf'
   try {
-    const type = (handle.logicalKey || handle.key).toLowerCase().endsWith('.pptx')
-      ? 'pptx'
-      : 'pdf'
     const search = mkSearch({
       url,
       input: type,
@@ -35,6 +35,17 @@ async function loadPdf({ url, handle }) {
         throw PreviewError.Archived({ handle })
       }
       throw PreviewError.Forbidden({ handle })
+    }
+    if (
+      e instanceof HTTPError &&
+      type === 'pptx' &&
+      typeof e.json?.error === 'string' &&
+      e.json.error.includes('LibreOffice')
+    ) {
+      throw PreviewError.Unsupported({
+        handle,
+        message: e.json.error,
+      })
     }
     // eslint-disable-next-line no-console
     console.warn('error loading pdf preview', { ...e })

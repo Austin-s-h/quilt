@@ -24,6 +24,42 @@ cd catalog
 npm install
 ```
 
+LOCAL document previews use host-installed native tools in addition to the Python
+lambda environments:
+
+```text
+- PDF thumbnails require Poppler (`pdftoppm`)
+- PPTX thumbnails require LibreOffice on PATH (`libreoffice` on Linux, `soffice` on macOS/Homebrew or Windows)
+```
+
+Install them before validating document previews locally:
+
+```bash
+# Ubuntu / Debian
+sudo apt-get update
+sudo apt-get install -y poppler-utils libreoffice
+
+# Fedora
+sudo dnf install -y poppler-utils libreoffice
+
+# macOS (Homebrew)
+brew install poppler libreoffice
+```
+
+On Windows, install both Poppler and LibreOffice, then add their CLI directories to `PATH` before launching `quilt3 catalog`:
+
+```text
+- LibreOffice usually provides `soffice.exe` under C:\Program Files\LibreOffice\program
+- Poppler packages usually provide `pdftoppm.exe` under a `bin` directory you add to PATH
+```
+
+You can verify the required commands are visible from the shell that launches LOCAL mode:
+
+```bash
+command -v pdftoppm
+command -v libreoffice || command -v soffice
+```
+
 The recommended LOCAL helpers use isolated `uv run` invocations, so they do not
 mutate `api/python/.venv`.
 

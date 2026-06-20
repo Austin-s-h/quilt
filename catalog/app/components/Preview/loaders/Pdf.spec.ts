@@ -66,6 +66,13 @@ vi.mock('../types', () => ({
       )
       return err
     },
+    Unsupported: (value: unknown) => {
+      const err: Error & { tag: string; value: unknown } = Object.assign(
+        new Error('Unsupported'),
+        { tag: 'Unsupported', value },
+      )
+      return err
+    },
   },
 }))
 vi.mock('./utils', () => ({
@@ -255,6 +262,36 @@ describe('components/Preview/loaders/Pdf', () => {
       )
 
       await expect(pending[0]).rejects.toMatchObject({ tag: 'Forbidden' })
+    })
+
+    it('maps missing LibreOffice errors for pptx to Unsupported PreviewError', async () => {
+      fetchMock.mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            error:
+              'PPTX previews require LibreOffice on PATH. Install LibreOffice and expose either `libreoffice` or `soffice` on PATH. See lambdas/thumbnail/README.md for Linux/macOS/Windows setup.',
+          }),
+          { status: 500 },
+        ),
+      )
+
+      render(
+        React.createElement(Loader, {
+          handle: {
+            bucket: 'demo',
+            key: 'hashed/asset',
+            logicalKey: 'slides.pptx',
+          } as never,
+          children: () => null,
+        }),
+      )
+
+      await expect(pending[0]).rejects.toMatchObject({
+        tag: 'Unsupported',
+        value: expect.objectContaining({
+          message: expect.stringContaining('LibreOffice'),
+        }),
+      })
     })
 
     it('rethrows unexpected errors so retry handling can wrap them later', async () => {

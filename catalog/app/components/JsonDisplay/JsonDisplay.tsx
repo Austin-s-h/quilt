@@ -47,8 +47,13 @@ const useStyles = M.makeStyles((t) => ({
   root: {
     fontFamily: t.typography.monospace.fontFamily,
     fontSize: t.typography.body2.fontSize,
-    overflow: 'auto',
-    whiteSpace: 'pre',
+    maxWidth: '100%',
+    minWidth: 0,
+    overflowX: 'auto',
+    overflowY: 'visible',
+    overflowWrap: 'anywhere',
+    whiteSpace: 'pre-wrap',
+    wordBreak: 'break-word',
     width: '100%',
   },
   more: {
@@ -56,6 +61,8 @@ const useStyles = M.makeStyles((t) => ({
   },
   flex: {
     display: 'flex',
+    maxWidth: '100%',
+    minWidth: 0,
   },
   compoundInner: {
     paddingLeft: t.spacing(2),
@@ -68,7 +75,11 @@ const useStyles = M.makeStyles((t) => ({
   },
   key: {},
   value: {
+    maxWidth: '100%',
+    minWidth: 0,
     opacity: 0.7,
+    overflowWrap: 'anywhere',
+    wordBreak: 'break-word',
   },
   separator: {
     opacity: 0.6,
