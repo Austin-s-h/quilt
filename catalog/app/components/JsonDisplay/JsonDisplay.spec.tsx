@@ -71,6 +71,30 @@ describe('components/JsonDisplay', () => {
     expect(window.getComputedStyle(row as Element).flexWrap).toBe('wrap')
   })
 
+  it('can collapse objects to a compact summary without listing keys', async () => {
+    renderWithTheme(
+      <JsonDisplay
+        defaultExpanded={0}
+        name="Metadata"
+        showKeysWhenCollapsed={false}
+        value={{
+          beginanalysis: '1',
+          begindata: '2',
+          beginstext: '3',
+          byteord: '1,2,3,4',
+        }}
+      />,
+    )
+
+    await waitFor(() => {
+      expect(screen.getByText(/Metadata:/i)).toBeTruthy()
+    })
+
+    const row = screen.getByText(/Metadata:/i).parentElement
+    expect(row?.textContent).toContain('<…4>')
+    expect(row?.textContent).not.toContain('beginanalysis')
+  })
+
   it('resets compound expansion when the value changes', async () => {
     const { rerender } = renderWithTheme(
       <JsonDisplay defaultExpanded={1} name="Metadata" value={{ beginanalysis: '1' }} />,

@@ -58,8 +58,9 @@ function Fcs({ className, preview, metadata, note, vegaLite, warnings, ...props 
       {renderWarnings(warnings)}
       {!!metadata && (
         <JsonDisplay
-          defaultExpanded={1}
+          defaultExpanded={0}
           name="Metadata"
+          showKeysWhenCollapsed={false}
           style={{
             maxWidth: '100%',
             minWidth: 0,

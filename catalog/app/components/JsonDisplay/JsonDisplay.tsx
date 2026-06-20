@@ -420,7 +420,7 @@ export default function JsonDisplay({
   const { width: currentBPWidth } = useResizeObserver({ ref })
   const computedKeys = React.useMemo(() => {
     if (showKeysWhenCollapsed === true) return Number.POSITIVE_INFINITY
-    if (showKeysWhenCollapsed === false) return Number.POSITIVE_INFINITY
+    if (showKeysWhenCollapsed === false) return 0
     if (showKeysWhenCollapsed === 'auto') return (currentBPWidth ?? 0) / CHAR_W
     return showKeysWhenCollapsed
   }, [showKeysWhenCollapsed, currentBPWidth])

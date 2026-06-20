@@ -8,14 +8,21 @@ import renderFcs from './Fcs'
 vi.mock('components/JsonDisplay', () => ({
   default: ({
     defaultExpanded,
+    showKeysWhenCollapsed,
     style,
     value,
   }: {
     defaultExpanded?: boolean | number
+    showKeysWhenCollapsed?: boolean | number | 'auto'
     style?: React.CSSProperties
     value: unknown
   }) => (
-    <div data-expanded={String(defaultExpanded)} data-testid="json" style={style}>
+    <div
+      data-expanded={String(defaultExpanded)}
+      data-show-keys={String(showKeysWhenCollapsed)}
+      data-testid="json"
+      style={style}
+    >
       {JSON.stringify(value)}
     </div>
   ),
@@ -53,7 +60,8 @@ describe('components/Preview/renderers/Fcs', () => {
     expect(screen.getByText('Parsing errors')).toBeTruthy()
     const metadata = screen.getByTestId('json')
     expect(metadata.textContent).toContain('"sample":"value"')
-    expect(metadata.getAttribute('data-expanded')).toBe('1')
+    expect(metadata.getAttribute('data-expanded')).toBe('0')
+    expect(metadata.getAttribute('data-show-keys')).toBe('false')
     expect(window.getComputedStyle(metadata).whiteSpace).toBe('pre-wrap')
     expect(screen.getByTestId('vega').textContent).toBe(JSON.stringify(spec))
     expect(container.querySelector('table.dataframe')).toBeTruthy()
